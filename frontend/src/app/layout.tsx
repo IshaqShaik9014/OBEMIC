@@ -15,6 +15,10 @@ const outfit = Outfit({
 export const metadata: Metadata = {
   title: "OBEMIC | Outcome-Based Education Management",
   description: "Next-generation Academic Performance & Outcome-Based Education Management System.",
+  icons: {
+    icon: '/logo.png',
+    apple: '/logo.png',
+  },
 };
 
 export default function RootLayout({
