@@ -4,7 +4,8 @@
   <h3>Outcome-Based Education Management Information & Calculation</h3>
   <p><i>The complete automated engine for NBA / ABET Accreditation Compliance.</i></p>
 
-  [![Node.js](https://img.shields.io/badge/Node.js-22.0+-43853D?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
+  [![Next.js](https://img.shields.io/badge/Next.js-14+-000000?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
+  [![Node.js](https://img.shields.io/badge/Node.js-20.0+-43853D?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
   [![TypeScript](https://img.shields.io/badge/TypeScript-5.5-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
   [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-316192?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
   [![Prisma](https://img.shields.io/badge/Prisma-7.9.1-2D3748?style=for-the-badge&logo=prisma&logoColor=white)](https://www.prisma.io/)
@@ -13,22 +14,22 @@
 ---
 
 ## 📑 Table of Contents
-1. [The Problem Domain: What is Outcome-Based Education?](#1-the-problem-domain-what-is-outcome-based-education)
-2. [Deep Dive: The Mathematics of Attainment](#2-deep-dive-the-mathematics-of-attainment)
-3. [System Architecture: "Under the Hood"](#3-system-architecture-under-the-hood)
-4. [Database Schema & ERD Analysis](#4-database-schema--erd-analysis)
-5. [The Request Lifecycle (How Data Flows)](#5-the-request-lifecycle-how-data-flows)
-6. [API Security & RBAC](#6-api-security--rbac)
+1. [The Problem Domain: Outcome-Based Education](#1-the-problem-domain-outcome-based-education)
+2. [The Three Portals (Application Interfaces)](#2-the-three-portals-application-interfaces)
+3. [Deep Dive: The Mathematics of Attainment](#3-deep-dive-the-mathematics-of-attainment)
+4. [System Architecture: "Under the Hood"](#4-system-architecture-under-the-hood)
+5. [Database Schema & ERD Analysis](#5-database-schema--erd-analysis)
+6. [The Request Lifecycle (How Data Flows)](#6-the-request-lifecycle-how-data-flows)
 7. [Comprehensive Directory Structure](#7-comprehensive-directory-structure)
-8. [Local Developer Onboarding](#8-local-developer-onboarding)
+8. [Local Developer Onboarding (Backend & Frontend)](#8-local-developer-onboarding-backend--frontend)
 
 ---
 
-## 1. The Problem Domain: What is Outcome-Based Education?
+## 1. The Problem Domain: Outcome-Based Education
 
 Universities seeking accreditation from bodies like the **National Board of Accreditation (NBA)** or **ABET** must prove that their students are actually learning the required skills. Moving away from traditional grade-based evaluations, Outcome-Based Education (OBE) requires a massive, data-driven mapping of micro-skills to macro-career goals.
 
-**OBEMIC** replaces hundreds of error-prone Excel sheets by mathematically modeling the student journey.
+**OBEMIC** replaces hundreds of error-prone Excel sheets by mathematically modeling the student journey automatically.
 
 ### The Taxonomy of OBE:
 - **PEO (Program Educational Objectives):** The highest level. What graduates will achieve 3-5 years *after* graduation (e.g., "Lead software engineering teams").
@@ -38,34 +39,54 @@ Universities seeking accreditation from bodies like the **National Board of Accr
 
 ---
 
-## 2. Deep Dive: The Mathematics of Attainment
+## 2. The Three Portals (Application Interfaces)
+
+OBEMIC is divided into three highly specialized front-end interfaces, all unified under a sleek Next.js (React) application featuring Tailwind CSS and Glassmorphism design principles.
+
+### A. The Admin Control Center
+Accessed via `/admin`. Only authorized administrators and Heads of Departments (HODs) can enter.
+- **Setup Wizards:** Initialize Academic Years, Semesters, and Departments.
+- **Subject & CO Management:** Define global Course Outcomes and map them to Program Outcomes (CO-PO Matrix).
+- **Faculty Assignment:** Assign faculty members to specific subjects and sections.
+- **Survey Generation:** Start, monitor, and close student course-exit surveys universally.
+
+### B. The Faculty Dashboard
+Accessed via `/faculty`. This is where the magic happens for teaching staff.
+- **Assigned Subjects:** Faculty see only the subjects they are assigned to.
+- **Excel Upload Engine:** Faculty simply upload their standard Excel marksheets (Internal, External, and Lab marks). The backend reads the columns, extracts student marks, checks them against the target thresholds, and computes attainment.
+- **Dynamic Charts:** Chart.js instantly renders responsive Bar Charts of CO and PO Attainments.
+- **Automated OBE Document Generation:** A fully-formatted, completely white background PDF generator that instantly outputs the Final OBE Report ready for NBA committee signatures.
+
+### C. Student Portal (Survey Nexus)
+Accessed via `/survey`. 
+- **Frictionless Entry:** Students log in simply via Roll Number and secure password.
+- **Pending Surveys List:** Students see cards for every subject they need to evaluate.
+- **Course Exit Form:** A beautiful, responsive UI where students rate their confidence in achieving each Course Outcome on a 5-point scale (Poor, Fair, Good, Very Good, Excellent). These responses directly pipe into the **Indirect Assessment** engine on the Faculty Dashboard.
+
+---
+
+## 3. Deep Dive: The Mathematics of Attainment
 
 OBEMIC automates the exact algorithms required by the NBA. Here is the mathematical engine running in our backend services (`src/services/attainment`).
 
 ### A. Direct Attainment (Quantitative Assessment)
 Direct attainment measures actual academic performance via exams.
-1. **The Threshold (Set by Admins):** e.g., 60% of the maximum marks.
-2. **Student Qualification:** For a specific CO (mapped to specific exam questions), how many students scored $\ge$ 60%?
-3. **Level Calculation Algorithm:**
-   - Let $P$ = Percentage of students crossing the threshold.
-   - If $P \ge 70\% \rightarrow$ **Level 3 (High)**
-   - If $P \ge 60\% \rightarrow$ **Level 2 (Medium)**
-   - If $P \ge 50\% \rightarrow$ **Level 1 (Low)**
-   - If $P < 50\% \rightarrow$ **Level 0 (Failed)**
-4. **Weighted Aggregation:**
-   $$ \text{Total Direct Attainment} = (W_{int} \times \text{Internal Level}) + (W_{ext} \times \text{External Level}) $$
-   *(Typically $W_{int} = 0.3$ and $W_{ext} = 0.7$)*
+1. **The Threshold (Set by Admins/Faculty):** e.g., 65% of the maximum marks.
+2. **Student Qualification:** For a specific CO (mapped to specific exam questions), how many students scored $\ge$ 65%?
+3. **Level Calculation Algorithm (Linear Proportional Scale):**
+   Unlike rigid tier-based scales (where anything under 60% is a harsh 0), OBEMIC is configured to use a precise **Direct Linear Proportional Scale**.
+   Let $P$ = Percentage of students crossing the threshold.
+   $$ \text{Attainment Level (3-Scale)} = \left(\frac{P}{100}\right) \times 3 $$
+   *(e.g., A 40% pass rate instantly maps to exactly 1.20)*
 
 ### B. Indirect Attainment (Qualitative Assessment)
-Indirect attainment measures student confidence via surveys.
-1. Students rate their confidence on a CO from 1 to 5.
-2. The system computes the Arithmetic Mean ($\mu$) of all responses.
-3. **Normalization (5-point to 3-point scale):**
-   $$ \text{Indirect Attainment} = \left( \frac{\mu}{5} \right) \times 3 $$
+Sourced automatically from the Student Survey Nexus. 
+1. The 5-point survey ratings (Poor to Excellent) are averaged.
+2. The 5-point scale is dynamically squashed into the 3-point scale using a standard ratio algorithm.
 
 ### C. Final CO Attainment
-Both metrics are fused into a final CO score:
-$$ \text{Final CO Attainment} = (0.8 \times \text{Direct Attainment}) + (0.2 \times \text{Indirect Attainment}) $$
+Both metrics are fused into a final CO score (typically an 80/20 or 60/40 split):
+$$ \text{Final CO Attainment} = (0.6 \times \text{Direct Attainment}) + (0.4 \times \text{Indirect Attainment}) $$
 
 ### D. PO & PSO Projection (The Mapping Matrix)
 Every CO is mapped to POs using a Correlation Factor ($C$):
@@ -74,18 +95,18 @@ Every CO is mapped to POs using a Correlation Factor ($C$):
 - 3 = Substantial (High)
 
 To calculate how much a Course contributed to a Program Outcome:
-$$ \text{PO Attainment} = \frac{\sum (\text{Final CO Attainment}_i \times C_i)}{3 \times N} $$
-*(Where $N$ is the number of COs mapped to that PO).*
+$$ \text{PO Attainment} = \frac{\sum (\text{Final CO Attainment}_i \times C_i)}{N} $$
+*(Where $N$ is the number of mapped COs, using standard arithmetic means against the generated matrix)*
 
 ---
 
-## 3. System Architecture: "Under the Hood"
+## 4. System Architecture: "Under the Hood"
 
 OBEMIC uses a strictly typed, **Headless Layered Architecture**. The UI is completely decoupled from the computational backend.
 
 ```mermaid
 graph TD
-    Client[React/Next.js Client] -->|HTTP REST + JWT| Router[Express Routers]
+    Client[Next.js App Router Client] -->|HTTP REST + JWT| Router[Express Routers]
     
     subgraph OBEMIC Backend Node.js
         Router -->|Req Validation| MW[Middlewares]
@@ -104,16 +125,16 @@ graph TD
     Prisma <-->|Connection Pool| DB[(PostgreSQL v16)]
 ```
 
-### The 5 Architectural Layers
+### The 5 Architectural Layers (Backend)
 1. **Routes (`/routes`):** URL definitions. Purely maps an endpoint to a Controller method.
-2. **Middleware (`/middleware`):** The shield. `auth.middleware.ts` decodes the JWT signature. `role.middleware.ts` blocks unauthorized access (e.g., blocking a Student from hitting a Faculty route).
-3. **Controllers (`/controllers`):** The HTTP bridge. Responsible solely for extracting `req.body`, `req.params`, handling `res.status(500)`, and orchestrating the response. *Zero business logic is allowed here.*
+2. **Middleware (`/middleware`):** The shield. `auth.middleware.ts` decodes the JWT signature. `role.middleware.ts` blocks unauthorized access.
+3. **Controllers (`/controllers`):** The HTTP bridge. Responsible solely for extracting `req.body`, `req.params`, and orchestrating the response. *Zero business logic.*
 4. **Services (`/services`):** The Brain. This is where the underground heavy lifting lives. Excel files are streamed into memory, cells are parsed, CO attainment arrays are computed, and transaction pipelines are built.
-5. **Repositories (`/repositories`):** The Database Abstraction. Contains pure Prisma queries (`findMany`, `create`, `update`). This ensures our Services aren't polluted with raw database syntax.
+5. **Repositories (`/repositories`):** The Database Abstraction. Contains pure Prisma queries (`findMany`, `create`, `update`).
 
 ---
 
-## 4. Database Schema & ERD Analysis
+## 5. Database Schema & ERD Analysis
 
 Powered by PostgreSQL and Prisma ORM, our schema is highly normalized to handle the complexity of academic structures.
 
@@ -124,43 +145,7 @@ Powered by PostgreSQL and Prisma ORM, our schema is highly normalized to handle 
 
 ---
 
-## 5. The Request Lifecycle (How Data Flows)
-
-Let's trace exactly what happens when a Faculty member uploads an Internal Marks Excel file:
-
-1. **Frontend:** Sends a `multipart/form-data` POST request containing the `.xlsx` file.
-2. **Router:** Hits `POST /api/v1/faculty/reports/internal/upload`.
-3. **Upload Middleware:** `multer` intercepts the file, writes it to `/uploads`, and attaches the file path to `req.file`.
-4. **Controller:** Extracts the `facultyAssignmentId` and `req.file.path`. Calls `ReportService.processInternalMarks()`.
-5. **Service Layer (The Heavy Lifting):**
-   - Initializes `InternalWorkbookValidator` to ensure the Excel template hasn't been tampered with.
-   - Triggers `InternalHeaderMapper` to map columns to specific Course Outcomes.
-   - Iterates through hundreds of student rows.
-   - Calculates the threshold metrics mathematically.
-   - Formats the results into a massive JSON object.
-6. **Repository:** Saves the JSON object into `ReportHistory` as a `DRAFT`.
-7. **Controller:** Returns `HTTP 200 OK` with the calculation summary.
-
----
-
-## 6. API Security & RBAC
-
-We utilize **Stateless JWT Authentication**.
-
-- **Tokens:** Upon login, the server generates an HMAC-SHA256 signed JWT containing the user's `userId` and `role`.
-- **RBAC (Role-Based Access Control):** 
-  ```typescript
-  // Example of deep security applied to a route
-  router.post('/create', 
-    authenticate, // Enforces JWT validity
-    requireRole([RoleName.ADMIN, RoleName.COORDINATOR]), // Blocks Faculty/Students
-    AdminController.createSubject
-  );
-  ```
-
----
-
-## 7. Comprehensive Directory Structure
+## 6. Comprehensive Directory Structure
 
 To truly master the codebase, you must understand where the files live:
 
@@ -171,26 +156,32 @@ OBEMIC/
 │   │   ├── schema.prisma            # The absolute source of truth for the DB
 │   │   └── seed.ts                  # Injects dummy Admin/Students on fresh installs
 │   ├── src/
-│   │   ├── config/                  # Global constants, branch codes, permission enums
+│   │   ├── config/                  # Global constants, permission enums
 │   │   ├── controllers/             # HTTP boundary (req/res handling)
-│   │   ├── database/                # PrismaClient singleton with the 'pg' driver adapter
-│   │   ├── logs/                    # Pino/Winston logging configurations
+│   │   ├── database/                # PrismaClient singleton with pg adapter
 │   │   ├── middleware/              # JWT verification and Multer file uploads
-│   │   ├── repositories/            # Prisma ORM abstraction layer
 │   │   ├── routes/                  # API endpoints grouped by feature
-│   │   ├── services/
-│   │   │   ├── attainment/          # 🧠 The massive Mathematical / Excel parser engine
-│   │   │   ├── admin/imports/       # Bulk Excel importers for Admin setups
-│   │   │   └── *.service.ts         # Standard business logic for auth, academic, etc.
-│   │   ├── types/                   # TypeScript interfaces and DTOs
-│   │   └── utils/                   # Helper functions (hashing, JWT signing)
-│   └── package.json
-└── frontend/                        # React / Next.js UI (Under Development)
+│   │   └── services/
+│   │       ├── attainment/          # 🧠 The massive Mathematical / Excel parser engine
+│   │       ├── admin/imports/       # Bulk Excel importers for Admin setups
+│   │       └── *.service.ts         # Standard business logic for auth, academic, etc.
+│   └── TEST/                        # Contains database seeding tools and scratch files
+│       └── Excel_Templates/         # Blank Excel templates for Faculty upload testing
+│
+└── frontend/                        # Next.js UI Application
+    ├── src/
+    │   ├── app/
+    │   │   ├── admin/               # Admin Control Center (Page routing)
+    │   │   ├── faculty/             # Faculty Dashboard (Page routing)
+    │   │   └── survey/              # Student Survey Nexus (Page routing)
+    │   ├── components/              # Reusable UI components (Modals, Charts)
+    │   └── services/                # Axios wrappers mapping to Backend REST APIs
+    └── tailwind.config.ts           # Global design system tokens
 ```
 
 ---
 
-## 8. Local Developer Onboarding
+## 7. Local Developer Onboarding (Backend & Frontend)
 
 Ready to write code? Follow this strict initialization sequence.
 
@@ -198,7 +189,7 @@ Ready to write code? Follow this strict initialization sequence.
 - **Node.js:** v20+ recommended.
 - **PostgreSQL:** Running locally on port `5432`.
 
-### 1. Database Configuration
+### 1. Database Configuration (Backend)
 Inside the `backend/` directory, create a `.env` file:
 ```env
 DATABASE_URL="postgresql://postgres:YOUR_PASSWORD_HERE@localhost:5432/obemic"
@@ -207,7 +198,7 @@ PORT=5000
 ```
 *(Note: If your password contains special characters like `@`, you MUST URL-encode them as `%40` in the `DATABASE_URL`).*
 
-### 2. Install & Generate
+### 2. Install & Generate (Backend)
 ```bash
 cd backend
 npm install
@@ -225,17 +216,33 @@ We provide a seeder that automatically creates Academic Years, Semesters, Depart
 npx ts-node prisma/seed.ts
 ```
 
-### 4. Boot the Server
+### 4. Boot the Servers
+
+**Backend API Server:**
 ```bash
+cd backend
 npm run dev
 ```
-You should see: `OBEMIC API Server running on port 5000`.
+*Server running on http://localhost:5000*
 
-### 5. API Testing (Swagger)
-Open `http://localhost:5000/api-docs` in your browser.
-To authenticate:
-1. Hit `/api/v1/auth/login`.
-2. Body: `{ "email": "admin@college.edu", "password": "password123" }`
-3. Copy `accessToken`, click **Authorize** at the top of Swagger, and paste it. You now have God-mode access to the backend.
+**Frontend UI Server:**
+Open a new terminal window.
+```bash
+cd frontend
+npm install
+npm run dev
+```
+*Web App running on http://localhost:3000*
+
+### 5. Accessing the Platforms
+- **Admin Hub:** Navigate to `http://localhost:3000/admin`
+  *(Login with `admin@college.edu` / `password123`)*
+- **Faculty Dashboard:** Navigate to `http://localhost:3000/faculty`
+  *(Login with a seeded faculty email)*
+- **Student Survey Nexus:** Navigate to `http://localhost:3000/survey`
+  *(Login with a seeded student Roll Number)*
+
+### 6. API Testing (Swagger)
+Open `http://localhost:5000/api-docs` in your browser to view the auto-generated Swagger OpenAPI specifications.
 
 Welcome to the underground. Happy coding. 🚀
