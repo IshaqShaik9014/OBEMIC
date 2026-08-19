@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="OBEMIC-LOGO.png" alt="OBEMIC Logo" width="120" height="120" style="border-radius: 20px;"/>
+  <img src="frontend/public/logo.png" alt="OBEMIC Logo" width="120" height="120" style="border-radius: 20px;"/>
   <h1>🎓 OBEMIC: NBA Accreditation & OBE Engine</h1>
   <h3>Outcome-Based Education Management Information & Calculation</h3>
   <p><i>A complete, automated software solution for Engineering Institutions in India to achieve NBA / ABET Accreditation without the manual paperwork.</i></p>
