@@ -71,11 +71,15 @@ OBEMIC strictly follows the mathematical models recommended by the NBA. The calc
 
 ### A. Direct Attainment (Based on University & Mid Marks)
 This measures actual academic performance through exams.
-1. **The Target (Threshold):** For example, the department sets a target that students should score $\ge$ 60% of the maximum marks.
+1. **The Target (Threshold):** For example, the department sets a target that students should score >= 60% of the maximum marks.
 2. **Attainment Level (Linear Scale):** 
    Instead of rigid tiers, OBEMIC uses a precise **Direct Linear Proportional Scale** to be as fair and accurate as possible.
-   If $P$ is the Percentage of students who crossed the 60% marks threshold:
-   $$ \text{Attainment Level (Out of 3)} = \left(\frac{P}{100}\right) \times 3 $$
+   If `$P$` is the Percentage of students who crossed the 60% marks threshold:
+
+$$
+\text{Attainment Level (Out of 3)} = \left(\frac{P}{100}\right) \times 3
+$$
+
    *(Example: If 40% of the class passed the threshold, the attainment level is exactly 1.20)*
 
 ### B. Indirect Attainment (Based on Student Surveys)
@@ -83,11 +87,17 @@ This is calculated automatically from the Student Portal. The system takes the a
 
 ### C. Final CO Attainment
 Both direct (exams) and indirect (surveys) results are combined. Typically, exam marks carry more weight:
-$$ \text{Final CO Attainment} = (0.8 \times \text{Direct Attainment}) + (0.2 \times \text{Indirect Attainment}) $$
+
+$$
+\text{Final CO Attainment} = (0.8 \times \text{Direct Attainment}) + (0.2 \times \text{Indirect Attainment})
+$$
 
 ### D. PO Attainment (The Final Goal)
-To find out how much a specific subject contributed to the overall engineering degree (Program Outcomes), the system checks the Correlation Factor ($C$) set by the HOD (1 = Low, 2 = Medium, 3 = High) and calculates:
-$$ \text{PO Attainment} = \frac{\sum (\text{Final CO Attainment}_i \times C_i)}{N} $$
+To find out how much a specific subject contributed to the overall engineering degree (Program Outcomes), the system checks the Correlation Factor (`$C$`) set by the HOD (1 = Low, 2 = Medium, 3 = High) and calculates:
+
+$$
+\text{PO Attainment} = \frac{\sum (\text{Final CO Attainment}_i \times C_i)}{N}
+$$
 
 ---
 
