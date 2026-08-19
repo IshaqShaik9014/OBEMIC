@@ -1,68 +1,62 @@
 import { InternalFormulaBuilder } from './InternalFormulaBuilder';
-import { StudentRange } from '../shared/DynamicStudentRangeDetector';
-import { TablePlacementService } from '../shared/TablePlacementService';
+import { StudentRange } from './StudentRangeDetector';
 
 export class COSummaryWriter {
     private builder = new InternalFormulaBuilder();
-    private placement = new TablePlacementService();
 
-    public write(sheet: any, range: StudentRange, courseOutcomes: { coCode: string }[], startColIndex: number, threshold: number): void {
-        const numCOs = courseOutcomes.length;
-        if (numCOs > 5) {
-            throw new Error(`The internal template currently only supports up to 5 COs. Found: ${numCOs}`);
-        }
+    public write(sheet: any, range: StudentRange, threshold: number = 1.8): void {
         const summaryStartRow = range.endRow + 2;
 
-        // The summary table always requires 5 columns for its layout
-        const cols: string[] = [];
-        for (let i = 0; i < 5; i++) {
-            cols.push(this.placement.getColLetter(startColIndex + i));
-        }
-        
-        const firstCol = cols[0];
-        const lastCol = cols[4];
-
         // 1. Write Headers
-        const summaryHeaders = ['CO', 'Appeared', 'Attained', '3-Point Scale', 'Attainment Percentage'];
+        const headers = ['CO', 'Appeared', 'Attained', '3-Point Scale', 'Attainment%'];
+        const cols = ['AC', 'AD', 'AE', 'AF', 'AG'];
         
         for (let i = 0; i < 5; i++) {
             const cell = sheet.cell(`${cols[i]}${summaryStartRow}`);
-            cell.value(summaryHeaders[i]);
+            cell.value(headers[i]);
             cell.style('bold', true);
-            cell.style('horizontalAlignment', 'center');
-            cell.style('fill', 'C6E0B4'); // Light green background
         }
 
-        // 2. Write Data Rows
-        for (let i = 0; i < numCOs; i++) {
-            const r = summaryStartRow + i + 1;
+        // 2. Write CO Rows
+        const coLabels = ['CO1', 'CO2', 'CO3', 'CO4', 'CO5'];
+        const dataCols = ['AC', 'AD', 'AE', 'AF', 'AG']; // Source cols for CO scores
+
+        for (let i = 0; i < 5; i++) {
+            const r = summaryStartRow + 1 + i;
+            const sourceCol = dataCols[i];
             
-            // CO Name
-            sheet.cell(`${cols[0]}${r}`).value(courseOutcomes[i].coCode);
-
-            // Appeared 
-            sheet.cell(`${cols[1]}${r}`).formula(this.builder.getAppearedFormula(cols[i], range.startRow, range.endRow));
+            // CO Label (AC)
+            sheet.cell(`AC${r}`).value(coLabels[i]);
             
-            // Attained 
-            sheet.cell(`${cols[2]}${r}`).formula(this.builder.getAttainedFormula(cols[i], range.startRow, range.endRow, threshold));
-
-            // 3-Point Scale 
-            sheet.cell(`${cols[3]}${r}`).formula(this.builder.get3PointScaleFormula(`${cols[2]}${r}`, `${cols[1]}${r}`));
-
-            // Attainment Percentage 
-            sheet.cell(`${cols[4]}${r}`).formula(this.builder.getAttainmentPercentageFormula(`${cols[2]}${r}`, `${cols[1]}${r}`));
+            // Appeared (AD)
+            sheet.cell(`AD${r}`).formula(this.builder.getAppearedFormula(sourceCol, range.startRow, range.endRow));
+            
+            // Attained (AE)
+            sheet.cell(`AE${r}`).formula(this.builder.getAttainedFormula(sourceCol, range.startRow, range.endRow, threshold));
+            
+            // 3-Point Scale (AF)
+            sheet.cell(`AF${r}`).formula(this.builder.get3PointScaleFormula(`AE${r}`, `AD${r}`));
+            
+            // Attainment Percentage (AG)
+            sheet.cell(`AG${r}`).formula(this.builder.getAttainmentPercentageFormula(`AE${r}`, `AD${r}`));
         }
 
-        // 3. Add formatting (borders and alignment)
-        sheet.range(`${firstCol}${summaryStartRow}:${lastCol}${summaryStartRow + numCOs}`).style('border', true);
-        sheet.range(`${firstCol}${summaryStartRow + 1}:${lastCol}${summaryStartRow + numCOs}`).style('horizontalAlignment', 'center');
-        sheet.range(`${firstCol}${summaryStartRow + 1}:${lastCol}${summaryStartRow + numCOs}`).style('verticalAlignment', 'center');
+        // 3. Add borders
+        sheet.range(`AC${summaryStartRow}:AG${summaryStartRow + 5}`).style('border', true);
+    }
 
-        // Adjust column widths for the summary table
-        sheet.column(cols[0]).width(12); // CO Name
-        sheet.column(cols[1]).width(15); // Appeared
-        sheet.column(cols[2]).width(15); // Attained
-        sheet.column(cols[3]).width(20); // 3-Point Scale (usually column AH)
-        sheet.column(cols[4]).width(25); // Attainment Percentage
+    public clear(sheet: any, range: StudentRange): void {
+        const summaryStartRow = range.endRow + 2;
+        
+        const markerCell = sheet.cell(`AC${summaryStartRow}`).value();
+        if (markerCell === 'CO') {
+            // We know it's at most 6 rows (header + 5 COs)
+            for (let r = summaryStartRow; r <= summaryStartRow + 5; r++) {
+                for (let c = 29; c <= 33; c++) {
+                    sheet.cell(r, c).formula(undefined);
+                    sheet.cell(r, c).value(undefined);
+                }
+            }
+        }
     }
 }

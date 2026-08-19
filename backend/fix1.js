@@ -1,0 +1,10 @@
+const fs = require('fs');
+let code = fs.readFileSync('src/services/admin/imports/course-outcomes/COImportValidator.ts', 'utf8');
+code = code.replace(/semesterId: string \| null;/g, 'semesterLevel: string | null;');
+code = code.replace(/semesterId: null,/g, 'semesterLevel: null,');
+code = code.replace(/validated.semesterId = dbSem.id;/g, 'validated.semesterLevel = mappedSemName;');
+code = code.replace(/validated.semesterId = existingSubject.semesterId;/g, 'validated.semesterLevel = existingSubject.semesterLevel;');
+code = code.replace(/!validated.departmentId \|\| !validated.semesterId/g, '!validated.departmentId');
+code = code.replace(/if \(!validated.semesterId\) validated.issues.push.*?;/g, '');
+fs.writeFileSync('src/services/admin/imports/course-outcomes/COImportValidator.ts', code);
+console.log('Fixed COImportValidator');

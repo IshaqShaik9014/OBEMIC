@@ -1,0 +1,205 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { Card } from '@/components/ui/Card';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/Button';
+import { SearchableSelect } from '@/components/ui/SearchableSelect';
+import { adminService } from '@/services/admin.service';
+
+export default function AdminReviewPage() {
+  const router = useRouter();
+  
+  // Data State
+  const [subjects, setSubjects] = useState<any[]>([]);
+  const [faculty, setFaculty] = useState<any[]>([]);
+  const [surveys, setSurveys] = useState<any[]>([]);
+  const [reports, setReports] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Master Filters State
+  const [selectedSubject, setSelectedSubject] = useState('');
+  const [selectedFaculty, setSelectedFaculty] = useState('');
+  const [selectedSem, setSelectedSem] = useState('');
+
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      const [subData, facData, surData, repData] = await Promise.all([
+        adminService.getSubjects(),
+        adminService.getFacultyList(),
+        adminService.getSurveys(),
+        adminService.getPendingReports()
+      ]);
+      setSubjects(subData);
+      setFaculty(facData);
+      setSurveys(surData);
+      setReports(repData);
+    } catch (err: any) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const handleApprove = async (id: string) => {
+    try {
+      await adminService.approveReport(id);
+      alert('Report Approved!');
+      fetchData();
+    } catch (err: any) {
+      alert(err.message || 'Failed to approve');
+    }
+  };
+
+  // Filter Options
+  const subjectOptions = subjects.map(s => ({ value: s.id, label: `${s.subjectCode} - ${s.subjectName}` }));
+  const facultyOptions = faculty.map(f => ({ value: f.id, label: f.name }));
+  const semOptions = [
+    { value: '1-1', label: '1st Year - 1st Sem' },
+    { value: '1-2', label: '1st Year - 2nd Sem' },
+    { value: '2-1', label: '2nd Year - 1st Sem' },
+    { value: '2-2', label: '2nd Year - 2nd Sem' },
+    { value: '3-1', label: '3rd Year - 1st Sem' },
+    { value: '3-2', label: '3rd Year - 2nd Sem' },
+    { value: '4-1', label: '4th Year - 1st Sem' },
+    { value: '4-2', label: '4th Year - 2nd Sem' },
+  ];
+
+  // Derived progress data based on selected subject
+  const currentSubject = subjects.find(s => s.id === selectedSubject);
+  const subjectReports = reports.filter(r => r.subjectId === selectedSubject);
+  const pendingReport = subjectReports.find(r => r.status === 'SUBMITTED');
+  
+  // For survey status, we'll map generically or use the first active survey as a proxy for the UI visualization
+  const activeSurvey = surveys.length > 0 ? surveys[0] : null;
+
+  return (
+    <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px' }}>
+        <button onClick={() => router.push('/admin/dashboard')} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#e2e8f0', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer' }}>
+           &larr; Back
+        </button>
+        <div>
+          <h1 style={{ fontSize: '1.8rem', color: '#f8fafc', margin: 0 }}>Review Reports Dashboard</h1>
+          <p style={{ color: '#94a3b8', margin: '4px 0 0 0' }}>Track attainment progress and approve final reports</p>
+        </div>
+      </div>
+
+      {/* MASTER FILTERS */}
+      <Card style={{ position: 'relative', zIndex: 20 }}>
+        <h3 style={{ margin: '0 0 16px 0', color: '#f8fafc', fontSize: '1.1rem' }}>Master Filters</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px' }}>
+          <div>
+            <label style={{ display: 'block', marginBottom: '6px', color: '#94a3b8', fontSize: '0.9rem' }}>Select Subject</label>
+            <SearchableSelect options={subjectOptions} value={selectedSubject} onChange={setSelectedSubject} placeholder="-- All Subjects --" />
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '6px', color: '#94a3b8', fontSize: '0.9rem' }}>Select Faculty</label>
+            <SearchableSelect options={facultyOptions} value={selectedFaculty} onChange={setSelectedFaculty} placeholder="-- All Faculty --" />
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '6px', color: '#94a3b8', fontSize: '0.9rem' }}>Select Semester</label>
+            <SearchableSelect options={semOptions} value={selectedSem} onChange={setSelectedSem} placeholder="-- All Semesters --" />
+          </div>
+        </div>
+      </Card>
+
+      {isLoading ? (
+        <p style={{ color: '#94a3b8', textAlign: 'center', padding: '40px' }}>Loading progress data...</p>
+      ) : !selectedSubject ? (
+        <Card>
+          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+            <h3 style={{ color: '#94a3b8', margin: '0 0 8px 0' }}>No Subject Selected</h3>
+            <p style={{ color: '#64748b', margin: 0 }}>Please select a subject from the Master Filters above to view its detailed attainment progress.</p>
+          </div>
+        </Card>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <h2 style={{ color: '#f8fafc', margin: '0 0 -8px 0', fontSize: '1.4rem' }}>
+            Attainment Progress: <span style={{ color: '#60a5fa' }}>{currentSubject?.subjectName} ({currentSubject?.subjectCode})</span>
+          </h2>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+            
+            {/* 1. DIRECT ATTAINMENT */}
+            <Card glow>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                <h3 style={{ margin: 0, color: '#f8fafc', fontSize: '1.1rem' }}>1. Direct Attainment</h3>
+                <span style={{ background: 'rgba(59,130,246,0.2)', color: '#60a5fa', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem' }}>In Progress</span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <span style={{ color: '#94a3b8' }}>Internal Marks</span>
+                  <span style={{ color: '#10B981', fontSize: '0.9rem' }}>✓ Uploaded</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <span style={{ color: '#94a3b8' }}>External Marks</span>
+                  <span style={{ color: '#fbbf24', fontSize: '0.9rem' }}>Pending</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ color: '#94a3b8' }}>Lab Marks</span>
+                  <span style={{ color: '#64748b', fontSize: '0.9rem' }}>N/A</span>
+                </div>
+              </div>
+              <Button style={{ width: '100%', background: 'transparent', border: '1px solid #3b82f6', color: '#60a5fa' }}>View Uploads</Button>
+            </Card>
+
+            {/* 2. INDIRECT ATTAINMENT */}
+            <Card glow>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                <h3 style={{ margin: 0, color: '#f8fafc', fontSize: '1.1rem' }}>2. Indirect Attainment</h3>
+                <span style={{ background: activeSurvey ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)', color: activeSurvey ? '#10B981' : '#ef4444', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem' }}>
+                  {activeSurvey ? 'Active' : 'Missing'}
+                </span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <span style={{ color: '#94a3b8' }}>Course Exit Survey</span>
+                  <span style={{ color: '#e2e8f0', fontSize: '0.9rem' }}>{activeSurvey ? activeSurvey.status || 'OPEN' : 'Not Created'}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ color: '#94a3b8' }}>Responses</span>
+                  <span style={{ color: '#e2e8f0', fontSize: '0.9rem' }}>{activeSurvey ? '14 / 60' : '0 / 0'}</span>
+                </div>
+              </div>
+              <Button style={{ width: '100%', background: 'transparent', border: '1px solid #3b82f6', color: '#60a5fa' }} onClick={() => router.push('/admin/survey')}>Manage Surveys</Button>
+            </Card>
+
+            {/* 3. FINAL REVIEW STATUS */}
+            <Card glow>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                <h3 style={{ margin: 0, color: '#f8fafc', fontSize: '1.1rem' }}>3. Final Review</h3>
+                <span style={{ background: pendingReport ? 'rgba(245,158,11,0.2)' : 'rgba(100,116,139,0.2)', color: pendingReport ? '#f59e0b' : '#94a3b8', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem' }}>
+                  {pendingReport ? 'Awaiting Review' : 'Not Ready'}
+                </span>
+              </div>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px', flexGrow: 1 }}>
+                <p style={{ color: '#94a3b8', fontSize: '0.9rem', margin: 0, lineHeight: '1.5' }}>
+                  {pendingReport 
+                    ? `Faculty ${pendingReport.faculty?.name || ''} has submitted the final attainment report for this subject.`
+                    : 'The final attainment report cannot be generated until both Direct and Indirect attainments are completed by the faculty.'}
+                </p>
+              </div>
+
+              {pendingReport ? (
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <Button style={{ flex: 1, background: '#10B981', color: 'white', border: 'none' }} onClick={() => handleApprove(pendingReport.id)}>Approve</Button>
+                  <Button style={{ flex: 1, background: 'transparent', border: '1px solid #ef4444', color: '#ef4444' }}>Reject</Button>
+                </div>
+              ) : (
+                <Button style={{ width: '100%', background: 'transparent', border: '1px solid #475569', color: '#94a3b8' }} disabled>Awaiting Submission</Button>
+              )}
+            </Card>
+
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

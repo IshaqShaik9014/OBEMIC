@@ -9,10 +9,10 @@ export class ReportRepository {
     status: ReportStatus;
     filePath: string;
     fileSize: number;
+    data?: any;
   }) {
     return prisma.reportHistory.create({
       data: {
-        
         ...data,
         generatedAt: new Date(),
       }
