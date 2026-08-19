@@ -17,11 +17,12 @@
 1. [The Problem Domain: Outcome-Based Education](#1-the-problem-domain-outcome-based-education)
 2. [The Three Portals (Application Interfaces)](#2-the-three-portals-application-interfaces)
 3. [Deep Dive: The Mathematics of Attainment](#3-deep-dive-the-mathematics-of-attainment)
-4. [System Architecture: "Under the Hood"](#4-system-architecture-under-the-hood)
-5. [Database Schema & ERD Analysis](#5-database-schema--erd-analysis)
-6. [The Request Lifecycle (How Data Flows)](#6-the-request-lifecycle-how-data-flows)
-7. [Comprehensive Directory Structure](#7-comprehensive-directory-structure)
-8. [Local Developer Onboarding (Backend & Frontend)](#8-local-developer-onboarding-backend--frontend)
+4. [Frontend Architecture & UI Engineering](#4-frontend-architecture--ui-engineering)
+5. [Backend Architecture: "Under the Hood"](#5-backend-architecture-under-the-hood)
+6. [Database Schema & ERD Analysis](#6-database-schema--erd-analysis)
+7. [The Request Lifecycle (How Data Flows)](#7-the-request-lifecycle-how-data-flows)
+8. [Comprehensive Directory Structure](#8-comprehensive-directory-structure)
+9. [Local Developer Onboarding](#9-local-developer-onboarding)
 
 ---
 
@@ -32,10 +33,10 @@ Universities seeking accreditation from bodies like the **National Board of Accr
 **OBEMIC** replaces hundreds of error-prone Excel sheets by mathematically modeling the student journey automatically.
 
 ### The Taxonomy of OBE:
-- **PEO (Program Educational Objectives):** The highest level. What graduates will achieve 3-5 years *after* graduation (e.g., "Lead software engineering teams").
-- **PO (Program Outcomes):** The 12 mandatory attributes defined by NBA/ABET (e.g., PO1: Engineering Knowledge, PO2: Problem Analysis, PO8: Ethics). Every student must possess these by graduation.
-- **PSO (Program Specific Outcomes):** 2 to 4 outcomes specific to the department (e.g., Computer Science PSOs vs. Mechanical PSOs).
-- **CO (Course Outcomes):** The microscopic level. 5 to 6 highly specific learning objectives for a *single subject* (e.g., "Analyze time complexity of sorting algorithms").
+- **PEO (Program Educational Objectives):** The highest level. What graduates will achieve 3-5 years *after* graduation.
+- **PO (Program Outcomes):** The 12 mandatory attributes defined by NBA/ABET.
+- **PSO (Program Specific Outcomes):** 2 to 4 outcomes specific to the department.
+- **CO (Course Outcomes):** The microscopic level. 5 to 6 highly specific learning objectives for a *single subject*.
 
 ---
 
@@ -53,7 +54,7 @@ Accessed via `/admin`. Only authorized administrators and Heads of Departments (
 ### B. The Faculty Dashboard
 Accessed via `/faculty`. This is where the magic happens for teaching staff.
 - **Assigned Subjects:** Faculty see only the subjects they are assigned to.
-- **Excel Upload Engine:** Faculty simply upload their standard Excel marksheets (Internal, External, and Lab marks). The backend reads the columns, extracts student marks, checks them against the target thresholds, and computes attainment.
+- **Excel Upload Engine:** Faculty simply upload their standard Excel marksheets (Internal, External, and Lab marks).
 - **Dynamic Charts:** Chart.js instantly renders responsive Bar Charts of CO and PO Attainments.
 - **Automated OBE Document Generation:** A fully-formatted, completely white background PDF generator that instantly outputs the Final OBE Report ready for NBA committee signatures.
 
@@ -61,7 +62,7 @@ Accessed via `/faculty`. This is where the magic happens for teaching staff.
 Accessed via `/survey`. 
 - **Frictionless Entry:** Students log in simply via Roll Number and secure password.
 - **Pending Surveys List:** Students see cards for every subject they need to evaluate.
-- **Course Exit Form:** A beautiful, responsive UI where students rate their confidence in achieving each Course Outcome on a 5-point scale (Poor, Fair, Good, Very Good, Excellent). These responses directly pipe into the **Indirect Assessment** engine on the Faculty Dashboard.
+- **Course Exit Form:** A beautiful, responsive UI where students rate their confidence in achieving each Course Outcome on a 5-point scale.
 
 ---
 
@@ -70,37 +71,56 @@ Accessed via `/survey`.
 OBEMIC automates the exact algorithms required by the NBA. Here is the mathematical engine running in our backend services (`src/services/attainment`).
 
 ### A. Direct Attainment (Quantitative Assessment)
-Direct attainment measures actual academic performance via exams.
 1. **The Threshold (Set by Admins/Faculty):** e.g., 65% of the maximum marks.
-2. **Student Qualification:** For a specific CO (mapped to specific exam questions), how many students scored $\ge$ 65%?
+2. **Student Qualification:** How many students scored $\ge$ 65%?
 3. **Level Calculation Algorithm (Linear Proportional Scale):**
-   Unlike rigid tier-based scales (where anything under 60% is a harsh 0), OBEMIC is configured to use a precise **Direct Linear Proportional Scale**.
-   Let $P$ = Percentage of students crossing the threshold.
+   OBEMIC uses a precise **Direct Linear Proportional Scale**.
    $$ \text{Attainment Level (3-Scale)} = \left(\frac{P}{100}\right) \times 3 $$
-   *(e.g., A 40% pass rate instantly maps to exactly 1.20)*
 
 ### B. Indirect Attainment (Qualitative Assessment)
-Sourced automatically from the Student Survey Nexus. 
-1. The 5-point survey ratings (Poor to Excellent) are averaged.
-2. The 5-point scale is dynamically squashed into the 3-point scale using a standard ratio algorithm.
+Sourced automatically from the Student Survey Nexus. The 5-point scale is dynamically squashed into the 3-point scale using a standard ratio algorithm.
 
 ### C. Final CO Attainment
-Both metrics are fused into a final CO score (typically an 80/20 or 60/40 split):
 $$ \text{Final CO Attainment} = (0.6 \times \text{Direct Attainment}) + (0.4 \times \text{Indirect Attainment}) $$
 
-### D. PO & PSO Projection (The Mapping Matrix)
-Every CO is mapped to POs using a Correlation Factor ($C$):
-- 1 = Slight (Low)
-- 2 = Moderate (Medium)
-- 3 = Substantial (High)
-
-To calculate how much a Course contributed to a Program Outcome:
+### D. PO & PSO Projection
 $$ \text{PO Attainment} = \frac{\sum (\text{Final CO Attainment}_i \times C_i)}{N} $$
-*(Where $N$ is the number of mapped COs, using standard arithmetic means against the generated matrix)*
 
 ---
 
-## 4. System Architecture: "Under the Hood"
+## 4. Frontend Architecture & UI Engineering
+
+The entire visual interface of OBEMIC is built using **Next.js (App Router)** and **React**. It is specifically designed to handle dynamic data visualization, seamless API integration, and flawless printable report generation.
+
+### Key Frontend Technologies
+- **Framework:** Next.js 14+ (App Router directory structure `src/app`).
+- **Styling Engine:** Tailwind CSS combined with custom CSS for highly specific UI layouts (like the Survey Nexus).
+- **Icons & Graphics:** `lucide-react` for lightweight, scalable SVG iconography.
+- **Data Visualization:** `react-chartjs-2` (Chart.js) for rendering dynamic, animated CO/PO attainment bar charts.
+- **Network / API Client:** `axios` configured with interceptors for JWT injection and error handling.
+
+### Advanced Frontend Features
+
+1. **State Management & Data Fetching:**
+   Instead of a heavy global store (like Redux), OBEMIC relies on localized React state (`useState`, `useEffect`) paired with singleton service classes (`faculty.service.ts`, `admin.service.ts`). These service classes encapsulate all Axios requests, providing clean async methods to the UI components.
+
+2. **Dynamic Routing & Path Parameters:**
+   The App Router utilizes dynamic folder brackets to render specific data. For example:
+   - `/faculty/subjects/[id]` dynamically captures the assignment ID from the URL, fetches the exact CO-PO mapping, and renders the corresponding graphs for that specific subject.
+   - `/survey/[id]` allows unique survey instances to be rendered securely for students.
+
+3. **Print-Optimized CSS Generation:**
+   A major requirement for OBEMIC is exporting official NBA documents. We implemented advanced `@media print` CSS directives in the Faculty layout. When a user clicks "Print Report":
+   - The dark mode UI, sidebars, and glowing glassmorphism backgrounds are instantly stripped away.
+   - The layout forces a strict `800px` (A4) width with an absolute white background.
+   - The Chart.js canvases, which normally resize fluidly, are frozen into static high-resolution off-screen frames (`left: -9999px`) before the print dialog opens, ensuring charts never render as "blank boxes" on the PDF.
+
+4. **Authentication Guards (Route Protection):**
+   The frontend actively manages the user's JSON Web Token (JWT). The API service interceptors watch for `401 Unauthorized` responses. If a session expires, the interceptor instantly flushes `localStorage` and redirects the user back to the `/login` portal, completely securing the Single Page Application (SPA).
+
+---
+
+## 5. Backend Architecture: "Under the Hood"
 
 OBEMIC uses a strictly typed, **Headless Layered Architecture**. The UI is completely decoupled from the computational backend.
 
@@ -127,25 +147,22 @@ graph TD
 
 ### The 5 Architectural Layers (Backend)
 1. **Routes (`/routes`):** URL definitions. Purely maps an endpoint to a Controller method.
-2. **Middleware (`/middleware`):** The shield. `auth.middleware.ts` decodes the JWT signature. `role.middleware.ts` blocks unauthorized access.
-3. **Controllers (`/controllers`):** The HTTP bridge. Responsible solely for extracting `req.body`, `req.params`, and orchestrating the response. *Zero business logic.*
-4. **Services (`/services`):** The Brain. This is where the underground heavy lifting lives. Excel files are streamed into memory, cells are parsed, CO attainment arrays are computed, and transaction pipelines are built.
-5. **Repositories (`/repositories`):** The Database Abstraction. Contains pure Prisma queries (`findMany`, `create`, `update`).
+2. **Middleware (`/middleware`):** The shield. `auth.middleware.ts` decodes the JWT signature.
+3. **Controllers (`/controllers`):** The HTTP bridge. Responsible solely for extracting `req.body` and orchestrating the response. *Zero business logic.*
+4. **Services (`/services`):** The Brain. Excel files are streamed into memory, cells are parsed, and attainment arrays are computed.
+5. **Repositories (`/repositories`):** The Database Abstraction. Contains pure Prisma queries (`findMany`, `create`).
 
 ---
 
-## 5. Database Schema & ERD Analysis
-
-Powered by PostgreSQL and Prisma ORM, our schema is highly normalized to handle the complexity of academic structures.
+## 6. Database Schema & ERD Analysis
 
 - **Hierarchy Table Chain:** `AcademicYear` $\rightarrow$ `Semester` $\rightarrow$ `Subject` $\rightarrow$ `CourseOutcome`.
-- **The Junction Hub (`FacultyAssignment`):** The most critical table. It links a `User` (Faculty) to a `Subject`, `AcademicYear`, and `Section`. Everything revolves around this assignment.
+- **The Junction Hub (`FacultyAssignment`):** Links a `User` (Faculty) to a `Subject`, `AcademicYear`, and `Section`.
 - **Reporting (`ReportHistory`):** Stores JSON blobs of the generated attainment data and manages the DRAFT $\rightarrow$ REVIEW $\rightarrow$ APPROVED workflow.
-- **Surveys (`Survey` & `SurveyResponse`):** Enforces a strict unique constraint (`surveyId`, `studentId`, `facultyAssignmentId`) so students can only rate a subject once.
 
 ---
 
-## 6. Comprehensive Directory Structure
+## 7. Comprehensive Directory Structure
 
 To truly master the codebase, you must understand where the files live:
 
@@ -163,31 +180,30 @@ OBEMIC/
 │   │   ├── routes/                  # API endpoints grouped by feature
 │   │   └── services/
 │   │       ├── attainment/          # 🧠 The massive Mathematical / Excel parser engine
-│   │       ├── admin/imports/       # Bulk Excel importers for Admin setups
 │   │       └── *.service.ts         # Standard business logic for auth, academic, etc.
 │   └── TEST/                        # Contains database seeding tools and scratch files
-│       └── Excel_Templates/         # Blank Excel templates for Faculty upload testing
 │
-└── frontend/                        # Next.js UI Application
+└── frontend/
     ├── src/
-    │   ├── app/
-    │   │   ├── admin/               # Admin Control Center (Page routing)
-    │   │   ├── faculty/             # Faculty Dashboard (Page routing)
-    │   │   └── survey/              # Student Survey Nexus (Page routing)
-    │   ├── components/              # Reusable UI components (Modals, Charts)
+    │   ├── app/                     # Next.js 14 App Router Directory
+    │   │   ├── admin/               # Admin Control Center pages & layouts
+    │   │   ├── faculty/             # Faculty Dashboard pages (charts, reports)
+    │   │   ├── survey/[id]/         # Dynamic Student Survey pages
+    │   │   ├── globals.css          # Global Tailwind directives and print media rules
+    │   │   └── layout.tsx           # Root HTML/Body wrapper
+    │   ├── components/              
+    │   │   ├── ui/                  # Reusable UI elements (Modals, Spinners)
+    │   │   └── Charts.tsx           # Chart.js Bar Chart abstractions
     │   └── services/                # Axios wrappers mapping to Backend REST APIs
-    └── tailwind.config.ts           # Global design system tokens
+    │       ├── admin.service.ts
+    │       ├── faculty.service.ts
+    │       └── student.service.ts
+    └── tailwind.config.ts           # Global design system tokens and colors
 ```
 
 ---
 
-## 7. Local Developer Onboarding (Backend & Frontend)
-
-Ready to write code? Follow this strict initialization sequence.
-
-### Prerequisites
-- **Node.js:** v20+ recommended.
-- **PostgreSQL:** Running locally on port `5432`.
+## 8. Local Developer Onboarding
 
 ### 1. Database Configuration (Backend)
 Inside the `backend/` directory, create a `.env` file:
@@ -196,22 +212,16 @@ DATABASE_URL="postgresql://postgres:YOUR_PASSWORD_HERE@localhost:5432/obemic"
 JWT_SECRET="development-secret-key-do-not-use-in-prod"
 PORT=5000
 ```
-*(Note: If your password contains special characters like `@`, you MUST URL-encode them as `%40` in the `DATABASE_URL`).*
 
 ### 2. Install & Generate (Backend)
 ```bash
 cd backend
 npm install
-
-# Force the database schema to sync with Prisma
 npx prisma db push --force-reset
-
-# Generate the Prisma Client binaries (Crucial for Prisma 7+)
 npx prisma generate
 ```
 
 ### 3. Seed the Database
-We provide a seeder that automatically creates Academic Years, Semesters, Departments, Admin users, Faculty, and Students so you don't start with a blank app.
 ```bash
 npx ts-node prisma/seed.ts
 ```
@@ -223,7 +233,6 @@ npx ts-node prisma/seed.ts
 cd backend
 npm run dev
 ```
-*Server running on http://localhost:5000*
 
 **Frontend UI Server:**
 Open a new terminal window.
@@ -232,17 +241,10 @@ cd frontend
 npm install
 npm run dev
 ```
-*Web App running on http://localhost:3000*
 
 ### 5. Accessing the Platforms
-- **Admin Hub:** Navigate to `http://localhost:3000/admin`
-  *(Login with `admin@college.edu` / `password123`)*
+- **Admin Hub:** Navigate to `http://localhost:3000/admin` *(Login with `admin@college.edu` / `password123`)*
 - **Faculty Dashboard:** Navigate to `http://localhost:3000/faculty`
-  *(Login with a seeded faculty email)*
 - **Student Survey Nexus:** Navigate to `http://localhost:3000/survey`
-  *(Login with a seeded student Roll Number)*
-
-### 6. API Testing (Swagger)
-Open `http://localhost:5000/api-docs` in your browser to view the auto-generated Swagger OpenAPI specifications.
 
 Welcome to the underground. Happy coding. 🚀
