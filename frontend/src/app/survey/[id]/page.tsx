@@ -226,12 +226,12 @@ export default function SurveyPage() {
                 </div>
                 <div className="subj-grid">
                   {dashboardData.pendingSubjects.map((sub: any, i: number) => (
-                    <div key={sub.assignmentId} className="subj-tile" onClick={() => selectSubject(sub.assignmentId)}>
+                    <div key={sub.facultyAssignmentId} className="subj-tile" onClick={() => selectSubject(sub.facultyAssignmentId)}>
                       <div className="tile-top">
-                        <div className={`chip s${i % 8}`}>{sub.subject.subjectCode}</div>
+                        <div className={`chip s${i % 8}`}>{sub.subjectCode}</div>
                         <div>
-                          <h3>{sub.subject.subjectCode}</h3>
-                          <div className="tile-meta">{sub.subject.subjectName}</div>
+                          <h3>{sub.subjectCode}</h3>
+                          <div className="tile-meta">{sub.subjectName}</div>
                         </div>
                       </div>
                       <div className="tile-desc">Course Outcomes to review</div>
