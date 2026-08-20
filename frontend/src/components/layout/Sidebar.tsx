@@ -58,23 +58,16 @@ export const Sidebar: React.FC = () => {
       <div>
         {/* Brand Logo */}
         <div style={{ padding: '0 12px', marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div
+          <img 
+            src="/logo.png" 
+            alt="OBEMIC" 
             style={{
               width: '36px',
               height: '36px',
-              borderRadius: '10px',
-              background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 0 15px rgba(59, 130, 246, 0.5)',
-              fontWeight: '800',
-              color: '#ffffff',
-              fontSize: '1.1rem'
+              borderRadius: '8px',
+              boxShadow: '0 2px 10px rgba(0, 0, 0, 0.3)'
             }}
-          >
-            Ic
-          </div>
+          />
           <div>
             <h2 style={{ fontSize: '1.2rem', fontWeight: '800', color: '#f8fafc', letterSpacing: '-0.02em' }}>
               OBEMIC
