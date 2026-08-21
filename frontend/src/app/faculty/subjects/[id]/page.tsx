@@ -96,16 +96,17 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
   const poLabels = Array.from({length: 12}, (_, i) => `PO${i+1}`).concat(['PSO1', 'PSO2']);
   const poAttainmentData = poLabels.map(po => {
     if (!copoMap) return 0;
-    let sumAttainment = 0;
-    let count = 0;
+    let sumProduct = 0;
+    let sumWeight = 0;
     ['CO1', 'CO2', 'CO3', 'CO4', 'CO5'].forEach(co => {
-       const weight = copoMap[co]?.[po];
-       if (weight && weight !== '-' && weight !== 0 && weight !== '0') {
-           sumAttainment += globalCOData[co].final;
-           count++;
+       const weightStr = copoMap[co]?.[po];
+       const weight = Number(weightStr);
+       if (!isNaN(weight) && weight > 0) {
+           sumProduct += (globalCOData[co].final * weight);
+           sumWeight += weight;
        }
     });
-    return count > 0 ? (sumAttainment / count) : 0;
+    return sumWeight > 0 ? Number((sumProduct / sumWeight).toFixed(2)) : 0;
   });
 
   const handleUpload = async () => {
@@ -559,7 +560,11 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
 
     {/* PRINT-ONLY FINAL REPORT */}
     <div className="print-only" style={{ padding: '20px', fontFamily: 'sans-serif' }}>
-      <h1 style={{ textAlign: 'center', margin: '0 0 10px 0', borderBottom: '2px solid #000', paddingBottom: '10px' }}>Outcome-Based Education Final Report</h1>
+      <img 
+        src="/summary-header.png" 
+        alt="Official Report Header" 
+        style={{ width: '100%', borderBottom: '2px solid #000', paddingBottom: '10px', marginBottom: '20px' }} 
+      />
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px' }}>
         <div>
           <strong>Subject:</strong> {subjectInfo.subjectName} ({subjectInfo.subjectCode})<br/>
