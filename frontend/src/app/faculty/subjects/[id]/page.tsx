@@ -145,11 +145,15 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
 
   const completeStep = async (step: string) => {
     try {
-      const newProg = { ...progress, [step]: true };
+      let key = step;
+      if (step === 'overall_attainment') key = 'overall';
+      if (step === 'copo_attainment') key = 'copo';
+      
+      const newProg = { ...progress, [key]: true };
       await facultyService.updateProgress(subjectId, newProg);
       setProgress(newProg);
       
-      const stepOrder = ['indirect', 'direct', 'copo_attainment', 'overall_attainment'];
+      const stepOrder = ['indirect', 'direct', 'overall_attainment', 'copo_attainment'];
       const currentIdx = stepOrder.indexOf(step);
       if (currentIdx < stepOrder.length - 1) {
         setActiveTab(stepOrder[currentIdx + 1]);
@@ -163,9 +167,9 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
 
   const isLocked = (tab: string) => {
     if (tab === 'direct') return !progress.indirect;
-    if (tab === 'copo_attainment') return !progress.direct;
-    if (tab === 'overall_attainment') return !progress.copo;
-    if (tab === 'printable_summary') return !progress.overall;
+    if (tab === 'overall_attainment') return !progress.direct;
+    if (tab === 'copo_attainment') return !progress.overall;
+    if (tab === 'printable_summary') return !progress.copo;
     return false;
   };
 
@@ -571,11 +575,11 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
     </div>
 
     {/* PRINT-ONLY FINAL REPORT */}
-    <div className="print-only" style={{ padding: '20px', fontFamily: 'sans-serif' }}>
+    <div className="print-only" style={{ padding: '20px', fontFamily: 'sans-serif', boxSizing: 'border-box', width: '100%', maxWidth: '100%' }}>
       <img 
         src="/summary-header.png" 
         alt="Official Report Header" 
-        style={{ width: '100%', display: 'block', margin: '0 auto' }} 
+        style={{ width: '100%', maxWidth: '100%', display: 'block', margin: '0 auto', boxSizing: 'border-box', objectFit: 'contain' }} 
       />
       <hr style={{ border: 'none', borderTop: '1px solid #000', marginBottom: '20px' }} />
 
