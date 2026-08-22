@@ -46,24 +46,25 @@ export default function FacultyLayout({
             position: absolute !important;
             left: -9999px !important;
             top: -9999px !important;
-            width: 800px !important; /* Match A4 print width to prevent canvas overflow */
+            width: 700px !important;
             opacity: 0 !important;
             pointer-events: none !important;
           }
         }
         @media print {
+          @page { size: A4; margin: 1cm; }
           .print-only { 
-            position: relative !important;
-            left: 0 !important;
-            top: 0 !important;
-            width: 100% !important;
-            opacity: 1 !important;
-            display: block !important; 
+            position: relative !important; left: 0 !important; top: 0 !important;
+            width: 100% !important; max-width: 100vw !important; opacity: 1 !important;
+            display: block !important; overflow: hidden !important; box-sizing: border-box !important;
           }
+          .print-only * { max-width: 100% !important; box-sizing: border-box !important; }
           .no-print { display: none !important; }
-          body { background: white !important; color: black !important; -webkit-print-color-adjust: exact; }
-          body::before, body::after { display: none !important; } /* Hide animated background blobs in print */
-          main { padding: 0 !important; max-width: none !important; margin: 0 !important; }
+          body { background: white !important; color: black !important; -webkit-print-color-adjust: exact; margin: 0 !important; padding: 0 !important; }
+          body::before, body::after { display: none !important; }
+          main { padding: 0 !important; max-width: 100% !important; margin: 0 !important; overflow: hidden !important; }
+          div[style*="display: flex"] { display: block !important; }
+          .print-only div[style*="display: flex"] { display: flex !important; }
         }
       `}</style>
       <div style={{ display: 'flex', minHeight: '100vh' }}>
