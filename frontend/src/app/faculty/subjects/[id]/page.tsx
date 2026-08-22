@@ -563,39 +563,175 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
       <img 
         src="/summary-header.png" 
         alt="Official Report Header" 
-        style={{ width: '100%', borderBottom: '2px solid #000', paddingBottom: '10px', marginBottom: '20px' }} 
+        style={{ width: '100%', display: 'block', margin: '0 auto' }} 
       />
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px' }}>
+      <hr style={{ border: 'none', borderTop: '1px solid #000', marginBottom: '20px' }} />
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px', fontSize: '14px', lineHeight: '1.6' }}>
         <div>
-          <strong>Subject:</strong> {subjectInfo.subjectName} ({subjectInfo.subjectCode})<br/>
-          <strong>Department:</strong> {subjectInfo.department}
+          <strong style={{ fontSize: '16px' }}>ATTAINMENTS OF COs</strong><br/>
+          <strong>DEPARTMENT:</strong> {subjectInfo.department.toUpperCase()}<br/>
+          <strong>ACADEMIC YEAR:</strong> {subjectInfo.academicYear}<br/>
+          <strong>NAME OF THE COURSE:</strong> {subjectInfo.subjectName.toUpperCase()}
         </div>
         <div style={{ textAlign: 'right' }}>
-          <strong>Regulation:</strong> MIC-23<br/>
-          <strong>Academic Year:</strong> {subjectInfo.academicYear} | <strong>Semester:</strong> {subjectInfo.semester}
+          <strong style={{ fontSize: '16px' }}>{subjectInfo.subjectCode}</strong><br/>
+          <strong>DATE:</strong> {new Date().toLocaleDateString('en-GB')}<br/>
+          <strong>SEMESTER:</strong> {subjectInfo.semester}<br/>
+          <strong>COURSE COORDINATOR:</strong> {subjectInfo.facultyName || 'N/A'}
         </div>
       </div>
 
-      <h3 style={{ borderBottom: '1px solid #ccc' }}>1. Course Outcomes (COs)</h3>
-      <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '30px', border: '1px solid #000' }}>
+      {/* 1. Direct Assessment */}
+      <h3 style={{ margin: '10px 0', fontSize: '16px' }}>1. COs Attainment through Direct Assessment(A):</h3>
+      <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '30px', border: '1px solid #000', textAlign: 'center', fontSize: '14px' }}>
         <thead>
           <tr style={{ background: '#eee' }}>
-            <th style={{ border: '1px solid #000', padding: '8px', textAlign: 'left' }}>Outcome</th>
-            <th style={{ border: '1px solid #000', padding: '8px', textAlign: 'left' }}>Description</th>
+            <th style={{ border: '1px solid #000', padding: '8px' }}>Course<br/>Outcomes</th>
+            <th style={{ border: '1px solid #000', padding: '8px' }}>Internal<br/>Exam (x1)</th>
+            <th style={{ border: '1px solid #000', padding: '8px' }}>End Exam (x3)</th>
+            <th style={{ border: '1px solid #000', padding: '8px' }}>Attainment (A)<br/>[0.3(x1)+0.70(x3)]</th>
+            <th style={{ border: '1px solid #000', padding: '8px' }}>Target<br/>(3-Scale)</th>
           </tr>
         </thead>
         <tbody>
-          {cos.map((co: any) => (
-            <tr key={co.id}>
-              <td style={{ border: '1px solid #000', padding: '8px', fontWeight: 'bold' }}>{co.coCode}</td>
-              <td style={{ border: '1px solid #000', padding: '8px' }}>{co.description}</td>
-            </tr>
-          ))}
+          {['CO1', 'CO2', 'CO3', 'CO4', 'CO5'].map((co) => {
+             const d = directData?.data?.[co];
+             return (
+               <tr key={co}>
+                 <td style={{ border: '1px solid #000', padding: '8px', fontWeight: 'bold' }}>{co}</td>
+                 <td style={{ border: '1px solid #000', padding: '8px' }}>{d ? d.internal3Scale.toFixed(2) : '-'}</td>
+                 <td style={{ border: '1px solid #000', padding: '8px' }}>{d ? d.external3Scale.toFixed(2) : '-'}</td>
+                 <td style={{ border: '1px solid #000', padding: '8px' }}>{d ? d.direct3Scale.toFixed(2) : '-'}</td>
+                 <td style={{ border: '1px solid #000', padding: '8px' }}>{d ? d.target3Scale.toFixed(2) : '1.80'}</td>
+               </tr>
+             );
+          })}
         </tbody>
       </table>
 
-      <h3 style={{ borderBottom: '1px solid #ccc' }}>2. CO-PO Attainment Matrix</h3>
-      <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '30px', border: '1px solid #000', textAlign: 'center' }}>
+      {/* 2. Indirect Assessment */}
+      <h3 style={{ margin: '10px 0', fontSize: '16px' }}>2. COs Attainment through Indirect Assessment: Course End Survey(B)</h3>
+      <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '30px', border: '1px solid #000', textAlign: 'center', fontSize: '14px' }}>
+        <thead>
+          <tr style={{ background: '#eee' }}>
+            <th style={{ border: '1px solid #000', padding: '8px' }} rowSpan={2}>Course<br/>outcomes</th>
+            <th style={{ border: '1px solid #000', padding: '8px' }} colSpan={5}>Course end survey points</th>
+            <th style={{ border: '1px solid #000', padding: '8px' }} rowSpan={2}>Weighted Average<br/>(3-scale)</th>
+          </tr>
+          <tr style={{ background: '#eee' }}>
+            <th style={{ border: '1px solid #000', padding: '4px' }}>5</th>
+            <th style={{ border: '1px solid #000', padding: '4px' }}>4</th>
+            <th style={{ border: '1px solid #000', padding: '4px' }}>3</th>
+            <th style={{ border: '1px solid #000', padding: '4px' }}>2</th>
+            <th style={{ border: '1px solid #000', padding: '4px' }}>1</th>
+          </tr>
+        </thead>
+        <tbody>
+          {(() => {
+             return ['CO1', 'CO2', 'CO3', 'CO4', 'CO5'].map((co) => {
+               let count5=0, count4=0, count3=0, count2=0, count1=0;
+               let sum = 0;
+               (indirectData || []).forEach((stu: any) => {
+                  const score = stu.scores?.[co] || 5;
+                  sum += score;
+                  if (score === 5) count5++;
+                  else if (score === 4) count4++;
+                  else if (score === 3) count3++;
+                  else if (score === 2) count2++;
+                  else if (score === 1) count1++;
+               });
+               const avg5Scale = sum / (indirectData?.length || 1);
+               const ind = (avg5Scale / 5) * 3;
+               return (
+                 <tr key={co}>
+                   <td style={{ border: '1px solid #000', padding: '8px', fontWeight: 'bold' }}>{co}</td>
+                   <td style={{ border: '1px solid #000', padding: '8px', fontWeight: 'bold' }}>{count5}</td>
+                   <td style={{ border: '1px solid #000', padding: '8px', fontWeight: 'bold' }}>{count4}</td>
+                   <td style={{ border: '1px solid #000', padding: '8px', fontWeight: 'bold' }}>{count3}</td>
+                   <td style={{ border: '1px solid #000', padding: '8px', fontWeight: 'bold' }}>{count2}</td>
+                   <td style={{ border: '1px solid #000', padding: '8px', fontWeight: 'bold' }}>{count1}</td>
+                   <td style={{ border: '1px solid #000', padding: '8px' }}>{ind.toFixed(2)}</td>
+                 </tr>
+               );
+             });
+          })()}
+        </tbody>
+      </table>
+
+      {/* 3. Final Attainment */}
+      <h3 style={{ margin: '10px 0', fontSize: '16px', pageBreakBefore: 'always' }}>3. Final Attainment of COs:</h3>
+      <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '40px', border: '1px solid #000', textAlign: 'center', fontSize: '14px' }}>
+        <thead>
+          <tr style={{ background: '#eee' }}>
+            <th style={{ border: '1px solid #000', padding: '8px' }}>Course<br/>Outcomes</th>
+            <th style={{ border: '1px solid #000', padding: '8px' }}>Direct<br/>Assessment<br/>(A)</th>
+            <th style={{ border: '1px solid #000', padding: '8px' }}>Indirect<br/>Assessment<br/>(B)</th>
+            <th style={{ border: '1px solid #000', padding: '8px' }}>Final<br/>Attainment<br/>[0.6(A)+0.4(B)]</th>
+            <th style={{ border: '1px solid #000', padding: '8px' }}>Target<br/>(3-Scale)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {(() => {
+            const combinedDataForPrint: any[] = [];
+            ['CO1', 'CO2', 'CO3', 'CO4', 'CO5'].forEach((co) => {
+               const d = directData?.data?.[co];
+               const dir = d?.direct3Scale || 0;
+               const tgt = d?.target3Scale || 1.80;
+               let sum = 0;
+               (indirectData || []).forEach((stu: any) => sum += (stu.scores?.[co] || 5));
+               const avg5Scale = sum / (indirectData?.length || 1);
+               const ind = (avg5Scale / 5) * 3;
+               const final = (dir * 0.6) + (ind * 0.4);
+               combinedDataForPrint.push({ co, dir, ind, final, tgt });
+            });
+            return combinedDataForPrint.map((row) => (
+               <tr key={row.co}>
+                 <td style={{ border: '1px solid #000', padding: '8px', fontWeight: 'bold' }}>{row.co}</td>
+                 <td style={{ border: '1px solid #000', padding: '8px' }}>{row.dir.toFixed(2)}</td>
+                 <td style={{ border: '1px solid #000', padding: '8px' }}>{row.ind.toFixed(2)}</td>
+                 <td style={{ border: '1px solid #000', padding: '8px', fontWeight: 'bold' }}>{row.final.toFixed(2)}</td>
+                 <td style={{ border: '1px solid #000', padding: '8px' }}>{row.tgt.toFixed(2)}</td>
+               </tr>
+            ));
+          })()}
+        </tbody>
+      </table>
+
+      {/* Visual Graphs */}
+      <h3 style={{ textAlign: 'center', margin: '20px 0 10px 0', fontSize: '16px', fontWeight: 'bold' }}>Summary of CO Attainment</h3>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '40px' }}>
+        <div style={{ height: '280px', padding: '16px', borderRadius: '8px', border: '1px solid #ccc', pageBreakInside: 'avoid', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ position: 'relative', flex: 1, width: '100%' }}>
+            {(() => {
+              const combinedDataForPrint: any[] = [];
+              ['CO1', 'CO2', 'CO3', 'CO4', 'CO5'].forEach((co) => {
+                 const dir = directData?.data?.[co]?.direct3Scale || 0;
+                 let sum = 0;
+                 (indirectData || []).forEach((stu: any) => sum += (stu.scores?.[co] || 5));
+                 const avg5Scale = sum / (indirectData?.length || 1);
+                 const ind = (avg5Scale / 5) * 3;
+                 const final = (dir * 0.6) + (ind * 0.4);
+                 combinedDataForPrint.push({ co, dir, ind, final });
+              });
+              return (
+                <AttainmentBarChart 
+                  labels={['CO1', 'CO2', 'CO3', 'CO4', 'CO5']}
+                  datasets={[
+                    { label: 'Direct CO Attainment', data: combinedDataForPrint.map(d => d.dir), backgroundColor: '#3b82f6' },
+                    { label: 'Indirect CO Attainment', data: combinedDataForPrint.map(d => d.ind), backgroundColor: '#ef4444' },
+                    { label: 'Final CO Attainment', data: combinedDataForPrint.map(d => d.final), backgroundColor: '#84cc16' },
+                  ]}
+                />
+              );
+            })()}
+          </div>
+        </div>
+      </div>
+
+      {/* CO-PO Attainment Matrix */}
+      <h3 style={{ margin: '30px 0 10px 0', fontSize: '16px', pageBreakBefore: 'always' }}>4. CO-PO Attainment Matrix</h3>
+      <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '30px', border: '1px solid #000', textAlign: 'center', fontSize: '14px' }}>
         <thead>
           <tr style={{ background: '#eee' }}>
             <th style={{ border: '1px solid #000', padding: '8px' }}>CO</th>
@@ -618,82 +754,14 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
         </tbody>
       </table>
 
-      <h3 style={{ borderBottom: '1px solid #ccc' }}>3. Final Overall Assessment</h3>
-      <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '30px', border: '1px solid #000', textAlign: 'center' }}>
-        <thead>
-          <tr style={{ background: '#eee' }}>
-            <th style={{ border: '1px solid #000', padding: '8px' }}>CO</th>
-            <th style={{ border: '1px solid #000', padding: '8px' }}>Direct Attainment (60%)</th>
-            <th style={{ border: '1px solid #000', padding: '8px' }}>Indirect Attainment (40%)</th>
-            <th style={{ border: '1px solid #000', padding: '8px', fontWeight: 'bold' }}>Final Attainment</th>
-          </tr>
-        </thead>
-        <tbody>
-          {(() => {
-            const combinedDataForPrint: any[] = [];
-            ['CO1', 'CO2', 'CO3', 'CO4', 'CO5'].forEach((co) => {
-               const dir = directData?.data?.[co]?.direct3Scale || 0;
-               let sum = 0;
-               (indirectData || []).forEach((stu: any) => sum += (stu.scores?.[co] || 5));
-               const avg5Scale = sum / (indirectData?.length || 1);
-               const ind = (avg5Scale / 5) * 3;
-               const final = (dir * 0.6) + (ind * 0.4);
-               combinedDataForPrint.push({ co, dir, ind, final });
-            });
-            
-            return (
-              <>
-                {combinedDataForPrint.map((row) => (
-                   <tr key={row.co}>
-                     <td style={{ border: '1px solid #000', padding: '8px', fontWeight: 'bold' }}>{row.co}</td>
-                     <td style={{ border: '1px solid #000', padding: '8px' }}>{row.dir.toFixed(2)}</td>
-                     <td style={{ border: '1px solid #000', padding: '8px' }}>{row.ind.toFixed(2)}</td>
-                     <td style={{ border: '1px solid #000', padding: '8px', fontWeight: 'bold' }}>{row.final.toFixed(2)}</td>
-                   </tr>
-                ))}
-              </>
-            );
-          })()}
-        </tbody>
-      </table>
-
-      <h3 style={{ borderBottom: '1px solid #ccc', marginTop: '40px', pageBreakBefore: 'always' }}>4. Visual Attainment Analysis Graphs</h3>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '40px' }}>
-        <div style={{ height: '280px', padding: '16px', borderRadius: '8px', border: '1px solid #ccc', pageBreakInside: 'avoid', display: 'flex', flexDirection: 'column' }}>
-          <h4 style={{ textAlign: 'center', margin: '0 0 10px 0' }}>PO Attainment (3-Scale)</h4>
-          <div style={{ position: 'relative', flex: 1, width: '100%' }}>
-            <AttainmentBarChart 
-              labels={Array.from({length: 12}, (_, i) => `PO${i+1}`).concat(['PSO1', 'PSO2'])}
-              datasets={[{ label: 'PO Attainment', data: poAttainmentData, backgroundColor: '#3b82f6' }]}
-            />
-          </div>
-        </div>
-        <div style={{ height: '280px', padding: '16px', borderRadius: '8px', border: '1px solid #ccc', pageBreakInside: 'avoid', display: 'flex', flexDirection: 'column' }}>
-          <h4 style={{ textAlign: 'center', margin: '0 0 10px 0' }}>CO Attainment Summary (3-Scale)</h4>
-          <div style={{ position: 'relative', flex: 1, width: '100%' }}>
-            {(() => {
-              const combinedDataForPrint: any[] = [];
-              ['CO1', 'CO2', 'CO3', 'CO4', 'CO5'].forEach((co) => {
-                 const dir = directData?.data?.[co]?.direct3Scale || 0;
-                 let sum = 0;
-                 (indirectData || []).forEach((stu: any) => sum += (stu.scores?.[co] || 5));
-                 const avg5Scale = sum / (indirectData?.length || 1);
-                 const ind = (avg5Scale / 5) * 3;
-                 const final = (dir * 0.6) + (ind * 0.4);
-                 combinedDataForPrint.push({ co, dir, ind, final });
-              });
-              return (
-                <AttainmentBarChart 
-                  labels={['CO1', 'CO2', 'CO3', 'CO4', 'CO5']}
-                  datasets={[
-                    { label: 'Direct', data: combinedDataForPrint.map(d => d.dir), backgroundColor: '#ef4444' },
-                    { label: 'Indirect', data: combinedDataForPrint.map(d => d.ind), backgroundColor: '#3b82f6' },
-                    { label: 'Final', data: combinedDataForPrint.map(d => d.final), backgroundColor: '#10b981' },
-                  ]}
-                />
-              );
-            })()}
-          </div>
+      {/* PO Graph */}
+      <div style={{ height: '280px', padding: '16px', borderRadius: '8px', border: '1px solid #ccc', pageBreakInside: 'avoid', display: 'flex', flexDirection: 'column' }}>
+        <h4 style={{ textAlign: 'center', margin: '0 0 10px 0' }}>PO Attainment Summary</h4>
+        <div style={{ position: 'relative', flex: 1, width: '100%' }}>
+          <AttainmentBarChart 
+            labels={Array.from({length: 12}, (_, i) => `PO${i+1}`).concat(['PSO1', 'PSO2'])}
+            datasets={[{ label: 'PO Attainment', data: poAttainmentData, backgroundColor: '#3b82f6' }]}
+          />
         </div>
       </div>
 
@@ -708,6 +776,7 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
         </div>
       </div>
     </div>
+
     </>
   );
 }
