@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { Dropzone } from '@/components/ui/Dropzone';
 import { AttainmentBarChart } from '@/components/ui/Charts';
 
-const TABS = ['cos', 'pos', 'peos', 'marks', 'indirect', 'direct', 'copo_attainment', 'overall_attainment', 'printable_summary'];
+const TABS = ['cos', 'pos', 'peos', 'marks', 'indirect', 'direct', 'overall_attainment', 'copo_attainment', 'printable_summary'];
 const TAB_LABELS: Record<string, string> = {
   cos: "List of CO's",
   pos: "List of PO's",
@@ -113,17 +113,29 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
     if (!file) return;
     setIsUploading(true);
     try {
+      let res;
       if (marksType === 'internal') {
-        await facultyService.generateInternalReport(file, subjectInfo.subjectCode);
+        res = await facultyService.generateInternalReport(file, subjectInfo.subjectCode);
       } else if (marksType === 'external') {
-        await facultyService.generateExternalReport(file, subjectInfo.subjectCode);
+        res = await facultyService.generateExternalReport(file, subjectInfo.subjectCode);
       } else {
-        await facultyService.generateLabReport(file, subjectInfo.subjectCode);
+        res = await facultyService.generateLabReport(file, subjectInfo.subjectCode);
       }
-      alert('Marks successfully processed and saved to database!');
+      alert('Marks successfully processed and saved to database! Downloading the generated report...');
       const updatedDir = await facultyService.getDirectAssessment(subjectId);
       setDirectData(updatedDir);
       setFile(null);
+      
+      if (res && res.blob) {
+         const url = window.URL.createObjectURL(res.blob);
+         const a = document.createElement('a');
+         a.href = url;
+         a.download = `${subjectInfo.subjectCode}_${marksType}_Processed.xlsx`;
+         document.body.appendChild(a);
+         a.click();
+         window.URL.revokeObjectURL(url);
+         document.body.removeChild(a);
+      }
     } catch (e: any) {
       alert(e.message || 'Upload failed');
     } finally {
@@ -700,8 +712,8 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
 
       {/* Visual Graphs */}
       <h3 style={{ textAlign: 'center', margin: '20px 0 10px 0', fontSize: '16px', fontWeight: 'bold' }}>Summary of CO Attainment</h3>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '40px' }}>
-        <div style={{ height: '280px', padding: '16px', borderRadius: '8px', border: '1px solid #ccc', pageBreakInside: 'avoid', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '40px', maxWidth: '100%', boxSizing: 'border-box' }}>
+        <div style={{ height: '280px', padding: '16px', borderRadius: '8px', border: '1px solid #ccc', pageBreakInside: 'avoid', display: 'flex', flexDirection: 'column', maxWidth: '750px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
           <div style={{ position: 'relative', flex: 1, width: '100%' }}>
             {(() => {
               const combinedDataForPrint: any[] = [];
@@ -755,7 +767,7 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
       </table>
 
       {/* PO Graph */}
-      <div style={{ height: '280px', padding: '16px', borderRadius: '8px', border: '1px solid #ccc', pageBreakInside: 'avoid', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ height: '280px', padding: '16px', borderRadius: '8px', border: '1px solid #ccc', pageBreakInside: 'avoid', display: 'flex', flexDirection: 'column', maxWidth: '750px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
         <h4 style={{ textAlign: 'center', margin: '0 0 10px 0' }}>PO Attainment Summary</h4>
         <div style={{ position: 'relative', flex: 1, width: '100%' }}>
           <AttainmentBarChart 
