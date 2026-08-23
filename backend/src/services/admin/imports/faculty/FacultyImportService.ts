@@ -130,7 +130,7 @@ export class FacultyImportService {
         });
 
         return { success: true, processed };
-      }, { timeout: 30000 });
+      }, { maxWait: 10000, timeout: 60000 });
     } catch (error) {
        // Safe follow-up logging outside the rolled-back transaction
        if (error instanceof StaleDataError) {

@@ -105,10 +105,20 @@ export default function AdminSetupPage() {
         if (invalidBlocks.length > 0) isErrorState = true;
       } else if (Array.isArray(actualPayload)) {
         items = actualPayload;
+      } else if (actualPayload.validRecords || actualPayload.invalidRecords) {
+        items = [
+          ...(actualPayload.invalidRecords || []),
+          ...(actualPayload.validRecords || [])
+        ];
       } else {
         const arrayKey = Object.keys(actualPayload).find(key => Array.isArray(actualPayload[key]));
         if (arrayKey) items = actualPayload[arrayKey];
       }
+      
+      if (actualPayload.canConfirm === false) {
+        isErrorState = true;
+      }
+
       debugInfo = `Parsed successfully. allBlocks: ${allBlocks.length}, items: ${items.length}`;
     } catch (e: any) {
       debugInfo = `Error parsing: ${e.message}`;
