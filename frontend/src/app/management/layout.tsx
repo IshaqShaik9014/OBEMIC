@@ -18,12 +18,7 @@ export default function FacultyLayout({
     if (!authService.isAuthenticated()) {
       router.push('/login');
     } else {
-      const user = authService.getCurrentUser();
-      if (user?.mustChangePassword) {
-        router.push('/change-password');
-      } else {
-        setIsAuthorized(true);
-      }
+      setIsAuthorized(true);
     }
   }, [router]);
 

@@ -45,7 +45,7 @@ export default function ChangePasswordPage() {
           Change Password
         </h1>
         <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginBottom: '24px', textAlign: 'center' }}>
-          You must change your temporary password to continue.
+          Secure your account by updating your password.
         </p>
 
         {error && (
@@ -107,8 +107,11 @@ export default function ChangePasswordPage() {
           </div>
 
           <Button type="submit" disabled={isLoading} style={{ marginTop: '8px', padding: '14px', width: '100%' }}>
-            {isLoading ? 'Updating...' : 'Update Password & Login'}
+            {isLoading ? 'Updating...' : 'Update Password & Re-login'}
           </Button>
+          <button type="button" onClick={() => router.back()} style={{ marginTop: '12px', padding: '12px', width: '100%', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#cbd5e1', borderRadius: '8px', cursor: 'pointer' }}>
+            Cancel / Back
+          </button>
         </form>
       </Card>
     </div>
