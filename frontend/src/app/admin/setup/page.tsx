@@ -133,10 +133,10 @@ export default function AdminSetupPage() {
 
     return (
       <div style={{ marginTop: '20px' }}>
-        <div style={{ overflowX: 'auto', background: 'rgba(15, 23, 42, 0.4)', borderRadius: '8px', border: '1px solid #334155' }}>
+        <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: '400px', background: 'rgba(15, 23, 42, 0.4)', borderRadius: '8px', border: '1px solid #334155' }}>
           <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse', color: '#f8fafc' }}>
-            <thead>
-              <tr style={{ background: 'rgba(59, 130, 246, 0.1)', borderBottom: '1px solid #3b82f6' }}>
+            <thead style={{ position: 'sticky', top: 0, zIndex: 10 }}>
+              <tr style={{ background: '#1e293b', borderBottom: '1px solid #3b82f6' }}>
                 {keys.map(k => (
                   <th key={k} style={{ padding: '12px 16px', textTransform: 'capitalize', fontSize: '0.9rem', fontWeight: '600', color: '#93c5fd' }}>
                     {k.replace(/([A-Z])/g, ' $1').trim()}
@@ -145,7 +145,7 @@ export default function AdminSetupPage() {
               </tr>
             </thead>
             <tbody>
-              {items.slice(0, 10).map((item, idx) => (
+              {items.map((item, idx) => (
                 <tr key={idx} style={{ borderBottom: '1px solid #1e293b', background: idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)' }}>
                   {keys.map(k => (
                     <td key={k} style={{ padding: '12px 16px', fontSize: '0.85rem', color: k === 'Status' && (item[k].includes('Conflict') || item[k].includes('FAILED')) ? '#ef4444' : '#e2e8f0' }} title={k === 'Status' ? (item.Issues || '') : ''}>
@@ -156,11 +156,6 @@ export default function AdminSetupPage() {
               ))}
             </tbody>
           </table>
-          {items.length > 10 && (
-            <div style={{ padding: '12px 16px', textAlign: 'center', color: '#94a3b8', fontSize: '0.85rem', fontStyle: 'italic', borderTop: '1px solid #1e293b' }}>
-              + {items.length - 10} more records ...
-            </div>
-          )}
         </div>
         
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>

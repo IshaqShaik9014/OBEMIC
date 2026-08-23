@@ -29,7 +29,7 @@ export const Sidebar: React.FC = () => {
   } else if (user?.role === 'FACULTY') {
     navItems = [
       { label: 'Dashboard', href: '/faculty/dashboard', icon: '📊' },
-      { label: 'Assigned Subjects', href: '/faculty/subjects', icon: '📖' }
+      { label: 'Assigned Subjects', href: '/faculty/dashboard', icon: '📖' }
     ];
   } else if (user?.role === 'MANAGEMENT') {
     navItems = [

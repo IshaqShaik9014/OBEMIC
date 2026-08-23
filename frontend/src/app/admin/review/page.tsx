@@ -167,23 +167,19 @@ export default function AdminReviewPage() {
             <Card glow>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
                 <h3 style={{ margin: 0, color: '#f8fafc', fontSize: '1.1rem' }}>1. Direct Attainment</h3>
-                <span style={{ background: 'rgba(59,130,246,0.2)', color: '#60a5fa', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem' }}>In Progress</span>
+                <span style={{ background: directUploaded ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)', color: directUploaded ? '#10B981' : '#ef4444', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem' }}>
+                  {directUploaded ? 'Completed' : 'Pending'}
+                </span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <span style={{ color: '#94a3b8' }}>Internal Marks</span>
-                  <span style={{ color: '#10B981', fontSize: '0.9rem' }}>✓ Uploaded</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <span style={{ color: '#94a3b8' }}>External Marks</span>
-                  <span style={{ color: '#fbbf24', fontSize: '0.9rem' }}>Pending</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ color: '#94a3b8' }}>Lab Marks</span>
-                  <span style={{ color: '#64748b', fontSize: '0.9rem' }}>N/A</span>
+                  <span style={{ color: '#94a3b8' }}>Marks Data</span>
+                  <span style={{ color: directUploaded ? '#10B981' : '#ef4444', fontSize: '0.9rem' }}>
+                    {directUploaded ? '✓ Uploaded' : 'Not Uploaded'}
+                  </span>
                 </div>
               </div>
-              <Button style={{ width: '100%', background: 'transparent', border: '1px solid #3b82f6', color: '#60a5fa' }}>View Uploads</Button>
+              <Button style={{ width: '100%', background: 'transparent', border: '1px solid #3b82f6', color: '#60a5fa' }} disabled={!directUploaded}>View Uploads</Button>
             </Card>
 
             {/* 2. INDIRECT ATTAINMENT */}
@@ -198,7 +194,7 @@ export default function AdminReviewPage() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                   <span style={{ color: '#94a3b8' }}>Survey Data</span>
                   <span style={{ color: indirectUploaded ? '#10B981' : '#ef4444', fontSize: '0.9rem' }}>
-                    {indirectUploaded ? '? Evaluated' : 'Not Uploaded'}
+                    {indirectUploaded ? '✓ Evaluated' : 'Not Uploaded'}
                   </span>
                 </div>
               </div>

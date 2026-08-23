@@ -50,7 +50,7 @@ export class FacultyService {
       },
       recentReports: recentReports.map(r => ({
         id: r.id,
-        subjectCode: r.subject.subjectCode,
+        subjectCode: r.subject?.subjectCode || 'Unknown',
         reportType: r.reportType,
         status: r.status,
         generatedAt: r.generatedAt

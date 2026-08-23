@@ -116,12 +116,15 @@ export default function FacultyManagementPage() {
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px' }}>
-        <button onClick={() => router.push('/admin/dashboard')} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#e2e8f0', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer' }}>&larr; Back</button>
-        <div>
-          <h1 style={{ fontSize: '1.8rem', color: '#f8fafc', margin: 0 }}>Faculty Management</h1>
-          <p style={{ color: '#94a3b8', margin: '4px 0 0 0' }}>Manage faculty roster and assign subjects</p>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <button onClick={() => router.push('/admin/dashboard')} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#e2e8f0', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer' }}>&larr; Back</button>
+          <div>
+            <h1 style={{ fontSize: '1.8rem', color: '#f8fafc', margin: 0 }}>Faculty Management</h1>
+            <p style={{ color: '#94a3b8', margin: '4px 0 0 0' }}>Manage faculty roster and assign subjects</p>
+          </div>
         </div>
+        <Button onClick={() => setShowCreateModal(true)}>Add Faculty Manually</Button>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
