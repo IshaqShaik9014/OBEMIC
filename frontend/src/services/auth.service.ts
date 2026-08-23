@@ -19,6 +19,14 @@ export const authService = {
     return data;
   },
 
+  async changePassword(oldPassword: string, newPassword: string): Promise<void> {
+    const res = await api.post('/auth/change-password', { oldPassword, newPassword });
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.error || 'Failed to change password.');
+    }
+  },
+
   getCurrentUser(): User | null {
     if (typeof window !== 'undefined') {
       const userStr = localStorage.getItem('user');

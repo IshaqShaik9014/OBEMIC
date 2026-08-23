@@ -63,24 +63,17 @@ export default function LoginPage() {
       <div style={{ width: '100%', maxWidth: '440px' }}>
         {/* Header Branding */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <div
+          <img 
+            src="/logo.png" 
+            alt="OBEMIC Logo" 
             style={{
-              width: '56px',
-              height: '56px',
-              borderRadius: '16px',
-              background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 0 25px rgba(59, 130, 246, 0.6)',
-              fontWeight: '800',
-              color: '#ffffff',
-              fontSize: '1.6rem',
-              marginBottom: '16px'
+              width: '80px',
+              height: '80px',
+              borderRadius: '20px',
+              marginBottom: '16px',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.2)'
             }}
-          >
-            Ω
-          </div>
+          />
           <h1 style={{ fontSize: '1.8rem', color: '#f8fafc', letterSpacing: '-0.03em', marginBottom: '8px' }}>
             OBEMIC Portal
           </h1>

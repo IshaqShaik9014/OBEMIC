@@ -62,12 +62,13 @@ export default function FacultyLayout({
           .no-print { display: none !important; }
           body { background: white !important; color: black !important; -webkit-print-color-adjust: exact; margin: 0 !important; padding: 0 !important; }
           body::before, body::after { display: none !important; }
-          main { padding: 0 !important; max-width: 100% !important; margin: 0 !important; overflow: hidden !important; }
-          div[style*="display: flex"] { display: block !important; }
-          .print-only div[style*="display: flex"] { display: flex !important; }
+          #root-layout { display: block !important; min-height: 0 !important; }
+          .no-print { display: none !important; } /* Force again just in case */
+          main { padding: 0 !important; max-width: 100vw !important; margin: 0 !important; overflow: hidden !important; }
+          /* No flex hacks that override inline styles */
         }
       `}</style>
-      <div style={{ display: 'flex', minHeight: '100vh' }}>
+      <div id="root-layout" style={{ display: 'flex', minHeight: '100vh' }}>
         <div className="no-print"><Sidebar /></div>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
           <div className="no-print"><Navbar /></div>

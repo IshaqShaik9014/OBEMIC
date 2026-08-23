@@ -575,7 +575,7 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
     </div>
 
     {/* PRINT-ONLY FINAL REPORT */}
-    <div className="print-only" style={{ padding: '20px', fontFamily: 'sans-serif', boxSizing: 'border-box', width: '100%', maxWidth: '100%' }}>
+    <div className="print-only" style={{ fontFamily: 'sans-serif', width: '100%', maxWidth: '210mm', margin: '0 auto', overflow: 'hidden' }}>
       <img 
         src="/summary-header.png" 
         alt="Official Report Header" 
@@ -716,8 +716,8 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
 
       {/* Visual Graphs */}
       <h3 style={{ textAlign: 'center', margin: '20px 0 10px 0', fontSize: '16px', fontWeight: 'bold' }}>Summary of CO Attainment</h3>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '40px', maxWidth: '100%', boxSizing: 'border-box' }}>
-        <div style={{ height: '280px', padding: '16px', borderRadius: '8px', border: '1px solid #ccc', pageBreakInside: 'avoid', display: 'flex', flexDirection: 'column', maxWidth: '750px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '40px', width: '100%' }}>
+        <div style={{ height: '280px', borderRadius: '8px', border: '1px solid #ccc', pageBreakInside: 'avoid', display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '700px', margin: '0 auto', overflow: 'hidden' }}>
           <div style={{ position: 'relative', flex: 1, width: '100%' }}>
             {(() => {
               const combinedDataForPrint: any[] = [];
@@ -771,7 +771,7 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
       </table>
 
       {/* PO Graph */}
-      <div style={{ height: '280px', padding: '16px', borderRadius: '8px', border: '1px solid #ccc', pageBreakInside: 'avoid', display: 'flex', flexDirection: 'column', maxWidth: '750px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
+      <div style={{ height: '280px', borderRadius: '8px', border: '1px solid #ccc', pageBreakInside: 'avoid', display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '700px', margin: '0 auto', overflow: 'hidden' }}>
         <h4 style={{ textAlign: 'center', margin: '0 0 10px 0' }}>PO Attainment Summary</h4>
         <div style={{ position: 'relative', flex: 1, width: '100%' }}>
           <AttainmentBarChart 
