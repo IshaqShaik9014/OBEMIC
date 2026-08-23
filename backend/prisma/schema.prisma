@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
+  provider = "postgresql"
 }
 
 // -----------------------------------------
@@ -204,13 +204,14 @@ model FacultyAssignment {
   unassignedAt DateTime?
 
   surveyResponses SurveyResponse[]
+  reports         ReportHistory[]
 
   progressState Json? // Tracks wizard unlocking (e.g. { "indirect": true, "direct": true })
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([facultyId, subjectId, academicYearId, sectionId])
+  @@unique([facultyId, subjectId, academicYearId, semesterId, sectionId])
 }
 
 model ReportHistory {
@@ -221,6 +222,9 @@ model ReportHistory {
 
   subjectId String
   subject   Subject @relation(fields: [subjectId], references: [id])
+
+  facultyAssignmentId String?
+  facultyAssignment   FacultyAssignment? @relation(fields: [facultyAssignmentId], references: [id])
 
   reportType ReportType
   status     ReportStatus @default(DRAFT)

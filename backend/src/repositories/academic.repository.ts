@@ -71,10 +71,11 @@ export class AcademicRepository {
 
     return prisma.facultyAssignment.upsert({
       where: {
-        facultyId_subjectId_academicYearId_sectionId: {
+        facultyId_subjectId_academicYearId_semesterId_sectionId: {
           facultyId,
           subjectId,
           academicYearId,
+          semesterId: targetSemesterId,
           sectionId: (sectionId || '') as string
         }
       },
