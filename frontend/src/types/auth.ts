@@ -7,6 +7,7 @@ export interface User {
   role: RoleName;
   employeeId?: string;
   departmentId?: string;
+  mustChangePassword?: boolean;
 }
 
 export interface LoginResponse {
