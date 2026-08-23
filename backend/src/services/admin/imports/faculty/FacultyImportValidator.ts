@@ -74,10 +74,10 @@ export class FacultyImportValidator {
         continue;
       }
 
-      const dbDept = departments.find(d => 
-        d.departmentName.toUpperCase() === record.canonicalDepartmentCode ||
-        d.departmentName.toUpperCase() === resolveDbDeptName(record.canonicalDepartmentCode!)
-      );
+      const dbDept = departments.find(d => {
+        const allowedNames = resolveDbDeptName(record.canonicalDepartmentCode!);
+        return allowedNames.includes(d.departmentName.toUpperCase()) || d.departmentName.toUpperCase() === record.canonicalDepartmentCode;
+      });
 
       if (!dbDept) {
          validated.issues.push(`Error: Department '${record.canonicalDepartmentCode}' is configured but not found in the database.`);
@@ -129,15 +129,15 @@ export class FacultyImportValidator {
 }
 
 function resolveDbDeptName(code: string) {
-    const map: Record<string, string> = {
-        'CSE': 'COMPUTER SCIENCE AND ENGINEERING',
-        'MECH': 'MECHANICAL ENGINEERING',
-        'ECE': 'ELECTRONICS AND COMMUNICATION ENGINEERING',
-        'IT': 'INFORMATION TECHNOLOGY',
-        'CIVIL': 'CIVIL ENGINEERING',
-        'EEE': 'ELECTRICAL AND ELECTRONICS ENGINEERING',
-        'AIDS': 'ARTIFICIAL INTELLIGENCE AND DATA SCIENCE',
-        'AIML': 'ARTIFICIAL INTELLIGENCE AND MACHINE LEARNING',
+    const map: Record<string, string[]> = {
+        'CSE': ['COMPUTER SCIENCE AND ENGINEERING', 'CSE'],
+        'MECH': ['MECHANICAL ENGINEERING', 'MECHANICAL', 'MECH'],
+        'ECE': ['ELECTRONICS AND COMMUNICATION ENGINEERING', 'ECE'],
+        'IT': ['INFORMATION TECHNOLOGY', 'IT'],
+        'CIVIL': ['CIVIL ENGINEERING', 'CIVIL'],
+        'EEE': ['ELECTRICAL AND ELECTRONICS ENGINEERING', 'EEE'],
+        'AIDS': ['ARTIFICIAL INTELLIGENCE AND DATA SCIENCE', 'AIDS', 'AI&DS'],
+        'AIML': ['ARTIFICIAL INTELLIGENCE AND MACHINE LEARNING', 'AIML', 'AI&ML'],
     };
-    return map[code] || code;
+    return map[code] || [code];
 }
