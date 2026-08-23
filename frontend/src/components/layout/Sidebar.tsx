@@ -84,7 +84,7 @@ export const Sidebar: React.FC = () => {
             const isActive = pathname.startsWith(item.href);
             return (
               <Link
-                key={item.href}
+                key={item.label}
                 href={item.href}
                 style={{
                   display: 'flex',
