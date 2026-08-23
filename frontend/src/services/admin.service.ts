@@ -134,9 +134,16 @@ export const adminService = {
     return res.json();
   },
 
-  async unassignFaculty(assignmentId: string): Promise<any> {
+  async unassignFaculty(assignmentId: string): Promise<void> {
     const res = await api.delete(`/admin/faculty/assignment/${assignmentId}`);
     if (!res.ok) throw new Error('Failed to unassign faculty');
-    return res.json();
+  },
+
+  async createFaculty(data: any): Promise<void> {
+    const res = await api.post('/admin/faculty/create', data);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Failed to create faculty');
+    }
   }
 };

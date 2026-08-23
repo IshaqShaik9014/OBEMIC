@@ -14,6 +14,7 @@ router.use(requirePermission(Permissions.FACULTY_UPLOAD));
 
 router.post('/upload/preview', upload.single('file'), controller.previewImport);
 router.post('/upload/confirm', controller.confirmImport);
+router.post('/create', controller.createFaculty);
 
 /**
  * @swagger

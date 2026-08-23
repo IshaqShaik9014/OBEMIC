@@ -56,8 +56,22 @@ export default function AdminReviewPage() {
     }
   };
 
-  // Filter Options
-  const subjectOptions = subjects.map(s => ({ value: s.id, label: `${s.subjectCode} - ${s.subjectName}` }));
+  // Advanced Filtering Logic
+  let filteredSubjects = subjects;
+  
+  if (selectedFaculty) {
+    const fac = faculty.find(f => f.id === selectedFaculty);
+    if (fac && fac.assignments) {
+      const facSubjectIds = fac.assignments.map((a: any) => a.subjectId);
+      filteredSubjects = filteredSubjects.filter(s => facSubjectIds.includes(s.id));
+    }
+  }
+
+  if (selectedSem) {
+    filteredSubjects = filteredSubjects.filter(s => s.semesterLevel === selectedSem);
+  }
+
+  const subjectOptions = filteredSubjects.map(s => ({ value: s.id, label: `${s.subjectCode} - ${s.subjectName}` }));
   const facultyOptions = faculty.map(f => ({ value: f.id, label: f.name }));
   const semOptions = [
     { value: '1-1', label: '1st Year - 1st Sem' },
@@ -70,13 +84,36 @@ export default function AdminReviewPage() {
     { value: '4-2', label: '4th Year - 2nd Sem' },
   ];
 
-  // Derived progress data based on selected subject
+  // Derived progress data based on selected subject & faculty
   const currentSubject = subjects.find(s => s.id === selectedSubject);
-  const subjectReports = reports.filter(r => r.subjectId === selectedSubject);
+  
+  let subjectReports = reports.filter(r => r.subjectId === selectedSubject);
+  if (selectedFaculty) {
+    subjectReports = subjectReports.filter(r => r.facultyId === selectedFaculty);
+  }
   const pendingReport = subjectReports.find(r => r.status === 'SUBMITTED');
   
-  // For survey status, we'll map generically or use the first active survey as a proxy for the UI visualization
-  const activeSurvey = surveys.length > 0 ? surveys[0] : null;
+  // Get Assignment Data for real progress state
+  let currentAssignment: any = null;
+  if (selectedSubject) {
+    const facList = selectedFaculty ? faculty.filter(f => f.id === selectedFaculty) : faculty;
+    for (const fac of facList) {
+      if (fac.assignments) {
+        const assignment = fac.assignments.find((a: any) => a.subjectId === selectedSubject);
+        if (assignment) {
+          currentAssignment = assignment;
+          break;
+        }
+      }
+    }
+  }
+
+  const progressState = currentAssignment?.progressState || { direct: false, indirect: false, copo: false, overall: false };
+  const directUploaded = progressState.direct;
+  const indirectUploaded = progressState.indirect;
+
+  // Survey status
+  const activeSurvey = surveys.find(s => s.subjectId === selectedSubject) || (surveys.length > 0 ? surveys[0] : null);
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -153,18 +190,16 @@ export default function AdminReviewPage() {
             <Card glow>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
                 <h3 style={{ margin: 0, color: '#f8fafc', fontSize: '1.1rem' }}>2. Indirect Attainment</h3>
-                <span style={{ background: activeSurvey ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)', color: activeSurvey ? '#10B981' : '#ef4444', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem' }}>
-                  {activeSurvey ? 'Active' : 'Missing'}
+                <span style={{ background: indirectUploaded ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)', color: indirectUploaded ? '#10B981' : '#ef4444', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem' }}>
+                  {indirectUploaded ? 'Completed' : 'Pending'}
                 </span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <span style={{ color: '#94a3b8' }}>Course Exit Survey</span>
-                  <span style={{ color: '#e2e8f0', fontSize: '0.9rem' }}>{activeSurvey ? activeSurvey.status || 'OPEN' : 'Not Created'}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ color: '#94a3b8' }}>Responses</span>
-                  <span style={{ color: '#e2e8f0', fontSize: '0.9rem' }}>{activeSurvey ? '14 / 60' : '0 / 0'}</span>
+                  <span style={{ color: '#94a3b8' }}>Survey Data</span>
+                  <span style={{ color: indirectUploaded ? '#10B981' : '#ef4444', fontSize: '0.9rem' }}>
+                    {indirectUploaded ? '? Evaluated' : 'Not Uploaded'}
+                  </span>
                 </div>
               </div>
               <Button style={{ width: '100%', background: 'transparent', border: '1px solid #3b82f6', color: '#60a5fa' }} onClick={() => router.push('/admin/survey')}>Manage Surveys</Button>
