@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import prisma from '../../database/index';
-import { logger } from '../../utils/logger';
+import { logger } from '../../logs/logger';
 
 export class AdminDashboardController {
   public getStats = async (req: Request, res: Response): Promise<void> => {
