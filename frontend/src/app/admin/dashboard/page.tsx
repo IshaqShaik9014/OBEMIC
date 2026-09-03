@@ -1,13 +1,29 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/Card';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { authService } from '@/services/auth.service';
+import { adminService } from '@/services/admin.service';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
+  const [stats, setStats] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    adminService.getDashboardStats()
+      .then(data => {
+        setStats(data);
+      })
+      .catch(err => {
+        console.error('Failed to load stats', err);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, []);
 
   return (
     <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -17,6 +33,26 @@ export default function AdminDashboardPage() {
           <p style={{ color: '#94a3b8', margin: '4px 0 0 0' }}>Manage System Data & Review Reports</p>
         </div>
         <Button onClick={() => authService.logout()}>Logout</Button>
+      </div>
+
+      {/* Stats Summary */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '10px' }}>
+        <Card>
+          <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Total Faculty</p>
+          <h2 style={{ margin: '8px 0 0 0', color: '#f8fafc', fontSize: '2rem' }}>{isLoading ? '-' : stats?.totalFaculty || 0}</h2>
+        </Card>
+        <Card>
+          <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Total Subjects</p>
+          <h2 style={{ margin: '8px 0 0 0', color: '#f8fafc', fontSize: '2rem' }}>{isLoading ? '-' : stats?.totalSubjects || 0}</h2>
+        </Card>
+        <Card>
+          <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Pending Reports</p>
+          <h2 style={{ margin: '8px 0 0 0', color: '#f8fafc', fontSize: '2rem' }}>{isLoading ? '-' : stats?.pendingReports || 0}</h2>
+        </Card>
+        <Card>
+          <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Active Surveys</p>
+          <h2 style={{ margin: '8px 0 0 0', color: '#f8fafc', fontSize: '2rem' }}>{isLoading ? '-' : stats?.activeSurveys || 0}</h2>
+        </Card>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>

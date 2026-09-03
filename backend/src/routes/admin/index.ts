@@ -2,8 +2,10 @@ import { Router } from 'express';
 
 const adminRouter = Router();
 
+import dashboardRoutes from './dashboard.routes';
+
 // Dashboard Routes
-// adminRouter.use('/dashboard', dashboardRoutes);
+adminRouter.use('/dashboard', dashboardRoutes);
 
 // Course Outcome Routes
 // adminRouter.use('/course-outcomes', courseOutcomeRoutes);

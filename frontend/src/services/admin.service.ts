@@ -1,7 +1,11 @@
 import { api } from './apiClient';
 
 export const adminService = {
-  // COs
+  async getDashboardStats(): Promise<any> {
+    const res = await api.get('/admin/dashboard');
+    if (!res.ok) throw new Error('Failed to fetch dashboard stats');
+    return res.json();
+  },
   async previewCourseOutcomes(file: File): Promise<any> {
     const formData = new FormData();
     formData.append('file', file);
@@ -147,3 +151,4 @@ export const adminService = {
     }
   }
 };
+
