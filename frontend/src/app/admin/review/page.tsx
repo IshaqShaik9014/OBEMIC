@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { SearchableSelect } from '@/components/ui/SearchableSelect';
 import { adminService } from '@/services/admin.service';
+import toast from 'react-hot-toast';
 
 export default function AdminReviewPage() {
   const router = useRouter();
@@ -49,10 +50,10 @@ export default function AdminReviewPage() {
   const handleApprove = async (id: string) => {
     try {
       await adminService.approveReport(id);
-      alert('Report Approved!');
+      toast.success('Report Approved and Officially Published!');
       fetchData();
     } catch (err: any) {
-      alert(err.message || 'Failed to approve');
+      toast.error(err.message || 'Failed to approve report');
     }
   };
 
@@ -91,8 +92,6 @@ export default function AdminReviewPage() {
   if (selectedFaculty) {
     subjectReports = subjectReports.filter(r => r.facultyId === selectedFaculty);
   }
-  const pendingReport = subjectReports.find(r => r.status === 'SUBMITTED');
-  
   // Get Assignment Data for real progress state
   let currentAssignment: any = null;
   if (selectedSubject) {
@@ -111,6 +110,11 @@ export default function AdminReviewPage() {
   const progressState = currentAssignment?.progressState || { direct: false, indirect: false, copo: false, overall: false };
   const directUploaded = progressState.direct;
   const indirectUploaded = progressState.indirect;
+
+  const submittedReport = subjectReports.find(r => r.status === 'SUBMITTED');
+  const approvedReport = subjectReports.find(r => r.status === 'APPROVED');
+  const generatedReport = subjectReports.find(r => r.status === 'GENERATED');
+  const pendingReport = submittedReport || (generatedReport && directUploaded && indirectUploaded ? generatedReport : null);
 
   // Survey status
   const activeSurvey = surveys.find(s => s.subjectId === selectedSubject) || (surveys.length > 0 ? surveys[0] : null);
@@ -205,26 +209,47 @@ export default function AdminReviewPage() {
             <Card glow>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
                 <h3 style={{ margin: 0, color: '#f8fafc', fontSize: '1.1rem' }}>3. Final Review</h3>
-                <span style={{ background: pendingReport ? 'rgba(245,158,11,0.2)' : 'rgba(100,116,139,0.2)', color: pendingReport ? '#f59e0b' : '#94a3b8', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem' }}>
-                  {pendingReport ? 'Awaiting Review' : 'Not Ready'}
+                <span style={{ 
+                  background: approvedReport ? 'rgba(16,185,129,0.2)' : pendingReport ? 'rgba(245,158,11,0.2)' : 'rgba(100,116,139,0.2)', 
+                  color: approvedReport ? '#10B981' : pendingReport ? '#f59e0b' : '#94a3b8', 
+                  padding: '4px 8px', 
+                  borderRadius: '4px', 
+                  fontSize: '0.8rem',
+                  fontWeight: 'bold'
+                }}>
+                  {approvedReport ? 'Approved & Published' : pendingReport ? 'Awaiting Review' : 'Not Ready'}
                 </span>
               </div>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px', flexGrow: 1 }}>
                 <p style={{ color: '#94a3b8', fontSize: '0.9rem', margin: 0, lineHeight: '1.5' }}>
-                  {pendingReport 
-                    ? `Faculty ${pendingReport.faculty?.name || ''} has submitted the final attainment report for this subject.`
-                    : 'The final attainment report cannot be generated until both Direct and Indirect attainments are completed by the faculty.'}
+                  {approvedReport 
+                    ? 'The final attainment report has been verified, approved, and officially published.'
+                    : pendingReport 
+                      ? `Faculty ${pendingReport.faculty?.name || ''} has finalized attainment calculations. Ready for Admin approval.`
+                      : directUploaded && indirectUploaded 
+                        ? 'Faculty has completed Direct and Indirect milestones. Final attainment report is ready for submission.'
+                        : 'The final attainment report cannot be generated until both Direct and Indirect attainments are completed by the faculty.'}
                 </p>
               </div>
 
-              {pendingReport ? (
+              {approvedReport ? (
+                <Button style={{ width: '100%', background: 'rgba(16,185,129,0.15)', border: '1px solid #10B981', color: '#10B981', fontWeight: 'bold' }} disabled>
+                  ✓ Approved & Published
+                </Button>
+              ) : pendingReport ? (
                 <div style={{ display: 'flex', gap: '10px' }}>
-                  <Button style={{ flex: 1, background: '#10B981', color: 'white', border: 'none' }} onClick={() => handleApprove(pendingReport.id)}>Approve</Button>
-                  <Button style={{ flex: 1, background: 'transparent', border: '1px solid #ef4444', color: '#ef4444' }}>Reject</Button>
+                  <Button style={{ flex: 1, background: '#10B981', color: 'white', border: 'none', fontWeight: 'bold' }} onClick={() => handleApprove(pendingReport.id)}>
+                    Approve Report
+                  </Button>
+                  <Button style={{ flex: 1, background: 'transparent', border: '1px solid #ef4444', color: '#ef4444' }}>
+                    Reject
+                  </Button>
                 </div>
               ) : (
-                <Button style={{ width: '100%', background: 'transparent', border: '1px solid #475569', color: '#94a3b8' }} disabled>Awaiting Submission</Button>
+                <Button style={{ width: '100%', background: 'transparent', border: '1px solid #475569', color: '#94a3b8' }} disabled>
+                  Awaiting Submission
+                </Button>
               )}
             </Card>
 

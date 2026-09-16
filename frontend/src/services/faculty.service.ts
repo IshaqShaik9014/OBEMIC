@@ -120,11 +120,20 @@ export const facultyService = {
   },
 
   submitReport: async (historyId: string): Promise<void> => {
-    const res = await api.post(`/reports/submit/${historyId}`);
+    const res = await api.post(`/reports/${historyId}/submit`);
     if (!res.ok) {
       const err = await res.json();
       throw new Error(err.error || 'Failed to submit report');
     }
+  },
+
+  syncStudents: async (subjectId: string): Promise<{ success: boolean; count: number; message: string }> => {
+    const res = await api.post(`/faculty/subjects/${subjectId}/sync-students`);
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to sync students');
+    }
+    return res.json();
   },
 
   downloadReport: async (historyId: string): Promise<Blob> => {

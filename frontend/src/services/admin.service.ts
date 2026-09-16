@@ -6,6 +6,8 @@ export const adminService = {
     if (!res.ok) throw new Error('Failed to fetch dashboard stats');
     return res.json();
   },
+
+  // Course Outcomes
   async previewCourseOutcomes(file: File): Promise<any> {
     const formData = new FormData();
     formData.append('file', file);
@@ -149,6 +151,25 @@ export const adminService = {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || 'Failed to create faculty');
     }
+  },
+
+  async getAttainmentConfig(departmentId?: string): Promise<any> {
+    let url = '/admin/attainment-configurations';
+    if (departmentId) url += `?departmentId=${departmentId}`;
+    const res = await api.get(url);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Failed to fetch attainment configuration');
+    }
+    return res.json();
+  },
+
+  async updateAttainmentConfig(data: { departmentId: string; threshold: number; reason?: string }): Promise<any> {
+    const res = await api.post('/admin/attainment-configurations', data);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Failed to update attainment configuration');
+    }
+    return res.json();
   }
 };
-

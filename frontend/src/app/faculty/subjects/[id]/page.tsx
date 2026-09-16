@@ -3,6 +3,7 @@
 import React, { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { facultyService } from '@/services/faculty.service';
+import { toast } from 'react-hot-toast';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Dropzone } from '@/components/ui/Dropzone';
@@ -42,6 +43,11 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
   const [file, setFile] = useState<File | null>(null);
   const [marksType, setMarksType] = useState('internal');
   const [isUploading, setIsUploading] = useState(false);
+  const [latestBlob, setLatestBlob] = useState<{ blob: Blob, filename: string } | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [activeReport, setActiveReport] = useState<any>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSyncingStudents, setIsSyncingStudents] = useState(false);
 
   // Direct Target Level
   const [targetLevel, setTargetLevel] = useState(65);
@@ -71,6 +77,15 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
           setIndirectData(indRes);
           setDirectData(dirRes);
           setCopoMap(copoRes);
+
+          // Fetch history to track submission status
+          try {
+            const history = await facultyService.getReportHistory();
+            const rep = history.find(h => h.subjectId === subjectId);
+            if (rep) setActiveReport(rep);
+          } catch (err) {
+            console.error("Failed to load report history", err);
+          }
         }
       } catch (e) {
         console.error("Failed to load subject", e);
@@ -99,7 +114,7 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
     let sumProduct = 0;
     let sumWeight = 0;
     ['CO1', 'CO2', 'CO3', 'CO4', 'CO5'].forEach(co => {
-       const weightStr = copoMap[co]?.[po];
+       const weightStr = copoMap?.[co]?.[po];
        const weight = Number(weightStr);
        if (!isNaN(weight) && weight > 0) {
            sumProduct += (globalCOData[co].final * weight);
@@ -121,25 +136,105 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
       } else {
         res = await facultyService.generateLabReport(file, subjectInfo.subjectCode);
       }
-      alert('Marks successfully processed and saved to database! Downloading the generated report...');
+      
+      const filename = `Generated_${marksType.toUpperCase()}_OBE_${subjectInfo.subjectCode}.xlsx`;
+      if (res && res.blob) {
+        setLatestBlob({ blob: res.blob, filename });
+      }
+
+      toast.success('Marks processed & saved to backend! You can now download the generated report.');
       const updatedDir = await facultyService.getDirectAssessment(subjectId);
       setDirectData(updatedDir);
       setFile(null);
-      
-      if (res && res.blob) {
-         const url = window.URL.createObjectURL(res.blob);
-         const a = document.createElement('a');
-         a.href = url;
-         a.download = `${subjectInfo.subjectCode}_${marksType}_Processed.xlsx`;
-         document.body.appendChild(a);
-         a.click();
-         window.URL.revokeObjectURL(url);
-         document.body.removeChild(a);
-      }
     } catch (e: any) {
-      alert(e.message || 'Upload failed');
+      toast.error(e.message || 'Upload failed');
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleDownloadGenerated = async () => {
+    if (latestBlob) {
+      const url = window.URL.createObjectURL(latestBlob.blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = latestBlob.filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      toast.success('Generated report downloaded!');
+      return;
+    }
+
+    // Fallback: If page was refreshed, download latest generated report for this subject from backend history
+    setIsDownloading(true);
+    try {
+      const history = await facultyService.getReportHistory();
+      const matchingReport = history.find(h => 
+        h.subjectId === subjectId || 
+        h.subject?.subjectCode === subjectInfo?.subjectCode
+      );
+
+      if (matchingReport) {
+        const blob = await facultyService.downloadReport(matchingReport.id);
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Generated_${matchingReport.reportType}_OBE_${subjectInfo?.subjectCode || 'Report'}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        toast.success('Generated report downloaded from database!');
+      } else {
+        toast.error('No generated report found for this subject yet. Please upload and process marks first.');
+      }
+    } catch (e: any) {
+      toast.error(e.message || 'Failed to download report');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  const handleSyncStudents = async () => {
+    setIsSyncingStudents(true);
+    try {
+      const res = await facultyService.syncStudents(subjectId);
+      toast.success(res.message || `Successfully synced ${res.count} students!`);
+      const updatedInd = await facultyService.getIndirectAssessment(subjectId);
+      setIndirectData(updatedInd);
+    } catch (e: any) {
+      toast.error(e.message || 'Failed to extract students from sheet');
+    } finally {
+      setIsSyncingStudents(false);
+    }
+  };
+
+  const handleSubmitReport = async () => {
+    let repId = activeReport?.id;
+    if (!repId) {
+      try {
+        const history = await facultyService.getReportHistory();
+        const rep = history.find(h => h.subjectId === subjectId);
+        if (rep) repId = rep.id;
+      } catch (e) {}
+    }
+
+    if (!repId) {
+      toast.error('No generated report found for this subject. Please process marks first.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await facultyService.submitReport(repId);
+      toast.success('Final attainment report successfully submitted to Admin for review!');
+      setActiveReport((prev: any) => prev ? { ...prev, status: 'SUBMITTED' } : { id: repId, status: 'SUBMITTED' });
+    } catch (e: any) {
+      toast.error(e.message || 'Failed to submit report');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -255,15 +350,31 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <label style={{ color: '#94a3b8', fontSize: '0.9rem', fontWeight: 'bold' }}>Assessment Milestone</label>
-              <select 
-                value={marksType} 
-                onChange={e => setMarksType(e.target.value)}
-                style={{ padding: '12px', borderRadius: '8px', background: '#0f172a', color: '#fff', border: '1px solid #334155' }}
-              >
-                {!isLab && <option value="internal">Internal Marks</option>}
-                {!isLab && <option value="external">External Marks</option>}
-                {isLab && <option value="lab">Lab Marks</option>}
-              </select>
+              <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                <select 
+                  value={marksType} 
+                  onChange={e => setMarksType(e.target.value)}
+                  style={{ padding: '12px', borderRadius: '8px', background: '#0f172a', color: '#fff', border: '1px solid #334155', flex: 1 }}
+                >
+                  {!isLab && <option value="internal">Internal Marks</option>}
+                  {!isLab && <option value="external">External Marks</option>}
+                  {isLab && <option value="lab">Lab Marks</option>}
+                </select>
+                <a 
+                  href={
+                    isLab 
+                      ? "/templates/Lab_Template.xlsx" 
+                      : marksType === 'internal' 
+                        ? "/templates/Internal_Template.xlsx" 
+                        : "/templates/External_Template.xlsx"
+                  }
+                  download
+                  style={{ padding: '12px 16px', background: '#1e293b', color: '#38bdf8', borderRadius: '8px', textDecoration: 'none', border: '1px solid #334155', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px', whiteSpace: 'nowrap' }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Download Template
+                </a>
+              </div>
             </div>
 
             <Dropzone
@@ -274,8 +385,71 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
               subtitle="Drag & drop standard MIC Autonomous Template"
             />
 
-            <Button onClick={handleUpload} isLoading={isUploading} disabled={!file} style={{ width: '100%' }}>
-              Process & Save to Backend
+            <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
+              <Button 
+                onClick={handleUpload} 
+                isLoading={isUploading} 
+                disabled={!file} 
+                style={{ 
+                  flex: 1, 
+                  padding: '12px', 
+                  background: file ? '#3b82f6' : '#1e293b', 
+                  color: file ? '#ffffff' : '#64748b',
+                  border: '1px solid #334155',
+                  fontWeight: 'bold' 
+                }}
+              >
+                Process & Save to Backend
+              </Button>
+              
+              <Button 
+                onClick={handleDownloadGenerated} 
+                isLoading={isDownloading}
+                disabled={!latestBlob && !(directData?.hasInternal || directData?.hasExternal)}
+                style={{ 
+                  flex: 1, 
+                  padding: '12px', 
+                  background: (latestBlob || directData?.hasInternal || directData?.hasExternal) ? '#10B981' : '#1e293b',
+                  color: (latestBlob || directData?.hasInternal || directData?.hasExternal) ? '#ffffff' : '#64748b',
+                  border: '1px solid #334155',
+                  fontWeight: 'bold',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px'
+                }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                Download Generated Excel
+              </Button>
+            </div>
+
+            <Button
+              onClick={handleSyncStudents}
+              isLoading={isSyncingStudents}
+              disabled={!directData?.hasInternal && !directData?.hasExternal}
+              style={{
+                width: '100%',
+                marginTop: '10px',
+                padding: '10px',
+                background: 'rgba(56, 189, 248, 0.08)',
+                border: '1px dashed #38bdf8',
+                color: '#38bdf8',
+                borderRadius: '8px',
+                fontSize: '0.9rem',
+                fontWeight: 'bold',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              Extract & Synchronize Students from Marks Sheet
             </Button>
 
             <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: '16px', fontSize: '0.9rem', color: '#94a3b8' }}>
@@ -413,9 +587,9 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
                   {['CO1', 'CO2', 'CO3', 'CO4', 'CO5'].map((co) => (
                     <tr key={co} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', color: '#e2e8f0' }}>
                       <td style={{ padding: '10px', fontWeight: 'bold' }}>{co}</td>
-                      {Array.from({length: 12}, (_, i) => <td key={i}>{copoMap[co][`PO${i+1}`] || '-'}</td>)}
-                      <td>{copoMap[co]['PSO1'] || '-'}</td>
-                      <td>{copoMap[co]['PSO2'] || '-'}</td>
+                      {Array.from({length: 12}, (_, i) => <td key={i}>{copoMap?.[co]?.[`PO${i+1}`] || '-'}</td>)}
+                      <td>{copoMap?.[co]?.['PSO1'] || '-'}</td>
+                      <td>{copoMap?.[co]?.['PSO2'] || '-'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -500,13 +674,67 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
         );
 
       case 'printable_summary':
+        const isApproved = activeReport?.status === 'APPROVED';
+        const isSubmitted = activeReport?.status === 'SUBMITTED';
+
         return (
-          <div style={{ animation: 'fadeIn 0.3s ease', textAlign: 'center' }}>
-            <h3 style={{ color: '#f8fafc', marginBottom: '16px' }}>Printable Summary</h3>
-            <p style={{ color: '#94a3b8', marginBottom: '32px' }}>Your report is ready to print.</p>
-            <Button onClick={() => window.print()} style={{ fontSize: '1.2rem', padding: '16px 32px' }}>
-               🖨️ Print Final OBE Report
-            </Button>
+          <div style={{ animation: 'fadeIn 0.3s ease', textAlign: 'center', maxWidth: '650px', margin: '0 auto' }}>
+            <h3 style={{ color: '#f8fafc', marginBottom: '8px' }}>Final Attainment Report</h3>
+            <p style={{ color: '#94a3b8', marginBottom: '24px' }}>Review your finalized Direct and Indirect attainment figures and submit for institutional review.</p>
+            
+            {/* Status Banner */}
+            {isApproved ? (
+              <div style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid #10B981', padding: '16px', borderRadius: '8px', color: '#10B981', marginBottom: '24px', fontWeight: 'bold' }}>
+                🎉 Report Approved & Officially Published by Department Admin!
+              </div>
+            ) : isSubmitted ? (
+              <div style={{ background: 'rgba(245, 158, 11, 0.15)', border: '1px solid #f59e0b', padding: '16px', borderRadius: '8px', color: '#f59e0b', marginBottom: '24px', fontWeight: 'bold' }}>
+                ⏳ Report Submitted to Admin! Awaiting Review and Final Approval.
+              </div>
+            ) : (
+              <div style={{ background: 'rgba(59, 130, 246, 0.12)', border: '1px solid #3b82f6', padding: '16px', borderRadius: '8px', color: '#93c5fd', marginBottom: '24px' }}>
+                📋 All milestones completed! Click below to submit your official attainment calculations to the Department Admin for approval.
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
+              {!isApproved && (
+                <Button 
+                  onClick={handleSubmitReport} 
+                  isLoading={isSubmitting} 
+                  disabled={isSubmitted}
+                  style={{ 
+                    fontSize: '1.05rem', 
+                    padding: '14px 28px', 
+                    background: isSubmitted ? '#334155' : '#10B981', 
+                    color: isSubmitted ? '#94a3b8' : '#ffffff',
+                    fontWeight: 'bold',
+                    border: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}
+                >
+                  🚀 {isSubmitted ? 'Already Submitted to Admin' : 'Submit Final Report to Admin'}
+                </Button>
+              )}
+
+              <Button 
+                onClick={() => window.print()} 
+                style={{ 
+                  fontSize: '1.05rem', 
+                  padding: '14px 28px',
+                  background: '#1e293b',
+                  color: '#f8fafc',
+                  border: '1px solid #334155',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+              >
+                🖨️ Print Final OBE Report
+              </Button>
+            </div>
           </div>
         );
 
@@ -757,14 +985,14 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
           </tr>
         </thead>
         <tbody>
-          {copoMap && ['CO1', 'CO2', 'CO3', 'CO4', 'CO5'].map((co) => (
+          {['CO1', 'CO2', 'CO3', 'CO4', 'CO5'].map((co) => (
             <tr key={co}>
               <td style={{ border: '1px solid #000', padding: '8px', fontWeight: 'bold' }}>{co}</td>
               {Array.from({length: 12}, (_, i) => (
-                <td key={i} style={{ border: '1px solid #000', padding: '8px' }}>{copoMap[co][`PO${i+1}`] || '-'}</td>
+                <td key={i} style={{ border: '1px solid #000', padding: '8px' }}>{copoMap?.[co]?.[`PO${i+1}`] || '-'}</td>
               ))}
-              <td style={{ border: '1px solid #000', padding: '8px' }}>{copoMap[co]['PSO1'] || '-'}</td>
-              <td style={{ border: '1px solid #000', padding: '8px' }}>{copoMap[co]['PSO2'] || '-'}</td>
+              <td style={{ border: '1px solid #000', padding: '8px' }}>{copoMap?.[co]?.['PSO1'] || '-'}</td>
+              <td style={{ border: '1px solid #000', padding: '8px' }}>{copoMap?.[co]?.['PSO2'] || '-'}</td>
             </tr>
           ))}
         </tbody>
