@@ -6,7 +6,11 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 const connectionString = process.env.DATABASE_URL;
-const pool = new Pool({ connectionString });
+const isNeon = connectionString?.includes('neon.tech') || connectionString?.includes('sslmode=require');
+const pool = new Pool({ 
+  connectionString,
+  ssl: isNeon ? { rejectUnauthorized: false } : undefined
+});
 const adapter = new PrismaPg(pool);
 
 const prisma = new PrismaClient({ adapter });
