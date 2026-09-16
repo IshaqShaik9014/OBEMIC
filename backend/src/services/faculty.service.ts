@@ -1,5 +1,6 @@
 import prisma from '../database';
 import { ReportType, ReportStatus } from '@prisma/client';
+import fs from 'fs';
 
 export class FacultyService {
   /**
@@ -133,22 +134,63 @@ export class FacultyService {
       orderBy: { generatedAt: 'desc' }
     });
 
+    const subject = await prisma.subject.findUnique({ 
+      where: { id: subjectId },
+      include: { courseOutcomes: true }
+    });
+    const isLab = Boolean(
+      subject?.subjectName?.toLowerCase().includes('lab') || 
+      subject?.subjectCode?.toUpperCase().includes('L')
+    );
+
     const externalReport = await prisma.reportHistory.findFirst({
       where: { subjectId, facultyId, reportType: ReportType.EXTERNAL, status: { in: [ReportStatus.GENERATED, ReportStatus.SUBMITTED, ReportStatus.APPROVED] } },
       orderBy: { generatedAt: 'desc' }
     });
 
-    // Fallback Mock Data matching the UI
-    const defaultData: any = {
-      CO1: { internalPct: 60.33, internal3Scale: 1.81, externalPct: 18.67, external3Scale: 0.56, directPct: 31.17, direct3Scale: 0.94, target3Scale: 1.95 },
-      CO2: { internalPct: 67.33, internal3Scale: 2.02, externalPct: 62.67, external3Scale: 1.88, directPct: 64.07, direct3Scale: 1.92, target3Scale: 1.95 },
-      CO3: { internalPct: 80.67, internal3Scale: 2.42, externalPct: 16.67, external3Scale: 0.50, directPct: 35.87, direct3Scale: 1.08, target3Scale: 1.95 },
-      CO4: { internalPct: 81.67, internal3Scale: 2.45, externalPct: 28.00, external3Scale: 0.84, directPct: 44.10, direct3Scale: 1.32, target3Scale: 1.95 },
-      CO5: { internalPct: 85.67, internal3Scale: 2.57, externalPct: 8.33,  external3Scale: 0.25, directPct: 31.53, direct3Scale: 0.95, target3Scale: 1.95 }
-    };
+    const hasInternal = !!internalReport;
+    const hasExternal = isLab ? hasInternal : !!externalReport;
+
+    const defaultData: any = {};
+    if (subject?.courseOutcomes) {
+      subject.courseOutcomes.forEach(co => {
+        defaultData[co.coCode] = { internalPct: 0, internal3Scale: 0, externalPct: 0, external3Scale: 0, directPct: 0, direct3Scale: 0, target3Scale: 1.95 };
+      });
+    }
 
     let computedData: any = {};
-    if (internalReport?.data && externalReport?.data) {
+    if (isLab && internalReport) {
+        let labData = internalReport.data as any;
+
+        // Fallback: If existing DB record had data: null, extract it dynamically from the file on disk!
+        if (!labData && internalReport.filePath && fs.existsSync(internalReport.filePath)) {
+          try {
+            labData = await this.extractLabDataFromFile(internalReport.filePath);
+            if (labData) {
+              await prisma.reportHistory.update({
+                where: { id: internalReport.id },
+                data: { data: labData }
+              });
+            }
+          } catch (e) {
+            console.error('Failed to extract lab data from file:', e);
+          }
+        }
+
+        if (labData && subject?.courseOutcomes) {
+          subject.courseOutcomes.forEach(co => {
+            computedData[co.coCode] = {
+              internalPct: labData.internalPct ?? 0,
+              internal3Scale: labData.internal3Scale ?? 0,
+              externalPct: labData.externalPct ?? 0,
+              external3Scale: labData.external3Scale ?? 0,
+              directPct: labData.directPct ?? 0,
+              direct3Scale: labData.direct3Scale ?? 0,
+              target3Scale: 1.95
+            };
+          });
+        }
+    } else if (internalReport?.data && externalReport?.data) {
         const intData = internalReport.data as any;
         const extData = externalReport.data as any;
 
@@ -177,13 +219,169 @@ export class FacultyService {
     }
 
     return {
-      hasInternal: !!internalReport,
-      hasExternal: !!externalReport,
+      hasInternal,
+      hasExternal,
       data: Object.keys(computedData).length > 0 ? computedData : defaultData
     };
   }
 
+  public async extractLabDataFromFile(filePath: string): Promise<any> {
+    const XlsxPopulate = require('xlsx-populate');
+    const wb = await XlsxPopulate.fromFileAsync(filePath);
+    const sheet = wb.sheet(0);
+
+    let startRow = -1;
+    let endRow = -1;
+    for (let r = 7; r <= 200; r++) {
+      const val = sheet.cell('D' + r).value();
+      if (typeof val === 'number' && val >= 0) {
+        if (startRow === -1) startRow = r;
+        endRow = r;
+      } else if (startRow !== -1 && (val === undefined || val === null || val === '')) {
+        break;
+      }
+    }
+
+    if (startRow === -1) return null;
+
+    let internalMax = 30;
+    let externalMax = 70;
+    const d7 = String(sheet.cell('D7').value() || '');
+    const e7 = String(sheet.cell('E7').value() || '');
+    const dMatch = d7.match(/\d+/);
+    const eMatch = e7.match(/\d+/);
+    if (dMatch) internalMax = Number(dMatch[0]);
+    if (eMatch) externalMax = Number(eMatch[0]);
+
+    const thresholdPercentage = 0.60;
+    const round2 = (v: number) => Math.round((v + Number.EPSILON) * 100) / 100;
+    const round3 = (v: number) => Math.round((v + Number.EPSILON) * 1000) / 1000;
+
+    let intAttempted = 0, intAttained = 0;
+    let extAttempted = 0, extAttained = 0;
+
+    for (let r = startRow; r <= endRow; r++) {
+      const d = sheet.cell('D' + r).value();
+      const e = sheet.cell('E' + r).value();
+      if (typeof d === 'number' && d >= 0) {
+        intAttempted++;
+        if (d >= internalMax * thresholdPercentage) intAttained++;
+      }
+      if (typeof e === 'number' && e >= 0) {
+        extAttempted++;
+        if (e >= externalMax * thresholdPercentage) extAttained++;
+      }
+    }
+
+    const internalPct = intAttempted > 0 ? round2((intAttained / intAttempted) * 100) : 0;
+    const externalPct = extAttempted > 0 ? round2((extAttained / extAttempted) * 100) : 0;
+    const internal3Scale = intAttempted > 0 ? round2((intAttained / intAttempted) * 3) : 0;
+    const external3Scale = extAttempted > 0 ? round2((extAttained / extAttempted) * 3) : 0;
+    const direct3Scale = round3((0.3 * internal3Scale) + (0.7 * external3Scale));
+    const directPct = round2((0.3 * internalPct) + (0.7 * externalPct));
+
+    return {
+      internalAttempted: intAttempted,
+      internalAttained: intAttained,
+      internalPct,
+      internal3Scale,
+      externalAttempted: extAttempted,
+      externalAttained: extAttained,
+      externalPct,
+      external3Scale,
+      directPct,
+      direct3Scale
+    };
+  }
+
   public async getCOPOAttainment(subjectId: string, facultyId: string) {
+    return this.getCOPOMapping(subjectId, facultyId);
+  }
+
+  public async syncStudentsForSubject(subjectId: string, facultyId: string) {
+    const report = await prisma.reportHistory.findFirst({
+      where: { subjectId, facultyId, filePath: { not: null } },
+      orderBy: { createdAt: 'desc' },
+      include: { subject: { include: { department: true } } }
+    });
+
+    if (!report || !report.filePath || !fs.existsSync(report.filePath)) {
+      throw new Error('No uploaded marks sheet found for this subject. Please upload marks first.');
+    }
+
+    const assignment = await prisma.facultyAssignment.findFirst({
+      where: { subjectId, facultyId, status: 'ACTIVE' },
+      include: { semester: { include: { academicYear: true } } }
+    });
+
+    if (!assignment) {
+      throw new Error('Active faculty assignment not found.');
+    }
+
+    const XlsxPopulate = require('xlsx-populate');
+    const bcrypt = require('bcrypt');
+    const wb = await XlsxPopulate.fromFileAsync(report.filePath);
+    const sheet = wb.sheet(0);
+
+    const deptId = report.subject.departmentId;
+    const academicYearId = assignment.semester.academicYear.id;
+    const semesterId = assignment.semester.id;
+
+    let section = await prisma.section.findFirst({
+      where: { departmentId: deptId, academicYearId }
+    });
+    if (!section) {
+      section = await prisma.section.create({
+        data: { sectionName: 'A', departmentId: deptId, academicYearId }
+      });
+    }
+
+    let count = 0;
+    for (let r = 9; r <= 300; r++) {
+      const rollNumber = String(sheet.cell('B' + r).value() || '').trim();
+      const name = String(sheet.cell('C' + r).value() || rollNumber).trim();
+
+      if (!rollNumber) {
+        // If we hit blank row and already found students, stop
+        if (count > 0) break;
+        continue;
+      }
+
+      const passwordHash = await bcrypt.hash(rollNumber, 10);
+      const studentRecord = await prisma.student.upsert({
+        where: { rollNumber },
+        update: { name },
+        create: { rollNumber, name, passwordHash }
+      });
+
+      await prisma.studentEnrollment.upsert({
+        where: {
+          studentId_academicYearId_semesterId: {
+            studentId: studentRecord.id,
+            academicYearId,
+            semesterId
+          }
+        },
+        update: {},
+        create: {
+          studentId: studentRecord.id,
+          departmentId: deptId,
+          semesterId,
+          academicYearId,
+          sectionId: section.id
+        }
+      });
+      count++;
+    }
+
+    return {
+      success: true,
+      count,
+      message: `Successfully extracted and synchronized ${count} students into the database!`
+    };
+  }
+
+  public async getCOPOMapping(subjectId: string, facultyId: string) {
     const cos = await prisma.courseOutcome.findMany({
       where: { subjectId },
       include: { copoMappings: true },

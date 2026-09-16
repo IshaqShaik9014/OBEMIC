@@ -8,10 +8,52 @@ export interface LabVerificationReport {
     internalMax: number;
     externalMax: number;
     thresholdPercentage: number;
+    computedData?: {
+        internalAttempted: number;
+        internalAttained: number;
+        internalPct: number;
+        internal3Scale: number;
+        externalAttempted: number;
+        externalAttained: number;
+        externalPct: number;
+        external3Scale: number;
+        directPct: number;
+        direct3Scale: number;
+    };
 }
 
 export class LabAttainmentVerifier {
     public verify(sheet: any, range: LabStudentRange, thresholdPercentage: number, meta: any): LabVerificationReport {
+        const round2 = (v: number) => Math.round((v + Number.EPSILON) * 100) / 100;
+        const round3 = (v: number) => Math.round((v + Number.EPSILON) * 1000) / 1000;
+
+        let intAttempted = 0, intAttained = 0;
+        let extAttempted = 0, extAttained = 0;
+
+        const intThresholdMarks = meta.internalMaxMarks * thresholdPercentage;
+        const extThresholdMarks = meta.externalMaxMarks * thresholdPercentage;
+
+        for (let r = range.startRow; r <= range.endRow; r++) {
+            const intVal = sheet.cell(`D${r}`).value();
+            const extVal = sheet.cell(`E${r}`).value();
+
+            if (typeof intVal === 'number' && intVal >= 0) {
+                intAttempted++;
+                if (intVal >= intThresholdMarks) intAttained++;
+            }
+            if (typeof extVal === 'number' && extVal >= 0) {
+                extAttempted++;
+                if (extVal >= extThresholdMarks) extAttained++;
+            }
+        }
+
+        const internalPct = intAttempted > 0 ? round2((intAttained / intAttempted) * 100) : 0;
+        const externalPct = extAttempted > 0 ? round2((extAttained / extAttempted) * 100) : 0;
+        const internal3Scale = intAttempted > 0 ? round2((intAttained / intAttempted) * 3) : 0;
+        const external3Scale = extAttempted > 0 ? round2((extAttained / extAttempted) * 3) : 0;
+        const direct3Scale = round3((0.3 * internal3Scale) + (0.7 * external3Scale));
+        const directPct = round2((0.3 * internalPct) + (0.7 * externalPct));
+
         const report: LabVerificationReport = {
             success: true,
             studentCount: range.count,
@@ -19,7 +61,19 @@ export class LabAttainmentVerifier {
             endRow: range.endRow,
             internalMax: meta.internalMaxMarks,
             externalMax: meta.externalMaxMarks,
-            thresholdPercentage
+            thresholdPercentage,
+            computedData: {
+                internalAttempted: intAttempted,
+                internalAttained: intAttained,
+                internalPct,
+                internal3Scale,
+                externalAttempted: extAttempted,
+                externalAttained: extAttained,
+                externalPct,
+                external3Scale,
+                directPct,
+                direct3Scale
+            }
         };
 
         // Check Summary table exists

@@ -34,6 +34,7 @@ adminRouter.use('/outcomes', outcomesRoutes);
 // adminRouter.use('/assignments', assignmentRoutes);
 
 // Attainment Config Routes
-// adminRouter.use('/attainment-configurations', attainmentConfigRoutes);
+import attainmentRoutes from './attainment.routes';
+adminRouter.use('/attainment-configurations', attainmentRoutes);
 
 export default adminRouter;

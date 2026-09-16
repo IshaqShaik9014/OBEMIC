@@ -9,7 +9,7 @@ export class ReviewService {
    */
   public async getPendingReports(departmentId?: string) {
     const whereClause: any = {
-      status: ReportStatus.SUBMITTED,
+      status: { in: [ReportStatus.SUBMITTED, ReportStatus.GENERATED, ReportStatus.APPROVED] },
       isDeleted: false
     };
 
@@ -37,7 +37,9 @@ export class ReviewService {
   public async approveReport(reportId: string, reviewerId: string) {
     const report = await prisma.reportHistory.findUnique({ where: { id: reportId } });
     if (!report) throw new Error('Report not found');
-    if (report.status !== ReportStatus.SUBMITTED) throw new Error(`Cannot approve report with status ${report.status}`);
+    if (report.status !== ReportStatus.SUBMITTED && report.status !== ReportStatus.GENERATED) {
+      throw new Error(`Cannot approve report with status ${report.status}`);
+    }
 
     const updated = await prisma.reportHistory.update({
       where: { id: reportId },

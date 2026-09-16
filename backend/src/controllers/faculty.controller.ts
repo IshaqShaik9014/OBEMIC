@@ -71,7 +71,7 @@ export class FacultyController {
 
   public getCOPOAttainment = async (req: Request, res: Response): Promise<void> => {
     try {
-      const data = await this.facultyService.getCOPOAttainment(req.params.id as string, req.user!.userId as string);
+      const data = await this.facultyService.getCOPOMapping(req.params.id as string, req.user!.userId as string);
       res.json(data);
     } catch (e: any) {
       res.status(500).json({ error: e.message });
@@ -81,6 +81,15 @@ export class FacultyController {
   public updateProgress = async (req: Request, res: Response): Promise<void> => {
     try {
       const data = await this.facultyService.updateProgress(req.params.id as string, req.user!.userId as string, req.body);
+      res.json(data);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  };
+
+  public syncStudents = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const data = await this.facultyService.syncStudentsForSubject(req.params.id as string, req.user!.userId as string);
       res.json(data);
     } catch (e: any) {
       res.status(500).json({ error: e.message });

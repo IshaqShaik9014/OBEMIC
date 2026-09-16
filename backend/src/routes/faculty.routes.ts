@@ -51,5 +51,6 @@ router.get('/subjects/:id/indirect-assessment', authenticate, facultyController.
 router.get('/subjects/:id/direct-assessment', authenticate, facultyController.getDirectAssessment);
 router.get('/subjects/:id/copo', authenticate, facultyController.getCOPOAttainment);
 router.post('/subjects/:id/progress', authenticate, facultyController.updateProgress);
+router.post('/subjects/:id/sync-students', authenticate, facultyController.syncStudents);
 
 export default router;

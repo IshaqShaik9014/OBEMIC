@@ -257,7 +257,55 @@ export class ReportService {
 
     // 1. Generate Report
     const labService = new LabAttainmentService();
-    const { outputBuffer, report } = await labService.generateAttainment(facultyBuffer, subjectName); // Lab service not yet refactored to take sortedCOs
+    const { outputBuffer, report, students } = await labService.generateAttainment(facultyBuffer, subjectName);
+
+    // 1.5 Synchronize Students in DB
+    const bcrypt = require('bcrypt');
+    if (students && students.length > 0) {
+      let section = await prisma.section.findFirst({
+        where: { departmentId: subject.departmentId, academicYearId: subject.semester.academicYear.id }
+      });
+      if (!section) {
+        section = await prisma.section.create({
+          data: {
+            sectionName: 'A',
+            departmentId: subject.departmentId,
+            academicYearId: subject.semester.academicYear.id
+          }
+        });
+      }
+
+      for (const st of students) {
+        const passwordHash = await bcrypt.hash(st.rollNumber, 10);
+        const studentRecord = await prisma.student.upsert({
+          where: { rollNumber: st.rollNumber },
+          update: { name: st.name },
+          create: {
+            rollNumber: st.rollNumber,
+            name: st.name || st.rollNumber,
+            passwordHash
+          }
+        });
+
+        await prisma.studentEnrollment.upsert({
+          where: {
+            studentId_academicYearId_semesterId: {
+              studentId: studentRecord.id,
+              academicYearId: subject.semester.academicYear.id,
+              semesterId: subject.semester.id
+            }
+          },
+          update: {},
+          create: {
+            studentId: studentRecord.id,
+            departmentId: subject.departmentId,
+            semesterId: subject.semester.id,
+            academicYearId: subject.semester.academicYear.id,
+            sectionId: section.id
+          }
+        });
+      }
+    }
 
     // 2. Save to Disk
     const academicYearStr = subject.semester.academicYear.year;
@@ -282,7 +330,8 @@ export class ReportService {
       reportType: ReportType.INTERNAL, // Could add LAB to enum if needed, fallback to INTERNAL
       status: ReportStatus.GENERATED,
       filePath,
-      fileSize: outputBuffer.byteLength
+      fileSize: outputBuffer.byteLength,
+      data: report.computedData
     });
 
     // 4. Log Audit Event

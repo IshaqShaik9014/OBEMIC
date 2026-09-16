@@ -14,7 +14,7 @@ export class LabAttainmentService {
     private directAssessmentWriter = new LabDirectAssessmentWriter();
     private verifier = new LabAttainmentVerifier();
 
-    public async generateAttainment(workbookBuffer: Buffer, sheetName?: string, thresholdPercentage: number = 0.60): Promise<{ outputBuffer: Buffer, report: LabVerificationReport }> {
+    public async generateAttainment(workbookBuffer: Buffer, sheetName?: string, thresholdPercentage: number = 0.60): Promise<{ outputBuffer: Buffer, report: LabVerificationReport, students: Array<{ rollNumber: string, name: string }> }> {
         // 1. Load Workbook
         const wb = await XlsxPopulate.fromDataAsync(workbookBuffer);
         const sheet = sheetName ? wb.sheet(sheetName) : wb.sheet(0);
@@ -45,9 +45,19 @@ export class LabAttainmentService {
             throw new Error("Verification failed after generating Lab Attainment.");
         }
 
-        // 9. Output
+        // 9. Extract Students for DB Synchronization
+        const students: Array<{ rollNumber: string, name: string }> = [];
+        for (let r = range.startRow; r <= range.endRow; r++) {
+            const rollNumber = String(sheet.cell(`B${r}`).value() || '').trim();
+            const name = String(sheet.cell(`C${r}`).value() || rollNumber).trim();
+            if (rollNumber) {
+                students.push({ rollNumber, name });
+            }
+        }
+
+        // 10. Output
         const outputBuffer = await wb.outputAsync();
 
-        return { outputBuffer, report };
+        return { outputBuffer, report, students };
     }
 }

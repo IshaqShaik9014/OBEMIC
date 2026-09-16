@@ -190,4 +190,10 @@ router.post(
   reportController.submitReport
 );
 
+router.post(
+  '/submit/:id',
+  authenticate,
+  reportController.submitReport
+);
+
 export default router;
