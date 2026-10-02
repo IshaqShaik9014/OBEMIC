@@ -7,12 +7,41 @@ services:
     restart: always
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: Obemic@1252
-      POSTGRES_DB: obemic
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-Obemic@1252}
+      POSTGRES_DB: ${DB_NAME:-obemic}
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ${DB_NAME:-obemic}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: obemic_backend
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "5000:5000"
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      DATABASE_URL: "postgresql://postgres:${DB_PASSWORD:-Obemic@1252}@db:5432/${DB_NAME:-obemic}?schema=public"
+      DIRECT_URL: "postgresql://postgres:${DB_PASSWORD:-Obemic@1252}@db:5432/${DB_NAME:-obemic}?schema=public"
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required. Create a .env file from .env.example}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?JWT_REFRESH_SECRET is required. Create a .env file from .env.example}
+      UPLOAD_PATH: "storage/uploads"
+      REPORT_PATH: "storage/reports"
+    volumes:
+      - backend_storage:/app/storage
 
 volumes:
   pgdata:
+  backend_storage:
