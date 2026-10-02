@@ -1,10 +1,51 @@
+# ── Dependencies ──────────────────────────────────────────
 node_modules/
+
+# ── Build outputs ──────────────────────────────────────────
 dist/
 build/
+.next/
+tsconfig.tsbuildinfo
+
+# ── Environment secrets ────────────────────────────────────
 .env
-coverage/
-*.log
-scratch/
+.env.local
+.env.*.local
+
+# ── Uploaded files (user data, not code) ──────────────────
+backend/uploads/*
+!backend/uploads/.gitkeep
 storage/reports/*
 !storage/reports/.gitkeep
+
+# ── Test & debug one-off scripts ─────────────────────────
+test_*.ts
+test_*.js
+check_*.ts
+clean_*.ts
+cleanup*.ts
+nuke_*.ts
+seed_neon.ts
+seed_master.ts
+total_wipe.ts
+load_test.js
+
+# ── Editor & OS artifacts ─────────────────────────────────
+.DS_Store
+*.stackdump
+Thumbs.db
+
+# ── Logs ──────────────────────────────────────────────────
+*.log
+logs/
+
+# ── Build artifacts ───────────────────────────────────────
 *.xlsx
+
+# ── AI / Dev tooling (not needed in repo) ─────────────────
+.gemini/
+graphify-out/
+
+# ── Misc ──────────────────────────────────────────────────
+scratch/
+aws-setup.sh

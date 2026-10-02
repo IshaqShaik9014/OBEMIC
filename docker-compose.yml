@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  # 1. PostgreSQL Database Service
+  db:
+    image: postgres:15-alpine
+    container_name: obemic_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-Obemic@1252}
+      POSTGRES_DB: ${DB_NAME:-obemic}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ${DB_NAME:-obemic}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. OBEMIC Express Backend Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: obemic_backend
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "5000:5000"
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      DATABASE_URL: "postgresql://postgres:${DB_PASSWORD:-Obemic@1252}@db:5432/${DB_NAME:-obemic}?schema=public"
+      DIRECT_URL: "postgresql://postgres:${DB_PASSWORD:-Obemic@1252}@db:5432/${DB_NAME:-obemic}?schema=public"
+      JWT_SECRET: ${JWT_SECRET:-obemic-super-secret-jwt-key-2026-production}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-obemic-super-secret-refresh-key-2026-production}
+      UPLOAD_PATH: "storage/uploads"
+      REPORT_PATH: "storage/reports"
+    volumes:
+      - backend_storage:/app/storage
+
+  # 3. OBEMIC Next.js Frontend Service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:5000/api/v1}
+    container_name: obemic_frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+
+volumes:
+  pgdata:
+  backend_storage:
