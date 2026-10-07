@@ -37,4 +37,9 @@ adminRouter.use('/outcomes', outcomesRoutes);
 import attainmentRoutes from './attainment.routes';
 adminRouter.use('/attainment-configurations', attainmentRoutes);
 
+// Sandboxed Load Testing Routes
+import loadtestRoutes from './loadtest.routes';
+adminRouter.use('/loadtest', loadtestRoutes);
+
 export default adminRouter;
+

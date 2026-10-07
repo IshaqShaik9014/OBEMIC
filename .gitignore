@@ -29,6 +29,7 @@ seed_neon.ts
 seed_master.ts
 total_wipe.ts
 load_test.js
+!backend/prisma/*.ts
 
 # ── Editor & OS artifacts ─────────────────────────────────
 .DS_Store
