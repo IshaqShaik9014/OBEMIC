@@ -1,5 +1,5 @@
 import { RawSubjectBlock } from './COWorkbookReader';
-import { resolveDepartmentConfigBySubjectToken, resolveDepartmentCodeByAlias } from '../../../../config/branch-codes';
+import { resolveDepartmentConfigBySubjectToken, resolveDepartmentCodeByAlias, isInterdepartmentalToken } from '../../../../config/branch-codes';
 import prisma from '../../../../database';
 import { Subject, CourseOutcome, Department, Regulation } from '@prisma/client';
 
@@ -12,6 +12,8 @@ export interface ValidatedCO {
   action: CORecordAction;
   issues: string[];
   poMatrix?: Record<string, number>;
+  isExistingInDb?: boolean;
+  existingDbDescription?: string;
 }
 
 export interface ValidatedSubjectBlock {
@@ -23,6 +25,8 @@ export interface ValidatedSubjectBlock {
   action: SubjectRecordAction;
   courseOutcomes: ValidatedCO[];
   issues: string[];
+  isExistingInDb?: boolean;
+  existingDbSubjectName?: string;
 }
 
 export interface COImportPayload {
@@ -62,6 +66,13 @@ export class COImportValidator {
       }
     }
 
+    const subjectCodes = Array.from(uniqueSubjectsMap.keys());
+    const existingSubjects = await prisma.subject.findMany({
+      where: { subjectCode: { in: subjectCodes } },
+      include: { courseOutcomes: true, department: true, regulation: true }
+    });
+    const existingSubjectMap = new Map(existingSubjects.map(s => [s.subjectCode, s]));
+
     for (const [subjCode, block] of uniqueSubjectsMap.entries()) {
       const validated: ValidatedSubjectBlock = {
         normalizedSubjectCode: subjCode,
@@ -74,37 +85,65 @@ export class COImportValidator {
         issues: []
       };
 
-      // 1. Resolve Canonical Department from Subject Code
+      // 1. Resolve Target Department (Workbook Context Takes Priority!)
+      const wbDeptConfig = block.workbookDepartment ? resolveDepartmentCodeByAlias(block.workbookDepartment) : null;
       const deptConfig = resolveDepartmentConfigBySubjectToken(block.parsedSubjectCode.subjectBranchToken);
-      if (!deptConfig) {
-        validated.issues.push(`Error: Unknown Subject-Code Token '${block.parsedSubjectCode.subjectBranchToken}'.`);
-        validated.action = 'CONTEXT_CONFLICT';
-      } else {
-        // Does workbook context match canonical?
-        const wbDeptConfig = block.workbookDepartment ? resolveDepartmentCodeByAlias(block.workbookDepartment) : null;
-        if (wbDeptConfig && wbDeptConfig.departmentCode !== deptConfig.departmentCode) {
-           validated.issues.push(`Context Conflict: Workbook department '${block.workbookDepartment}' conflicts with Subject Code department '${deptConfig.departmentCode}'.`);
-           validated.action = 'CONTEXT_CONFLICT';
-        }
+      const isInterDept = isInterdepartmentalToken(block.parsedSubjectCode.subjectBranchToken);
 
-        // Map to DB department
-        const dbDept = dbDepts.find(d => {
+      let targetDept: any = null;
+
+      // Priority 1: Match from Workbook Department (Admin is uploading for their branch!)
+      if (wbDeptConfig) {
+        targetDept = dbDepts.find(d => {
+          const dbName = d.departmentName.toUpperCase();
+          return dbName === wbDeptConfig.departmentCode || 
+                 dbName === wbDeptConfig.departmentName.toUpperCase() ||
+                 wbDeptConfig.aliases.includes(dbName);
+        });
+      }
+
+      // Priority 2: Match directly by raw workbook string if alias didn't catch it
+      if (!targetDept && block.workbookDepartment) {
+        const rawWb = block.workbookDepartment.trim().toUpperCase();
+        targetDept = dbDepts.find(d => 
+          d.departmentName.trim().toUpperCase() === rawWb ||
+          d.departmentName.toUpperCase().includes(rawWb)
+        );
+      }
+
+      // Priority 3: Fall back to subject code's department if workbook has no department header
+      if (!targetDept && deptConfig) {
+        targetDept = dbDepts.find(d => {
           const dbName = d.departmentName.toUpperCase();
           return dbName === deptConfig.departmentCode || 
                  dbName === deptConfig.departmentName.toUpperCase() ||
-                 deptConfig.aliases.includes(dbName) ||
-                 deptConfig.departmentName.toUpperCase().includes(dbName);
+                 deptConfig.aliases.includes(dbName);
         });
-        if (dbDept) {
-          validated.departmentId = dbDept.id;
-        } else {
-          validated.issues.push(`Error: Department '${deptConfig.departmentCode}' not found in DB.`);
-          validated.action = 'CONTEXT_CONFLICT';
+      }
+
+      if (targetDept) {
+        validated.departmentId = targetDept.id;
+
+        // If it's a cross-branch subject (e.g. MECH subject taken in CSE) or interdepartmental (HS/MB)
+        if (wbDeptConfig && deptConfig && wbDeptConfig.departmentCode !== deptConfig.departmentCode) {
+          if (isInterDept) {
+            validated.issues.push(`Info: Foundational subject '${subjCode}' (${deptConfig.departmentCode}) linked to ${targetDept.departmentName}.`);
+          } else {
+            validated.issues.push(`Info: Inter-departmental/Open course '${subjCode}' (${deptConfig.departmentCode}) linked to ${targetDept.departmentName} curriculum.`);
+          }
         }
+      } else {
+        // If neither workbook nor subject code could resolve any existing department
+        validated.issues.push(`Error: Could not resolve department for subject '${subjCode}'. Please verify the department name.`);
+        validated.action = 'CONTEXT_CONFLICT';
       }
 
       // 2. Resolve Regulation
-      const dbReg = dbRegulations.find(r => r.name === block.parsedSubjectCode.regulationCode || r.name.includes(block.parsedSubjectCode.regulationCode));
+      const dbReg = dbRegulations.find(r => 
+        (block.workbookRegulation && (r.name === block.workbookRegulation || r.name.includes(block.workbookRegulation))) ||
+        r.name === block.parsedSubjectCode.regulationCode || 
+        r.name.includes(block.parsedSubjectCode.regulationCode)
+      );
       if (dbReg) {
          validated.regulationId = dbReg.id;
       } else {
@@ -121,13 +160,12 @@ export class COImportValidator {
       // Since subjects are completely decoupled from Semester records, we just assign the level
       validated.semesterLevel = mappedSemName;
 
-      // Check existing Subject
-      const existingSubject = await prisma.subject.findUnique({ 
-        where: { subjectCode: subjCode },
-        include: { courseOutcomes: true, department: true, regulation: true }
-      });
+      // Check existing Subject from in-memory pre-fetched map
+      const existingSubject = existingSubjectMap.get(subjCode);
 
       if (existingSubject) {
+         validated.isExistingInDb = true;
+         validated.existingDbSubjectName = existingSubject.subjectName;
          // Clear context conflicts from parsing since we will use the existing DB context
          validated.issues = [];
          validated.departmentId = existingSubject.departmentId;
@@ -144,8 +182,7 @@ export class COImportValidator {
          // It doesn't exist, so we must have a valid department and semester to CREATE it
          if (!validated.departmentId) {
             validated.action = 'CONTEXT_CONFLICT';
-            if (!validated.departmentId) validated.issues.push('Context Conflict: Department could not be resolved for new subject.');
-            
+            validated.issues.push('Context Conflict: Department could not be resolved for new subject.');
          }
       }
 
@@ -161,9 +198,17 @@ export class COImportValidator {
          const description = coBlock.description;
          const poMatrix = coBlock.poMatrix;
          const vCo: ValidatedCO = { coCode, description, poMatrix, action: 'CREATE', issues: [] };
+
+         // Check PO mapping for this outcome
+         if (!poMatrix || Object.keys(poMatrix).length === 0) {
+            vCo.issues.push(`PO Mapping Missing: Outcome ${coCode} has no linked Program Outcome correlations.`);
+         }
+
          if (existingSubject) {
             const exCo = existingSubject.courseOutcomes.find((c: any) => c.coCode === coCode);
             if (exCo) {
+               vCo.isExistingInDb = true;
+               vCo.existingDbDescription = exCo.description;
                if (exCo.description !== description) {
                   vCo.action = 'CO_CONTENT_CONFLICT';
                   vCo.issues.push(`CO Conflict: Description differs from existing DB record.`);
@@ -173,6 +218,15 @@ export class COImportValidator {
             }
          }
          validated.courseOutcomes.push(vCo);
+      }
+
+      // Check if subject has at least some PO mapping
+      const hasAnyPo = validated.courseOutcomes.some(c => c.poMatrix && Object.keys(c.poMatrix).length > 0);
+      if (!hasAnyPo) {
+        validated.issues.push('PO Mapping Missing: No Program Outcome (PO) mapping columns (PO1-PO12, PSO1-PSO2) found for this subject.');
+        if (validated.action === 'CREATE' || validated.action === 'UNCHANGED') {
+          validated.action = 'CONTEXT_CONFLICT';
+        }
       }
 
       // Tabulate metrics

@@ -13,6 +13,8 @@ export class StaleDataError extends Error {}
 
 export interface ConfirmOptions {
   injectFailure?: boolean; // For transaction rollback tests
+  validEmployeeIds?: string[];
+  excludedEmployeeIds?: string[];
 }
 
 export class FacultyImportService {
@@ -67,6 +69,13 @@ export class FacultyImportService {
 
         const payload: FacultyImportPayload = JSON.parse(batch.details || '{}');
         
+        // Filter out excluded or non-selected records if user removed conflicts
+        if (options?.validEmployeeIds && Array.isArray(options.validEmployeeIds)) {
+          payload.validRecords = payload.validRecords.filter(r => options.validEmployeeIds!.includes(r.employeeId));
+        } else if (options?.excludedEmployeeIds && Array.isArray(options.excludedEmployeeIds)) {
+          payload.validRecords = payload.validRecords.filter(r => !options.excludedEmployeeIds!.includes(r.employeeId));
+        }
+
         // 4. Revalidate DB state
         const isStale = await this.validateAgainstDb(tx, payload);
         if (isStale) {

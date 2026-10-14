@@ -1,7 +1,11 @@
-import { PrismaClient, RoleName, UserStatus } from '@prisma/client';
+import { RoleName, UserStatus } from '@prisma/client';
 import bcrypt from 'bcrypt';
-
-const prisma = new PrismaClient();
+import prisma from '../src/database/index';
+import {
+  DEFAULT_PROGRAM_OUTCOMES,
+  DEFAULT_PROGRAM_EDUCATIONAL_OBJECTIVES,
+  getDepartmentPSOs
+} from '../src/database/outcomeSeeds';
 
 async function main() {
   console.log('Seeding database...');
@@ -60,7 +64,7 @@ async function main() {
       subjectCode: 'CS301',
       subjectName: 'Operating Systems',
       credits: 3,
-      semesterId: semester.id,
+      semesterLevel: '3-1',
       departmentId: deptCSE.id,
     },
   });
@@ -126,7 +130,7 @@ async function main() {
       subjectCode: '23ME3T01',
       subjectName: 'NM&TT',
       credits: 3,
-      semesterId: semester.id,
+      semesterLevel: '3-1',
       departmentId: deptMech.id,
     },
   });
@@ -181,15 +185,15 @@ async function main() {
 
   // Faculty Assignments
   const assignmentKumar = await prisma.facultyAssignment.upsert({
-    where: { facultyId_subjectId_academicYearId_sectionId: { facultyId: drKumar.id, subjectId: subjectNMTT.id, academicYearId: academicYear.id, sectionId: secMechA.id } },
+    where: { facultyId_subjectId_academicYearId_semesterId_sectionId: { facultyId: drKumar.id, subjectId: subjectNMTT.id, academicYearId: academicYear.id, semesterId: semester.id, sectionId: secMechA.id } },
     update: {},
-    create: { facultyId: drKumar.id, subjectId: subjectNMTT.id, academicYearId: academicYear.id, sectionId: secMechA.id },
+    create: { facultyId: drKumar.id, subjectId: subjectNMTT.id, academicYearId: academicYear.id, semesterId: semester.id, sectionId: secMechA.id },
   });
 
   const assignmentRavi = await prisma.facultyAssignment.upsert({
-    where: { facultyId_subjectId_academicYearId_sectionId: { facultyId: drRavi.id, subjectId: subjectNMTT.id, academicYearId: academicYear.id, sectionId: secMechB.id } },
+    where: { facultyId_subjectId_academicYearId_semesterId_sectionId: { facultyId: drRavi.id, subjectId: subjectNMTT.id, academicYearId: academicYear.id, semesterId: semester.id, sectionId: secMechB.id } },
     update: {},
-    create: { facultyId: drRavi.id, subjectId: subjectNMTT.id, academicYearId: academicYear.id, sectionId: secMechB.id },
+    create: { facultyId: drRavi.id, subjectId: subjectNMTT.id, academicYearId: academicYear.id, semesterId: semester.id, sectionId: secMechB.id },
   });
 
   // Students (with new schema)
@@ -229,17 +233,27 @@ async function main() {
     });
   }
 
-  // Create an OPEN Survey
-  const survey = await prisma.survey.create({
-    data: {
-      title: 'Mid-Sem Course Outcome Survey',
+  // Create or find an OPEN Survey
+  let survey = await prisma.survey.findFirst({
+    where: {
       academicYearId: academicYear.id,
       semesterId: semester.id,
-      status: 'OPEN',
-      startDate: new Date(),
-      endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // open for 1 week
+      title: 'Mid-Sem Course Outcome Survey'
     }
   });
+
+  if (!survey) {
+    survey = await prisma.survey.create({
+      data: {
+        title: 'Mid-Sem Course Outcome Survey',
+        academicYearId: academicYear.id,
+        semesterId: semester.id,
+        status: 'OPEN',
+        startDate: new Date(),
+        endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // open for 1 week
+      }
+    });
+  }
 
   // Inject Dummy Ratings for Rahul Kumar
   const rahulRatings = [5, 4, 4, 5, 5];
@@ -254,8 +268,16 @@ async function main() {
     const student = createdStudents[i];
     const ratingsArray = allRatings[i];
 
-    const surveyResponse = await prisma.surveyResponse.create({
-      data: {
+    const surveyResponse = await prisma.surveyResponse.upsert({
+      where: {
+        surveyId_studentId_facultyAssignmentId: {
+          surveyId: survey.id,
+          studentId: student.id,
+          facultyAssignmentId: assignmentKumar.id,
+        }
+      },
+      update: {},
+      create: {
         surveyId: survey.id,
         studentId: student.id,
         facultyAssignmentId: assignmentKumar.id,
@@ -265,14 +287,61 @@ async function main() {
     for (let j = 0; j < fetchedCOs.length; j++) {
       const co = fetchedCOs.find(c => c.coCode === `CO${j+1}`);
       if (co) {
-        await prisma.surveyRating.create({
-          data: {
-            surveyResponseId: surveyResponse.id,
-            courseOutcomeId: co.id,
-            rating: ratingsArray[j],
-          }
+        const existingRating = await prisma.surveyRating.findFirst({
+          where: { surveyResponseId: surveyResponse.id, courseOutcomeId: co.id }
         });
+        if (!existingRating) {
+          await prisma.surveyRating.create({
+            data: {
+              surveyResponseId: surveyResponse.id,
+              courseOutcomeId: co.id,
+              rating: ratingsArray[j],
+            }
+          });
+        }
       }
+    }
+  }
+
+  // 6. Master Program Outcomes, PEOs, and Department PSOs
+  for (const po of DEFAULT_PROGRAM_OUTCOMES) {
+    await prisma.programOutcome.upsert({
+      where: { code: po.code },
+      update: { title: po.title, description: po.description },
+      create: po,
+    });
+  }
+
+  for (const peo of DEFAULT_PROGRAM_EDUCATIONAL_OBJECTIVES) {
+    await prisma.programEducationalObjective.upsert({
+      where: { code: peo.code },
+      update: { title: peo.title, description: peo.description },
+      create: peo,
+    });
+  }
+
+  const allDepts = await prisma.department.findMany();
+  for (const dept of allDepts) {
+    const psoList = getDepartmentPSOs(dept.departmentName);
+    for (const pso of psoList) {
+      await prisma.programSpecificObjective.upsert({
+        where: {
+          code_departmentId: {
+            code: pso.code,
+            departmentId: dept.id,
+          }
+        },
+        update: {
+          title: pso.title,
+          description: pso.description,
+        },
+        create: {
+          code: pso.code,
+          title: pso.title,
+          description: pso.description,
+          departmentId: dept.id,
+        }
+      });
     }
   }
 

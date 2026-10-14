@@ -1,5 +1,5 @@
 import prisma from '../database';
-import { ReportType, ReportStatus } from '@prisma/client';
+import { ReportType, ReportStatus, ProgramSpecificObjective } from '@prisma/client';
 import fs from 'fs';
 
 export class FacultyService {
@@ -71,13 +71,22 @@ export class FacultyService {
     return cos;
   }
 
-  public async getPOs(departmentId: string) {
+  public async getPOs(departmentId?: string) {
     const pos = await prisma.programOutcome.findMany({ orderBy: { code: 'asc' } });
     const peos = await prisma.programEducationalObjective.findMany({ orderBy: { code: 'asc' } });
-    const psos = await prisma.programSpecificObjective.findMany({
-      where: { departmentId },
-      orderBy: { code: 'asc' }
-    });
+    let psos: ProgramSpecificObjective[] = [];
+    if (departmentId && departmentId !== 'default' && departmentId !== 'undefined' && departmentId !== 'placeholder') {
+      psos = await prisma.programSpecificObjective.findMany({
+        where: { departmentId },
+        orderBy: { code: 'asc' }
+      });
+    }
+    if (psos.length === 0) {
+      psos = await prisma.programSpecificObjective.findMany({
+        orderBy: { code: 'asc' },
+        take: 2
+      });
+    }
     return { pos, peos, psos };
   }
 

@@ -26,13 +26,13 @@ export class AdminCOController {
       if (req.file && fs.existsSync(req.file.path)) {
         fs.unlinkSync(req.file.path);
       }
-      res.status(500).json({ error: error.message });
+      res.status(400).json({ error: error.message });
     }
   };
 
   public confirmImport = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { batchId } = req.body;
+      const { batchId, validSubjectCodes, excludedSubjectCodes } = req.body;
       if (!batchId) {
         res.status(400).json({ error: 'batchId is required' });
         return;
@@ -44,7 +44,10 @@ export class AdminCOController {
         return;
       }
 
-      const result = await this.importService.confirm(batchId, adminUserId);
+      const result = await this.importService.confirm(batchId, adminUserId, {
+        validSubjectCodes,
+        excludedSubjectCodes
+      });
       res.json(result);
     } catch (error: any) {
       res.status(500).json({ error: error.message });

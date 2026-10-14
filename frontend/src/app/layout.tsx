@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, Outfit } from "next/font/google";
+import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
 
-const plusJakarta = Plus_Jakarta_Sans({
-  variable: "--font-plus-jakarta",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
@@ -30,8 +30,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${plusJakarta.variable} ${outfit.variable}`}>
-        <Toaster position="top-right" toastOptions={{ style: { background: '#1e293b', color: '#fff', border: '1px solid #334155' } }} />
+      <body className={`${inter.variable} ${outfit.variable}`}>
+        <Toaster position="top-right" toastOptions={{ style: { background: '#FFFFFF', color: '#0F172A', border: '1px solid #CBD5E1', boxShadow: '0 4px 12px rgba(0,0,0,0.08)', fontWeight: 500 } }} />
         {children}
       </body>
     </html>

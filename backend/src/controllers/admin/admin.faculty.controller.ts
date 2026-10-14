@@ -79,7 +79,7 @@ export class AdminFacultyController {
 
   public confirmImport = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { batchId } = req.body;
+      const { batchId, validEmployeeIds, excludedEmployeeIds } = req.body;
       if (!batchId) {
         res.status(400).json({ error: 'batchId is required' });
         return;
@@ -91,7 +91,10 @@ export class AdminFacultyController {
         return;
       }
 
-      const result = await this.importService.confirm(batchId, adminUserId);
+      const result = await this.importService.confirm(batchId, adminUserId, {
+        validEmployeeIds,
+        excludedEmployeeIds
+      });
       res.json(result);
     } catch (error: any) {
       res.status(500).json({ error: error.message });

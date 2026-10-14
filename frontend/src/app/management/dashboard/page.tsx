@@ -11,33 +11,33 @@ export default function ManagementDashboardPage() {
 
   return (
     <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #E2E8F0', paddingBottom: '16px' }}>
         <div>
-          <h1 style={{ fontSize: '1.8rem', color: '#f8fafc', margin: 0 }}>Management Dashboard</h1>
-          <p style={{ color: '#94a3b8', margin: '4px 0 0 0' }}>Overall View of the Process</p>
+          <h1 style={{ fontSize: '1.8rem', color: '#0F172A', margin: 0, fontWeight: 700 }}>Management Dashboard</h1>
+          <p style={{ color: '#64748B', margin: '4px 0 0 0' }}>Overall View of the Process</p>
         </div>
-        <Button onClick={() => authService.logout()}>Logout</Button>
+        <Button onClick={() => authService.logout()} variant="secondary">Logout</Button>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px' }}>
         <Card glow>
-          <h3 style={{ color: '#f8fafc', marginTop: 0 }}>Total Subjects</h3>
-          <p style={{ color: '#3b82f6', fontSize: '2rem', fontWeight: 'bold' }}>142</p>
+          <h3 style={{ color: '#475569', marginTop: 0, fontSize: '1rem', fontWeight: 600 }}>Total Subjects</h3>
+          <p style={{ color: '#2563EB', fontSize: '2.2rem', fontWeight: 'bold', margin: '8px 0 0 0' }}>142</p>
         </Card>
         <Card glow>
-          <h3 style={{ color: '#f8fafc', marginTop: 0 }}>Reports Generated</h3>
-          <p style={{ color: '#10b981', fontSize: '2rem', fontWeight: 'bold' }}>87</p>
+          <h3 style={{ color: '#475569', marginTop: 0, fontSize: '1rem', fontWeight: 600 }}>Reports Generated</h3>
+          <p style={{ color: '#10B981', fontSize: '2.2rem', fontWeight: 'bold', margin: '8px 0 0 0' }}>87</p>
         </Card>
         <Card glow>
-          <h3 style={{ color: '#f8fafc', marginTop: 0 }}>Pending Submissions</h3>
-          <p style={{ color: '#f59e0b', fontSize: '2rem', fontWeight: 'bold' }}>55</p>
+          <h3 style={{ color: '#475569', marginTop: 0, fontSize: '1rem', fontWeight: 600 }}>Pending Submissions</h3>
+          <p style={{ color: '#F59E0B', fontSize: '2.2rem', fontWeight: 'bold', margin: '8px 0 0 0' }}>55</p>
         </Card>
       </div>
       
       <Card>
-         <h3 style={{ color: '#f8fafc', marginTop: 0 }}>Department Wise Progress</h3>
-         <div style={{ height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>
-            [Chart Placeholder]
+         <h3 style={{ color: '#0F172A', marginTop: 0, fontWeight: 700 }}>Department Wise Progress</h3>
+         <div style={{ height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748B' }}>
+            [Attainment Overview Analytics]
          </div>
       </Card>
     </div>

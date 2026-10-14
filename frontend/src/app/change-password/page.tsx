@@ -39,24 +39,24 @@ export default function ChangePasswordPage() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-      <Card style={{ maxWidth: '400px', width: '100%', padding: '32px' }}>
-        <h1 style={{ fontSize: '1.5rem', color: '#f8fafc', marginBottom: '8px', textAlign: 'center' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', background: '#F1F5F9' }}>
+      <Card style={{ maxWidth: '420px', width: '100%', padding: '36px', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
+        <h1 style={{ fontSize: '1.5rem', color: '#0F172A', marginBottom: '8px', textAlign: 'center', fontWeight: 700 }}>
           Change Password
         </h1>
-        <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginBottom: '24px', textAlign: 'center' }}>
+        <p style={{ color: '#64748B', fontSize: '0.9rem', marginBottom: '24px', textAlign: 'center' }}>
           Secure your account by updating your password.
         </p>
 
         {error && (
-          <div style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', padding: '12px', borderRadius: '8px', marginBottom: '20px', fontSize: '0.9rem' }}>
+          <div style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#B91C1C', padding: '12px', borderRadius: '8px', marginBottom: '20px', fontSize: '0.9rem' }}>
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div>
-            <label style={{ display: 'block', color: '#cbd5e1', marginBottom: '8px', fontSize: '0.9rem' }}>
+            <label style={{ display: 'block', color: '#334155', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 600 }}>
               Current Password
             </label>
             <input
@@ -66,14 +66,14 @@ export default function ChangePasswordPage() {
               required
               style={{
                 width: '100%', padding: '12px', borderRadius: '8px',
-                background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)',
-                color: '#fff', fontSize: '1rem'
+                background: '#FFFFFF', border: '1px solid #CBD5E1',
+                color: '#0F172A', fontSize: '1rem'
               }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', color: '#cbd5e1', marginBottom: '8px', fontSize: '0.9rem' }}>
+            <label style={{ display: 'block', color: '#334155', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 600 }}>
               New Password
             </label>
             <input
@@ -83,14 +83,14 @@ export default function ChangePasswordPage() {
               required
               style={{
                 width: '100%', padding: '12px', borderRadius: '8px',
-                background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)',
-                color: '#fff', fontSize: '1rem'
+                background: '#FFFFFF', border: '1px solid #CBD5E1',
+                color: '#0F172A', fontSize: '1rem'
               }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', color: '#cbd5e1', marginBottom: '8px', fontSize: '0.9rem' }}>
+            <label style={{ display: 'block', color: '#334155', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 600 }}>
               Confirm New Password
             </label>
             <input
@@ -100,8 +100,8 @@ export default function ChangePasswordPage() {
               required
               style={{
                 width: '100%', padding: '12px', borderRadius: '8px',
-                background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)',
-                color: '#fff', fontSize: '1rem'
+                background: '#FFFFFF', border: '1px solid #CBD5E1',
+                color: '#0F172A', fontSize: '1rem'
               }}
             />
           </div>
@@ -109,7 +109,7 @@ export default function ChangePasswordPage() {
           <Button type="submit" disabled={isLoading} style={{ marginTop: '8px', padding: '14px', width: '100%' }}>
             {isLoading ? 'Updating...' : 'Update Password & Re-login'}
           </Button>
-          <button type="button" onClick={() => router.back()} style={{ marginTop: '12px', padding: '12px', width: '100%', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#cbd5e1', borderRadius: '8px', cursor: 'pointer' }}>
+          <button type="button" onClick={() => router.back()} style={{ marginTop: '8px', padding: '12px', width: '100%', background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#475569', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>
             Cancel / Back
           </button>
         </form>

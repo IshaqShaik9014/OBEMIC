@@ -31,6 +31,8 @@ export interface RecentReport {
 }
 
 export interface FacultyDashboardData {
+  facultyName?: string;
+  department?: string;
   stats: {
     totalSubjects: number;
     totalReportsGenerated: number;

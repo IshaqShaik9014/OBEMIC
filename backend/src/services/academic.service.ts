@@ -36,17 +36,21 @@ export class AcademicService {
       // Auto-detect from subject code
       const parsed = SubjectCodeParser.parse(data.subjectCode);
       const config = resolveDepartmentConfigBySubjectToken(parsed.subjectBranchToken);
-      if (!config) throw new Error(`Could not resolve department for subject token ${parsed.subjectBranchToken}`);
       
-      // Find the department in the DB by its canonical name or code
-      const dbDepts = await prisma.department.findMany();
-      const dbDept = dbDepts.find(d => 
-        d.departmentName.toUpperCase() === config.departmentCode.toUpperCase() ||
-        d.departmentName.toUpperCase() === config.departmentName.toUpperCase() ||
-        config.aliases.includes(d.departmentName.toUpperCase())
-      );
-      if (!dbDept) throw new Error(`Department ${config.departmentName} not found in database. Please create it first.`);
-      deptId = dbDept.id;
+      if (config) {
+        // Find the department in the DB by its canonical name or code
+        const dbDepts = await prisma.department.findMany();
+        const dbDept = dbDepts.find(d => 
+          d.departmentName.toUpperCase() === config.departmentCode.toUpperCase() ||
+          d.departmentName.toUpperCase() === config.departmentName.toUpperCase() ||
+          config.aliases.includes(d.departmentName.toUpperCase())
+        );
+        if (dbDept) deptId = dbDept.id;
+      }
+
+      if (!deptId) {
+        throw new Error(`Could not auto-detect department for subject token '${parsed.subjectBranchToken}'. Please explicitly provide the departmentId.`);
+      }
     }
 
     return this.repo.createSubject({

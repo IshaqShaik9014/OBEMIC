@@ -268,8 +268,8 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
     return false;
   };
 
-  if (loading) return <div style={{ color: '#fff' }}>Loading Subject Wizard...</div>;
-  if (!subjectInfo) return <div style={{ color: '#ef4444' }}>Subject not found.</div>;
+  if (loading) return <div style={{ color: '#0F172A', padding: '40px', textAlign: 'center' }}>Loading Subject Wizard...</div>;
+  if (!subjectInfo) return <div style={{ color: '#ef4444', padding: '40px', textAlign: 'center' }}>Subject not found.</div>;
 
   const isLab = subjectInfo?.subjectName?.toLowerCase().includes('lab') || false;
 
@@ -278,19 +278,19 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
       case 'cos':
         return (
           <div style={{ animation: 'fadeIn 0.3s ease' }}>
-            <h3 style={{ textAlign: 'center', color: '#f8fafc', marginBottom: '16px' }}>Course Outcomes (COs)</h3>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', background: 'rgba(15, 23, 42, 0.4)', borderRadius: '8px', overflow: 'hidden' }}>
+            <h3 style={{ textAlign: 'center', color: '#0F172A', marginBottom: '16px', fontWeight: 700 }}>Course Outcomes (COs)</h3>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', background: '#FFFFFF', borderRadius: '8px', overflow: 'hidden', border: '1px solid #E2E8F0' }}>
               <thead>
-                <tr style={{ background: '#1e293b' }}>
-                  <th style={{ padding: '12px 16px', color: '#94a3b8' }}>Outcome</th>
-                  <th style={{ padding: '12px 16px', color: '#94a3b8' }}>Description</th>
+                <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
+                  <th style={{ padding: '12px 16px', color: '#475569', fontWeight: 600 }}>Outcome</th>
+                  <th style={{ padding: '12px 16px', color: '#475569', fontWeight: 600 }}>Description</th>
                 </tr>
               </thead>
               <tbody>
                 {cos.map((co: any) => (
-                  <tr key={co.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                    <td style={{ padding: '12px 16px', fontWeight: 'bold', color: '#3b82f6' }}>{co.coCode}</td>
-                    <td style={{ padding: '12px 16px', color: '#e2e8f0' }}>{co.description}</td>
+                  <tr key={co.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                    <td style={{ padding: '12px 16px', fontWeight: 'bold', color: '#2563EB' }}>{co.coCode}</td>
+                    <td style={{ padding: '12px 16px', color: '#334155' }}>{co.description}</td>
                   </tr>
                 ))}
               </tbody>
@@ -301,15 +301,15 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
       case 'pos':
         return (
           <div style={{ animation: 'fadeIn 0.3s ease' }}>
-            <h3 style={{ textAlign: 'center', color: '#f8fafc', marginBottom: '16px' }}>Program Outcomes (POs)</h3>
+            <h3 style={{ textAlign: 'center', color: '#0F172A', marginBottom: '16px', fontWeight: 700 }}>Program Outcomes (POs)</h3>
             <div style={{ display: 'grid', gap: '12px' }}>
               {poData.pos.map((po: any) => (
-                <div key={po.id} style={{ padding: '16px', background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}>
+                <div key={po.id} style={{ padding: '16px', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
                   <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '8px' }}>
-                    <span style={{ padding: '4px 8px', background: '#3b82f6', color: '#fff', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>{po.code}</span>
-                    <strong style={{ color: '#f8fafc' }}>{po.title}</strong>
+                    <span style={{ padding: '4px 8px', background: '#2563EB', color: '#fff', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>{po.code}</span>
+                    <strong style={{ color: '#0F172A' }}>{po.title}</strong>
                   </div>
-                  <p style={{ margin: 0, fontSize: '0.9rem', color: '#cbd5e1' }}>{po.description}</p>
+                  <p style={{ margin: 0, fontSize: '0.9rem', color: '#475569' }}>{po.description}</p>
                 </div>
               ))}
             </div>
@@ -319,24 +319,24 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
       case 'peos':
         return (
           <div style={{ animation: 'fadeIn 0.3s ease' }}>
-            <h3 style={{ textAlign: 'center', color: '#f8fafc', marginBottom: '16px' }}>PEOs & PSOs</h3>
+            <h3 style={{ textAlign: 'center', color: '#0F172A', marginBottom: '16px', fontWeight: 700 }}>PEOs & PSOs</h3>
             <div style={{ display: 'grid', gap: '12px' }}>
               {poData.peos.map((peo: any) => (
-                <div key={peo.id} style={{ padding: '16px', background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}>
+                <div key={peo.id} style={{ padding: '16px', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
                   <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '8px' }}>
-                    <span style={{ padding: '4px 8px', background: '#0ea5e9', color: '#fff', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>{peo.code}</span>
-                    <strong style={{ color: '#f8fafc' }}>{peo.title}</strong>
+                    <span style={{ padding: '4px 8px', background: '#0284C7', color: '#fff', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>{peo.code}</span>
+                    <strong style={{ color: '#0F172A' }}>{peo.title}</strong>
                   </div>
-                  <p style={{ margin: 0, fontSize: '0.9rem', color: '#cbd5e1' }}>{peo.description}</p>
+                  <p style={{ margin: 0, fontSize: '0.9rem', color: '#475569' }}>{peo.description}</p>
                 </div>
               ))}
               {poData.psos.map((pso: any) => (
-                <div key={pso.id} style={{ padding: '16px', background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', marginTop: '12px' }}>
+                <div key={pso.id} style={{ padding: '16px', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', marginTop: '12px' }}>
                   <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '8px' }}>
-                    <span style={{ padding: '4px 8px', background: '#8b5cf6', color: '#fff', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>{pso.code}</span>
-                    <strong style={{ color: '#f8fafc' }}>{pso.title}</strong>
+                    <span style={{ padding: '4px 8px', background: '#7C3AED', color: '#fff', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>{pso.code}</span>
+                    <strong style={{ color: '#0F172A' }}>{pso.title}</strong>
                   </div>
-                  <p style={{ margin: 0, fontSize: '0.9rem', color: '#cbd5e1' }}>{pso.description}</p>
+                  <p style={{ margin: 0, fontSize: '0.9rem', color: '#475569' }}>{pso.description}</p>
                 </div>
               ))}
             </div>
@@ -346,15 +346,15 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
       case 'marks':
         return (
           <div style={{ animation: 'fadeIn 0.3s ease', display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '600px', margin: '0 auto' }}>
-            <h3 style={{ textAlign: 'center', color: '#f8fafc' }}>Evaluation Marks Entry</h3>
+            <h3 style={{ textAlign: 'center', color: '#0F172A', fontWeight: 700 }}>Evaluation Marks Entry</h3>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label style={{ color: '#94a3b8', fontSize: '0.9rem', fontWeight: 'bold' }}>Assessment Milestone</label>
+              <label style={{ color: '#475569', fontSize: '0.9rem', fontWeight: 'bold' }}>Assessment Milestone</label>
               <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
                 <select 
                   value={marksType} 
                   onChange={e => setMarksType(e.target.value)}
-                  style={{ padding: '12px', borderRadius: '8px', background: '#0f172a', color: '#fff', border: '1px solid #334155', flex: 1 }}
+                  style={{ padding: '12px', borderRadius: '8px', background: '#FFFFFF', color: '#0F172A', border: '1px solid #CBD5E1', flex: 1, fontWeight: 500 }}
                 >
                   {!isLab && <option value="internal">Internal Marks</option>}
                   {!isLab && <option value="external">External Marks</option>}
@@ -369,7 +369,7 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
                         : "/templates/External_Template.xlsx"
                   }
                   download
-                  style={{ padding: '12px 16px', background: '#1e293b', color: '#38bdf8', borderRadius: '8px', textDecoration: 'none', border: '1px solid #334155', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px', whiteSpace: 'nowrap' }}
+                  style={{ padding: '12px 16px', background: '#FFFFFF', color: '#2563EB', borderRadius: '8px', textDecoration: 'none', border: '1px solid #CBD5E1', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px', whiteSpace: 'nowrap', fontWeight: 600 }}
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                   Download Template
@@ -393,9 +393,9 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
                 style={{ 
                   flex: 1, 
                   padding: '12px', 
-                  background: file ? '#3b82f6' : '#1e293b', 
-                  color: file ? '#ffffff' : '#64748b',
-                  border: '1px solid #334155',
+                  background: file ? 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)' : '#E2E8F0', 
+                  color: file ? '#ffffff' : '#94A3B8',
+                  border: 'none',
                   fontWeight: 'bold' 
                 }}
               >
@@ -409,9 +409,9 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
                 style={{ 
                   flex: 1, 
                   padding: '12px', 
-                  background: (latestBlob || directData?.hasInternal || directData?.hasExternal) ? '#10B981' : '#1e293b',
-                  color: (latestBlob || directData?.hasInternal || directData?.hasExternal) ? '#ffffff' : '#64748b',
-                  border: '1px solid #334155',
+                  background: (latestBlob || directData?.hasInternal || directData?.hasExternal) ? '#10B981' : '#E2E8F0',
+                  color: (latestBlob || directData?.hasInternal || directData?.hasExternal) ? '#ffffff' : '#94A3B8',
+                  border: 'none',
                   fontWeight: 'bold',
                   display: 'flex',
                   alignItems: 'center',
@@ -436,9 +436,9 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
                 width: '100%',
                 marginTop: '10px',
                 padding: '10px',
-                background: 'rgba(56, 189, 248, 0.08)',
-                border: '1px dashed #38bdf8',
-                color: '#38bdf8',
+                background: '#EFF6FF',
+                border: '1px dashed #3B82F6',
+                color: '#2563EB',
                 borderRadius: '8px',
                 fontSize: '0.9rem',
                 fontWeight: 'bold',
@@ -452,7 +452,7 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
               Extract & Synchronize Students from Marks Sheet
             </Button>
 
-            <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: '16px', fontSize: '0.9rem', color: '#94a3b8' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: '16px', fontSize: '0.9rem', color: '#475569' }}>
                <span>Internal: {directData?.hasInternal ? '✅ Uploaded' : '❌ Pending'}</span>
                <span>External: {directData?.hasExternal ? '✅ Uploaded' : '❌ Pending'}</span>
             </div>
@@ -470,12 +470,12 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
 
         return (
           <div style={{ animation: 'fadeIn 0.3s ease' }}>
-            <h3 style={{ textAlign: 'center', color: '#f8fafc', marginBottom: '8px' }}>Course End Survey (Indirect Assessment)</h3>
-            <p style={{ textAlign: 'center', color: '#94a3b8', marginBottom: '24px' }}>Real student survey data fetched from the DB</p>
+            <h3 style={{ textAlign: 'center', color: '#0F172A', marginBottom: '8px', fontWeight: 700 }}>Course End Survey (Indirect Assessment)</h3>
+            <p style={{ textAlign: 'center', color: '#64748B', marginBottom: '24px' }}>Real student survey data fetched from the DB</p>
             
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', background: 'rgba(15, 23, 42, 0.4)' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', overflow: 'hidden' }}>
               <thead>
-                <tr style={{ background: '#1e293b', color: '#94a3b8' }}>
+                <tr style={{ background: '#F8FAFC', color: '#475569', borderBottom: '1px solid #E2E8F0' }}>
                   <th style={{ padding: '12px' }}>Roll No</th>
                   <th style={{ padding: '12px', textAlign: 'left' }}>Student Name</th>
                   <th>CO1</th><th>CO2</th><th>CO3</th><th>CO4</th><th>CO5</th>
@@ -483,7 +483,7 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
               </thead>
               <tbody>
                 {indirectData.map((stu: any) => (
-                  <tr key={stu.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', color: '#e2e8f0' }}>
+                  <tr key={stu.id} style={{ borderBottom: '1px solid #F1F5F9', color: '#334155' }}>
                     <td style={{ padding: '12px', fontWeight: 'bold' }}>{stu.rollNo}</td>
                     <td style={{ padding: '12px', textAlign: 'left' }}>{stu.name}</td>
                     {['CO1','CO2','CO3','CO4','CO5'].map(co => <td key={co}>{stu.scores[co]}</td>)}
@@ -493,18 +493,18 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
             </table>
 
             <div style={{ marginTop: '32px', textAlign: 'center' }}>
-              <h4 style={{ color: '#f8fafc', marginBottom: '16px' }}>Weighted Averages (3-Scale)</h4>
+              <h4 style={{ color: '#0F172A', marginBottom: '16px', fontWeight: 700 }}>Weighted Averages (3-Scale)</h4>
               <div style={{ display: 'flex', justifyContent: 'center', gap: '24px' }}>
                 {Object.keys(indirectAvg).map(co => (
-                  <div key={co} style={{ background: '#0f172a', padding: '16px 24px', borderRadius: '8px', border: '1px solid #1e293b' }}>
-                    <div style={{ color: '#94a3b8', fontSize: '0.9rem', marginBottom: '4px' }}>{co}</div>
-                    <div style={{ color: '#3b82f6', fontSize: '1.4rem', fontWeight: 'bold' }}>{indirectAvg[co].toFixed(2)}</div>
+                  <div key={co} style={{ background: '#F8FAFC', padding: '16px 24px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                    <div style={{ color: '#64748B', fontSize: '0.9rem', marginBottom: '4px', fontWeight: 600 }}>{co}</div>
+                    <div style={{ color: '#2563EB', fontSize: '1.4rem', fontWeight: 'bold' }}>{indirectAvg[co].toFixed(2)}</div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div style={{ marginTop: '32px', textAlign: 'center', borderTop: '1px dashed #334155', paddingTop: '24px' }}>
+            <div style={{ marginTop: '32px', textAlign: 'center', borderTop: '1px dashed #CBD5E1', paddingTop: '24px' }}>
               {progress.indirect ? (
                 <div style={{ color: '#10b981', fontWeight: 'bold' }}>✅ Indirect Assessment Completed</div>
               ) : (
@@ -517,26 +517,26 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
       case 'direct':
         return (
           <div style={{ animation: 'fadeIn 0.3s ease' }}>
-            <h3 style={{ textAlign: 'center', color: '#f8fafc', marginBottom: '16px' }}>Direct Assessment Attainment</h3>
+            <h3 style={{ textAlign: 'center', color: '#0F172A', marginBottom: '16px', fontWeight: 700 }}>Direct Assessment Attainment</h3>
             
             <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', alignItems: 'center', marginBottom: '24px' }}>
-              <label style={{ color: '#cbd5e1', fontWeight: 'bold' }}>Target Level (%):</label>
-              <select value={targetLevel} onChange={e => setTargetLevel(Number(e.target.value))} style={{ padding: '8px', borderRadius: '4px', background: '#0f172a', color: '#fff' }}>
+              <label style={{ color: '#334155', fontWeight: 'bold' }}>Target Level (%):</label>
+              <select value={targetLevel} onChange={e => setTargetLevel(Number(e.target.value))} style={{ padding: '8px 12px', borderRadius: '6px', background: '#FFFFFF', color: '#0F172A', border: '1px solid #CBD5E1', fontWeight: 500 }}>
                 <option value={60}>60%</option>
                 <option value={65}>65%</option>
                 <option value={70}>70%</option>
               </select>
             </div>
 
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', background: 'rgba(15, 23, 42, 0.4)', fontSize: '0.9rem' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', overflow: 'hidden', fontSize: '0.9rem' }}>
               <thead>
-                <tr style={{ background: '#3b82f6', color: '#fff' }}>
+                <tr style={{ background: '#2563EB', color: '#fff' }}>
                   <th style={{ padding: '12px' }}>CO</th>
                   <th style={{ padding: '12px' }}>Internal Pct</th>
                   <th style={{ padding: '12px' }}>Internal (3)</th>
                   <th style={{ padding: '12px' }}>External Pct</th>
                   <th style={{ padding: '12px' }}>External (3)</th>
-                  <th style={{ padding: '12px', background: '#2563eb' }}>Direct Attn (3)</th>
+                  <th style={{ padding: '12px', background: '#1D4ED8' }}>Direct Attn (3)</th>
                   <th style={{ padding: '12px', background: '#10b981' }}>Target (3)</th>
                 </tr>
               </thead>
@@ -545,13 +545,13 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
                   const row = directData?.data[co];
                   if (!row) return null;
                   return (
-                    <tr key={co} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', color: '#e2e8f0', background: idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)' }}>
-                      <td style={{ padding: '12px', fontWeight: 'bold' }}>{co}</td>
+                    <tr key={co} style={{ borderBottom: '1px solid #F1F5F9', color: '#334155', background: idx % 2 === 0 ? '#FFFFFF' : '#F8FAFC' }}>
+                      <td style={{ padding: '12px', fontWeight: 'bold', color: '#0F172A' }}>{co}</td>
                       <td>{row.internalPct.toFixed(2)}%</td>
                       <td style={{ fontWeight: 'bold' }}>{row.internal3Scale.toFixed(2)}</td>
                       <td>{row.externalPct.toFixed(2)}%</td>
                       <td style={{ fontWeight: 'bold' }}>{row.external3Scale.toFixed(2)}</td>
-                      <td style={{ fontWeight: 'bold', color: '#3b82f6' }}>{row.direct3Scale.toFixed(2)}</td>
+                      <td style={{ fontWeight: 'bold', color: '#2563EB' }}>{row.direct3Scale.toFixed(2)}</td>
                       <td style={{ fontWeight: 'bold', color: '#10b981' }}>{row.target3Scale.toFixed(2)}</td>
                     </tr>
                   )
@@ -559,7 +559,7 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
               </tbody>
             </table>
 
-            <div style={{ marginTop: '32px', textAlign: 'center', borderTop: '1px dashed #334155', paddingTop: '24px' }}>
+            <div style={{ marginTop: '32px', textAlign: 'center', borderTop: '1px dashed #CBD5E1', paddingTop: '24px' }}>
               {progress.direct ? (
                 <div style={{ color: '#10b981', fontWeight: 'bold' }}>✅ Direct Assessment Completed</div>
               ) : (
@@ -572,12 +572,12 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
       case 'copo_attainment':
         return (
           <div style={{ animation: 'fadeIn 0.3s ease' }}>
-            <h3 style={{ textAlign: 'center', color: '#f8fafc', marginBottom: '16px' }}>CO-PO Attainment Matrix</h3>
+            <h3 style={{ textAlign: 'center', color: '#0F172A', marginBottom: '16px', fontWeight: 700 }}>CO-PO Attainment Matrix</h3>
             
             <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', background: 'rgba(15, 23, 42, 0.4)', fontSize: '0.85rem' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', overflow: 'hidden', fontSize: '0.85rem' }}>
                 <thead>
-                  <tr style={{ background: '#1e293b', color: '#94a3b8' }}>
+                  <tr style={{ background: '#F8FAFC', color: '#475569', borderBottom: '1px solid #E2E8F0' }}>
                     <th style={{ padding: '10px' }}>CO</th>
                     {Array.from({length: 12}, (_, i) => <th key={i}>PO{i+1}</th>)}
                     <th>PSO1</th><th>PSO2</th>
@@ -585,8 +585,8 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
                 </thead>
                 <tbody>
                   {['CO1', 'CO2', 'CO3', 'CO4', 'CO5'].map((co) => (
-                    <tr key={co} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', color: '#e2e8f0' }}>
-                      <td style={{ padding: '10px', fontWeight: 'bold' }}>{co}</td>
+                    <tr key={co} style={{ borderBottom: '1px solid #F1F5F9', color: '#334155' }}>
+                      <td style={{ padding: '10px', fontWeight: 'bold', color: '#0F172A' }}>{co}</td>
                       {Array.from({length: 12}, (_, i) => <td key={i}>{copoMap?.[co]?.[`PO${i+1}`] || '-'}</td>)}
                       <td>{copoMap?.[co]?.['PSO1'] || '-'}</td>
                       <td>{copoMap?.[co]?.['PSO2'] || '-'}</td>
@@ -596,14 +596,14 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
               </table>
             </div>
 
-            <div style={{ height: '350px', marginTop: '32px', background: '#0f172a', padding: '16px', borderRadius: '8px' }}>
+            <div style={{ height: '350px', marginTop: '32px', background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '16px', borderRadius: '8px' }}>
                <AttainmentBarChart 
                  labels={Array.from({length: 12}, (_, i) => `PO${i+1}`).concat(['PSO1', 'PSO2'])}
-                 datasets={[{ label: 'PO Attainment', data: poAttainmentData, backgroundColor: '#3b82f6' }]}
+                 datasets={[{ label: 'PO Attainment', data: poAttainmentData, backgroundColor: '#2563EB' }]}
                />
             </div>
 
-            <div style={{ marginTop: '32px', textAlign: 'center', borderTop: '1px dashed #334155', paddingTop: '24px' }}>
+            <div style={{ marginTop: '32px', textAlign: 'center', borderTop: '1px dashed #CBD5E1', paddingTop: '24px' }}>
               {progress.copo ? (
                 <div style={{ color: '#10b981', fontWeight: 'bold' }}>✅ CO-PO Assessment Completed</div>
               ) : (
@@ -628,42 +628,42 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
 
         return (
           <div style={{ animation: 'fadeIn 0.3s ease' }}>
-             <h3 style={{ textAlign: 'center', color: '#f8fafc', marginBottom: '16px' }}>Overall Attainment (60% Direct + 40% Indirect)</h3>
-             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', background: 'rgba(15, 23, 42, 0.4)', fontSize: '0.9rem' }}>
+             <h3 style={{ textAlign: 'center', color: '#0F172A', marginBottom: '16px', fontWeight: 700 }}>Overall Attainment (60% Direct + 40% Indirect)</h3>
+             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', overflow: 'hidden', fontSize: '0.9rem' }}>
               <thead>
-                <tr style={{ background: '#3b82f6', color: '#fff' }}>
+                <tr style={{ background: '#2563EB', color: '#fff' }}>
                   <th style={{ padding: '12px' }}>CO</th>
                   <th style={{ padding: '12px' }}>Direct (A)</th>
                   <th style={{ padding: '12px' }}>Indirect (B)</th>
-                  <th style={{ padding: '12px', background: '#2563eb' }}>Final Attainment</th>
+                  <th style={{ padding: '12px', background: '#1D4ED8' }}>Final Attainment</th>
                   <th style={{ padding: '12px', background: '#10b981' }}>Target (3)</th>
                 </tr>
               </thead>
               <tbody>
                 {combinedData.map((row, idx) => (
-                    <tr key={row.co} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', color: '#e2e8f0', background: idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)' }}>
-                      <td style={{ padding: '12px', fontWeight: 'bold' }}>{row.co}</td>
+                    <tr key={row.co} style={{ borderBottom: '1px solid #F1F5F9', color: '#334155', background: idx % 2 === 0 ? '#FFFFFF' : '#F8FAFC' }}>
+                      <td style={{ padding: '12px', fontWeight: 'bold', color: '#0F172A' }}>{row.co}</td>
                       <td>{row.dir.toFixed(2)}</td>
                       <td>{row.ind.toFixed(2)}</td>
-                      <td style={{ fontWeight: 'bold', color: '#3b82f6' }}>{row.final.toFixed(2)}</td>
+                      <td style={{ fontWeight: 'bold', color: '#2563EB' }}>{row.final.toFixed(2)}</td>
                       <td style={{ fontWeight: 'bold', color: '#10b981' }}>{row.tgt.toFixed(2)}</td>
                     </tr>
                 ))}
               </tbody>
             </table>
 
-            <div style={{ height: '350px', marginTop: '32px', background: '#0f172a', padding: '16px', borderRadius: '8px' }}>
+            <div style={{ height: '350px', marginTop: '32px', background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '16px', borderRadius: '8px' }}>
                <AttainmentBarChart 
                  labels={cos.map((c: any) => c.coCode)}
                  datasets={[
-                   { label: 'Direct', data: combinedData.map(d => d.dir), backgroundColor: '#3b82f6' },
-                   { label: 'Indirect', data: combinedData.map(d => d.ind), backgroundColor: '#8b5cf6' },
-                   { label: 'Final', data: combinedData.map(d => d.final), backgroundColor: '#10b981' },
+                   { label: 'Direct', data: combinedData.map(d => d.dir), backgroundColor: '#2563EB' },
+                   { label: 'Indirect', data: combinedData.map(d => d.ind), backgroundColor: '#7C3AED' },
+                   { label: 'Final', data: combinedData.map(d => d.final), backgroundColor: '#10B981' },
                  ]}
                />
             </div>
 
-            <div style={{ marginTop: '32px', textAlign: 'center', borderTop: '1px dashed #334155', paddingTop: '24px' }}>
+            <div style={{ marginTop: '32px', textAlign: 'center', borderTop: '1px dashed #CBD5E1', paddingTop: '24px' }}>
               {progress.overall ? (
                 <div style={{ color: '#10b981', fontWeight: 'bold' }}>✅ Overall Assessment Completed</div>
               ) : (
@@ -679,20 +679,20 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
 
         return (
           <div style={{ animation: 'fadeIn 0.3s ease', textAlign: 'center', maxWidth: '650px', margin: '0 auto' }}>
-            <h3 style={{ color: '#f8fafc', marginBottom: '8px' }}>Final Attainment Report</h3>
-            <p style={{ color: '#94a3b8', marginBottom: '24px' }}>Review your finalized Direct and Indirect attainment figures and submit for institutional review.</p>
+            <h3 style={{ color: '#0F172A', marginBottom: '8px', fontWeight: 700 }}>Final Attainment Report</h3>
+            <p style={{ color: '#64748B', marginBottom: '24px' }}>Review your finalized Direct and Indirect attainment figures and submit for institutional review.</p>
             
             {/* Status Banner */}
             {isApproved ? (
-              <div style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid #10B981', padding: '16px', borderRadius: '8px', color: '#10B981', marginBottom: '24px', fontWeight: 'bold' }}>
+              <div style={{ background: '#ECFDF5', border: '1px solid #10B981', padding: '16px', borderRadius: '8px', color: '#065F46', marginBottom: '24px', fontWeight: 'bold' }}>
                 🎉 Report Approved & Officially Published by Department Admin!
               </div>
             ) : isSubmitted ? (
-              <div style={{ background: 'rgba(245, 158, 11, 0.15)', border: '1px solid #f59e0b', padding: '16px', borderRadius: '8px', color: '#f59e0b', marginBottom: '24px', fontWeight: 'bold' }}>
+              <div style={{ background: '#FFFBEB', border: '1px solid #F59E0B', padding: '16px', borderRadius: '8px', color: '#92400E', marginBottom: '24px', fontWeight: 'bold' }}>
                 ⏳ Report Submitted to Admin! Awaiting Review and Final Approval.
               </div>
             ) : (
-              <div style={{ background: 'rgba(59, 130, 246, 0.12)', border: '1px solid #3b82f6', padding: '16px', borderRadius: '8px', color: '#93c5fd', marginBottom: '24px' }}>
+              <div style={{ background: '#EFF6FF', border: '1px solid #3B82F6', padding: '16px', borderRadius: '8px', color: '#1E40AF', marginBottom: '24px' }}>
                 📋 All milestones completed! Click below to submit your official attainment calculations to the Department Admin for approval.
               </div>
             )}
@@ -706,8 +706,8 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
                   style={{ 
                     fontSize: '1.05rem', 
                     padding: '14px 28px', 
-                    background: isSubmitted ? '#334155' : '#10B981', 
-                    color: isSubmitted ? '#94a3b8' : '#ffffff',
+                    background: isSubmitted ? '#E2E8F0' : '#10B981', 
+                    color: isSubmitted ? '#94A3B8' : '#ffffff',
                     fontWeight: 'bold',
                     border: 'none',
                     display: 'flex',
@@ -724,12 +724,13 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
                 style={{ 
                   fontSize: '1.05rem', 
                   padding: '14px 28px',
-                  background: '#1e293b',
-                  color: '#f8fafc',
-                  border: '1px solid #334155',
+                  background: '#FFFFFF',
+                  color: '#0F172A',
+                  border: '1px solid #CBD5E1',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '8px'
+                  gap: '8px',
+                  fontWeight: 600
                 }}
               >
                 🖨️ Print Final OBE Report
@@ -748,13 +749,13 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
       <div className="no-print" style={{ maxWidth: '1000px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
         
         {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px' }}>
-        <button onClick={() => router.push('/faculty/dashboard')} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#e2e8f0', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', borderBottom: '1px solid #E2E8F0', paddingBottom: '16px' }}>
+        <button onClick={() => router.push('/faculty/dashboard')} style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#334155', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>
            &larr; Back
         </button>
         <div>
-          <h1 style={{ fontSize: '1.8rem', color: '#f8fafc', margin: 0 }}>{subjectInfo.subjectName} ({subjectInfo.subjectCode})</h1>
-          <p style={{ color: '#3b82f6', margin: '4px 0 0 0', fontWeight: 'bold', fontSize: '0.9rem' }}>
+          <h1 style={{ fontSize: '1.8rem', color: '#0F172A', margin: 0, fontWeight: 700 }}>{subjectInfo.subjectName} ({subjectInfo.subjectCode})</h1>
+          <p style={{ color: '#2563EB', margin: '4px 0 0 0', fontWeight: 'bold', fontSize: '0.9rem' }}>
             Regulation: MIC-23 &bull; AY: {subjectInfo.academicYear} &bull; Sem: {subjectInfo.semester}
           </p>
         </div>
@@ -762,7 +763,7 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
 
       <Card glow>
         {/* Horizontal Scrollable Tabs */}
-        <div style={{ display: 'flex', overflowX: 'auto', gap: '8px', marginBottom: '24px', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+        <div style={{ display: 'flex', overflowX: 'auto', gap: '8px', marginBottom: '24px', paddingBottom: '8px', borderBottom: '1px solid #E2E8F0' }}>
           {TABS.map((tab) => {
             const locked = isLocked(tab);
             const active = activeTab === tab;
@@ -774,13 +775,13 @@ export default function SubjectWizardPage({ params }: { params: Promise<{ id: st
                 style={{
                   whiteSpace: 'nowrap',
                   padding: '10px 16px',
-                  background: active ? '#3b82f6' : 'transparent',
-                  color: active ? '#fff' : (locked ? '#475569' : '#cbd5e1'),
-                  border: 'none',
-                  borderRadius: '6px',
+                  background: active ? '#2563EB' : 'transparent',
+                  color: active ? '#fff' : (locked ? '#94A3B8' : '#475569'),
+                  border: active ? 'none' : '1px solid #E2E8F0',
+                  borderRadius: '8px',
                   cursor: locked ? 'not-allowed' : 'pointer',
-                  fontWeight: active ? 'bold' : 'normal',
-                  transition: 'background 0.2s',
+                  fontWeight: active ? 'bold' : '500',
+                  transition: 'all 0.2s',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px'

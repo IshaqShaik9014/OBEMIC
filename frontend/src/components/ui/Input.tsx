@@ -14,7 +14,7 @@ export const Input: React.FC<InputProps> = ({ label, error, icon, style, ...prop
           style={{
             fontSize: '0.85rem',
             fontWeight: '600',
-            color: '#94a3b8',
+            color: '#334155',
             letterSpacing: '0.02em'
           }}
         >
@@ -39,10 +39,10 @@ export const Input: React.FC<InputProps> = ({ label, error, icon, style, ...prop
           style={{
             width: '100%',
             padding: icon ? '12px 14px 12px 42px' : '12px 14px',
-            background: 'rgba(15, 23, 42, 0.6)',
-            border: error ? '1px solid #ef4444' : '1px solid rgba(255, 255, 255, 0.12)',
+            background: '#ffffff',
+            border: error ? '1px solid #ef4444' : '1px solid #cbd5e1',
             borderRadius: '10px',
-            color: '#f8fafc',
+            color: '#0f172a',
             fontSize: '0.95rem',
             outline: 'none',
             transition: 'all 0.2s ease',
@@ -50,10 +50,10 @@ export const Input: React.FC<InputProps> = ({ label, error, icon, style, ...prop
           }}
           onFocus={(e) => {
             e.currentTarget.style.borderColor = '#3b82f6';
-            e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.2)';
+            e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.15)';
           }}
           onBlur={(e) => {
-            e.currentTarget.style.borderColor = error ? '#ef4444' : 'rgba(255, 255, 255, 0.12)';
+            e.currentTarget.style.borderColor = error ? '#ef4444' : '#cbd5e1';
             e.currentTarget.style.boxShadow = 'none';
           }}
           {...props}

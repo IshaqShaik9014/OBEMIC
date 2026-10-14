@@ -78,8 +78,8 @@ export const Dropzone: React.FC<DropzoneProps> = ({
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
           style={{
-            border: isDragOver ? '2px dashed #3b82f6' : '2px dashed rgba(255, 255, 255, 0.2)',
-            backgroundColor: isDragOver ? 'rgba(59, 130, 246, 0.08)' : 'rgba(15, 23, 42, 0.4)',
+            border: isDragOver ? '2px dashed #3b82f6' : '2px dashed #cbd5e1',
+            backgroundColor: isDragOver ? 'rgba(59, 130, 246, 0.05)' : '#f8fafc',
             borderRadius: '16px',
             padding: '40px 20px',
             textAlign: 'center',
@@ -97,11 +97,11 @@ export const Dropzone: React.FC<DropzoneProps> = ({
               width: '56px',
               height: '56px',
               borderRadius: '14px',
-              background: 'rgba(59, 130, 246, 0.15)',
+              background: '#eff6ff',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#60a5fa',
+              color: '#3b82f6',
               fontSize: '1.5rem',
               marginBottom: '4px'
             }}
@@ -109,21 +109,22 @@ export const Dropzone: React.FC<DropzoneProps> = ({
             📊
           </div>
           <div>
-            <h4 style={{ fontSize: '1rem', color: '#f8fafc', marginBottom: '4px' }}>{title}</h4>
-            <p style={{ fontSize: '0.85rem', color: '#94a3b8' }}>{subtitle}</p>
+            <h4 style={{ fontSize: '1rem', color: '#0f172a', fontWeight: '700', marginBottom: '4px' }}>{title}</h4>
+            <p style={{ fontSize: '0.85rem', color: '#64748b' }}>{subtitle}</p>
           </div>
           <button
             type="button"
             style={{
               marginTop: '8px',
               padding: '6px 14px',
-              background: 'rgba(255, 255, 255, 0.08)',
-              border: '1px solid rgba(255, 255, 255, 0.15)',
+              background: '#ffffff',
+              border: '1px solid #cbd5e1',
               borderRadius: '8px',
-              color: '#93c5fd',
+              color: '#2563eb',
               fontSize: '0.8rem',
               fontWeight: '600',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
             }}
           >
             Browse Files
@@ -136,8 +137,8 @@ export const Dropzone: React.FC<DropzoneProps> = ({
             alignItems: 'center',
             justifyContent: 'space-between',
             padding: '16px 20px',
-            background: 'rgba(16, 185, 129, 0.1)',
-            border: '1px solid rgba(16, 185, 129, 0.3)',
+            background: '#ecfdf5',
+            border: '1px solid #a7f3d0',
             borderRadius: '12px',
           }}
         >
@@ -147,21 +148,21 @@ export const Dropzone: React.FC<DropzoneProps> = ({
                 width: '40px',
                 height: '40px',
                 borderRadius: '10px',
-                background: 'rgba(16, 185, 129, 0.2)',
+                background: '#d1fae5',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontSize: '1.2rem',
-                color: '#34d399'
+                color: '#059669'
               }}
             >
               📄
             </div>
             <div>
-              <p style={{ fontWeight: '600', color: '#f8fafc', fontSize: '0.95rem' }}>
+              <p style={{ fontWeight: '600', color: '#0f172a', fontSize: '0.95rem' }}>
                 {selectedFile.name}
               </p>
-              <p style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+              <p style={{ fontSize: '0.75rem', color: '#64748b' }}>
                 {(selectedFile.size / 1024).toFixed(1)} KB
               </p>
             </div>
@@ -175,9 +176,9 @@ export const Dropzone: React.FC<DropzoneProps> = ({
               if (fileInputRef.current) fileInputRef.current.value = '';
             }}
             style={{
-              background: 'rgba(239, 68, 68, 0.15)',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
-              color: '#f87171',
+              background: '#fef2f2',
+              border: '1px solid #fecaca',
+              color: '#dc2626',
               padding: '6px 12px',
               borderRadius: '8px',
               fontSize: '0.8rem',

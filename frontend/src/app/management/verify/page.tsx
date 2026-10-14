@@ -51,17 +51,17 @@ export default function VerifyMarksPage() {
 
   return (
     <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px' }}>
-        <h1 style={{ fontSize: '1.8rem', color: '#f8fafc', margin: 0 }}>Verify Internal Marks</h1>
-        <p style={{ color: '#94a3b8', margin: '4px 0 0 0' }}>Review and verify mark calculations submitted by faculty</p>
+      <div style={{ borderBottom: '1px solid #E2E8F0', paddingBottom: '16px' }}>
+        <h1 style={{ fontSize: '1.8rem', color: '#0F172A', margin: 0, fontWeight: 700 }}>Verify Internal Marks</h1>
+        <p style={{ color: '#64748B', margin: '4px 0 0 0' }}>Review and verify mark calculations submitted by faculty</p>
       </div>
       
       {isLoading ? (
-        <Card glow><p style={{ color: '#94a3b8' }}>Loading pending verification items...</p></Card>
+        <Card glow><p style={{ color: '#64748B', textAlign: 'center', padding: '24px 0' }}>Loading pending verification items...</p></Card>
       ) : reports.length === 0 ? (
         <Card glow>
           <div style={{ textAlign: 'center', padding: '32px 0' }}>
-            <p style={{ color: '#94a3b8', fontSize: '1.1rem' }}>✅ All caught up! No pending marks to verify right now.</p>
+            <p style={{ color: '#059669', fontSize: '1.1rem', fontWeight: 600 }}>✅ All caught up! No pending marks to verify right now.</p>
           </div>
         </Card>
       ) : (
@@ -70,19 +70,19 @@ export default function VerifyMarksPage() {
             <Card key={report.id} glow>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <h3 style={{ color: '#f8fafc', margin: '0 0 4px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ background: 'rgba(59,130,246,0.1)', color: '#60a5fa', padding: '2px 6px', borderRadius: '4px', fontSize: '0.8rem' }}>
+                  <h3 style={{ color: '#0F172A', margin: '0 0 4px 0', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700 }}>
+                    <span style={{ background: '#EFF6FF', color: '#2563EB', padding: '2px 8px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 'bold' }}>
                       {report.subject?.subjectCode}
                     </span>
                     {report.subject?.subjectName}
                   </h3>
-                  <p style={{ color: '#94a3b8', fontSize: '0.9rem', margin: 0 }}>
-                    Faculty: <strong>{report.faculty?.name}</strong> | Academic Year: <strong>{report.academicYear?.year}</strong>
+                  <p style={{ color: '#64748B', fontSize: '0.9rem', margin: 0 }}>
+                    Faculty: <strong style={{ color: '#334155' }}>{report.faculty?.name}</strong> | Academic Year: <strong style={{ color: '#334155' }}>{report.academicYear?.year}</strong>
                   </p>
                 </div>
                 <div style={{ display: 'flex', gap: '12px' }}>
                   <Button style={{ background: '#10B981', color: 'white', border: 'none' }} onClick={() => handleApprove(report.id)}>Approve</Button>
-                  <Button style={{ background: 'transparent', color: '#ef4444', border: '1px solid #ef4444' }} onClick={() => handleReject(report.id)}>Reject</Button>
+                  <Button style={{ background: '#FFFFFF', color: '#EF4444', border: '1px solid #FCA5A5' }} onClick={() => handleReject(report.id)}>Reject</Button>
                 </div>
               </div>
             </Card>

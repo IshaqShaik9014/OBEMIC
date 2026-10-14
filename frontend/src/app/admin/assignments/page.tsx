@@ -68,50 +68,50 @@ export default function AssignmentsPage() {
   };
 
   return (
-    <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px' }}>
-        <h1 style={{ fontSize: '1.8rem', color: '#f8fafc', margin: 0 }}>Faculty - Subject Assignments</h1>
-        <p style={{ color: '#94a3b8', margin: '4px 0 0 0' }}>Assign faculty from any department to your subjects</p>
+    <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div style={{ borderBottom: '1px solid #E2E8F0', paddingBottom: '16px' }}>
+        <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0F172A', margin: 0, letterSpacing: '-0.02em' }}>Faculty - Subject Assignments</h1>
+        <p style={{ color: '#64748B', fontSize: '0.9rem', margin: '4px 0 0 0' }}>Assign faculty from any department to your subjects</p>
       </div>
 
       <Card glow>
         {isLoading ? (
-          <p style={{ color: '#94a3b8' }}>Loading assignment matrix...</p>
+          <p style={{ color: '#64748B' }}>Loading assignment matrix...</p>
         ) : subjects.length === 0 ? (
-          <p style={{ color: '#94a3b8' }}>No subjects found in your department.</p>
+          <p style={{ color: '#64748B' }}>No subjects found in your department.</p>
         ) : (
-          <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse', color: '#f8fafc' }}>
+          <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse', color: '#0F172A' }}>
             <thead>
-              <tr style={{ borderBottom: '1px solid #334155' }}>
-                <th style={{ padding: '12px' }}>Code</th>
-                <th style={{ padding: '12px' }}>Subject</th>
-                <th style={{ padding: '12px' }}>Semester</th>
-                <th style={{ padding: '12px' }}>Assigned Faculty</th>
-                <th style={{ padding: '12px', textAlign: 'right' }}>Action</th>
+              <tr style={{ borderBottom: '1px solid #E2E8F0', background: '#F8FAFC' }}>
+                <th style={{ padding: '12px 16px', color: '#64748B', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase' }}>Code</th>
+                <th style={{ padding: '12px 16px', color: '#64748B', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase' }}>Subject</th>
+                <th style={{ padding: '12px 16px', color: '#64748B', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase' }}>Semester</th>
+                <th style={{ padding: '12px 16px', color: '#64748B', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase' }}>Assigned Faculty</th>
+                <th style={{ padding: '12px 16px', color: '#64748B', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', textAlign: 'right' }}>Action</th>
               </tr>
             </thead>
             <tbody>
               {subjects.map(sub => (
-                <tr key={sub.id} style={{ borderBottom: '1px solid #1e293b' }}>
-                  <td style={{ padding: '12px' }}>
-                    <span style={{ background: 'rgba(59,130,246,0.1)', color: '#60a5fa', padding: '4px 8px', borderRadius: '6px', fontSize: '0.85rem' }}>
+                <tr key={sub.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                  <td style={{ padding: '12px 16px' }}>
+                    <span style={{ background: '#EFF6FF', color: '#2563EB', padding: '4px 10px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 700 }}>
                       {sub.subjectCode}
                     </span>
                   </td>
-                  <td style={{ padding: '12px', fontWeight: '600' }}>{sub.subjectName}</td>
-                  <td style={{ padding: '12px' }}>Sem {sub.semesterLevel || '?'}</td>
-                  <td style={{ padding: '12px' }}>
+                  <td style={{ padding: '12px 16px', fontWeight: '600' }}>{sub.subjectName}</td>
+                  <td style={{ padding: '12px 16px', color: '#475569' }}>Sem {sub.semesterLevel || '?'}</td>
+                  <td style={{ padding: '12px 16px' }}>
                     <select 
                       value={selections[sub.id] || ''} 
                       onChange={(e) => handleSelectChange(sub.id, e.target.value)}
                       style={{
-                        background: 'rgba(15, 23, 42, 0.6)',
-                        border: '1px solid #334155',
-                        color: '#f8fafc',
+                        background: '#FFFFFF',
+                        border: '1px solid #CBD5E1',
+                        color: '#0F172A',
                         padding: '8px 12px',
-                        borderRadius: '6px',
+                        borderRadius: '8px',
                         width: '100%',
-                        maxWidth: '250px'
+                        maxWidth: '280px'
                       }}
                     >
                       <option value="">— Unassigned —</option>
@@ -122,7 +122,7 @@ export default function AssignmentsPage() {
                       ))}
                     </select>
                   </td>
-                  <td style={{ padding: '12px', textAlign: 'right' }}>
+                  <td style={{ padding: '12px 16px', textAlign: 'right' }}>
                     <Button 
                       onClick={() => handleSave(sub.id)}
                       isLoading={savingId === sub.id}

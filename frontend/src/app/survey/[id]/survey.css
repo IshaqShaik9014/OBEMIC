@@ -562,8 +562,9 @@ html { scroll-behavior: smooth; }
   align-items: center;
   justify-content: center;
   padding: 6px 12px;
-  background: #1e293b;
-  color: #f8fafc;
+  background: #EFF6FF;
+  color: #2563EB;
+  border: 1px solid #BFDBFE;
   font-family: var(--mono);
   font-size: 0.82rem;
   font-weight: 700;

@@ -12,6 +12,8 @@ export class StaleDataError extends Error {}
 
 export interface ConfirmOptions {
   injectFailure?: boolean; // For transaction rollback tests
+  validSubjectCodes?: string[];
+  excludedSubjectCodes?: string[];
 }
 
 export class COImportService {
@@ -21,6 +23,16 @@ export class COImportService {
 
   public async preview(filePath: string, adminUserId: string) {
     const rawBlocks = await this.reader.parse(filePath);
+
+    // Verify PO mapping matrix is present in the uploaded Excel file
+    const totalPoMappings = rawBlocks.reduce((acc, b) => 
+      acc + b.courseOutcomes.reduce((coAcc, co) => coAcc + (co.poMatrix ? Object.keys(co.poMatrix).length : 0), 0)
+    , 0);
+
+    if (totalPoMappings === 0) {
+      throw new Error('PO mapping missing: The uploaded file does not contain Program Outcome (PO) mapping columns (PO1-PO12, PSO1-PSO2). Course Outcomes must be linked with POs. Please upload an Excel sheet containing the CO-PO correlation matrix.');
+    }
+
     const payload = await this.validator.validate(rawBlocks);
 
     // 30 minutes expiry
@@ -64,7 +76,16 @@ export class COImportService {
           data: { status: ImportStatus.CONFIRMING } 
         });
 
-        const payload: COImportPayload = JSON.parse(batch.details || '{}');
+        let payload: COImportPayload = JSON.parse(batch.details || '{}');
+        
+        // Filter out excluded or non-selected subjects if user removed conflicts
+        if (options?.validSubjectCodes && Array.isArray(options.validSubjectCodes)) {
+          const normValids = options.validSubjectCodes.map(s => s.replace(/\s+/g, '').toUpperCase());
+          payload.validBlocks = payload.validBlocks.filter(b => normValids.includes(b.normalizedSubjectCode));
+        } else if (options?.excludedSubjectCodes && Array.isArray(options.excludedSubjectCodes)) {
+          const normExcludes = options.excludedSubjectCodes.map(s => s.replace(/\s+/g, '').toUpperCase());
+          payload.validBlocks = payload.validBlocks.filter(b => !normExcludes.includes(b.normalizedSubjectCode));
+        }
         
         // 4. Revalidate DB state
         const isStale = await this.validateAgainstDb(tx, payload);

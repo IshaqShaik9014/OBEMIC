@@ -42,18 +42,21 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({ options, val
         onClick={() => { setIsOpen(!isOpen); setSearchTerm(''); }}
         style={{
           padding: '10px 14px',
-          background: 'rgba(15, 23, 42, 0.6)',
-          border: '1px solid #334155',
-          borderRadius: '6px',
-          color: selectedOption ? '#f8fafc' : '#94a3b8',
+          background: '#FFFFFF',
+          border: '1px solid #CBD5E1',
+          borderRadius: '8px',
+          color: selectedOption ? '#0F172A' : '#64748B',
           cursor: 'pointer',
           display: 'flex',
           justifyContent: 'space-between',
-          alignItems: 'center'
+          alignItems: 'center',
+          boxShadow: '0 1px 2px rgba(0,0,0,0.04)'
         }}
       >
-        <span>{selectedOption ? selectedOption.label : placeholder}</span>
-        <span style={{ fontSize: '0.8rem' }}>▼</span>
+        <span style={{ fontSize: '0.9rem', fontWeight: selectedOption ? '600' : 'normal' }}>
+          {selectedOption ? selectedOption.label : placeholder}
+        </span>
+        <span style={{ fontSize: '0.75rem', color: '#64748B' }}>▼</span>
       </div>
 
       {isOpen && (
@@ -62,15 +65,16 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({ options, val
           top: '100%',
           left: 0,
           right: 0,
-          marginTop: '4px',
-          background: '#1e293b',
-          border: '1px solid #334155',
-          borderRadius: '6px',
+          marginTop: '6px',
+          background: '#FFFFFF',
+          border: '1px solid #E2E8F0',
+          borderRadius: '10px',
           zIndex: 50,
-          boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
-          maxHeight: '250px',
+          boxShadow: '0 10px 25px rgba(0,0,0,0.12), 0 4px 6px rgba(0,0,0,0.05)',
+          maxHeight: '260px',
           display: 'flex',
-          flexDirection: 'column'
+          flexDirection: 'column',
+          overflow: 'hidden'
         }}>
           <input 
             autoFocus
@@ -81,16 +85,17 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({ options, val
             style={{
               margin: '8px',
               padding: '8px 12px',
-              background: 'rgba(15, 23, 42, 0.8)',
-              border: '1px solid #334155',
-              borderRadius: '4px',
-              color: 'white',
+              background: '#F8FAFC',
+              border: '1px solid #CBD5E1',
+              borderRadius: '6px',
+              color: '#0F172A',
+              fontSize: '0.88rem',
               outline: 'none'
             }}
           />
-          <div style={{ overflowY: 'auto', paddingBottom: '8px' }}>
+          <div style={{ overflowY: 'auto', paddingBottom: '6px' }}>
             {filteredOptions.length === 0 ? (
-              <div style={{ padding: '8px 12px', color: '#94a3b8', fontSize: '0.9rem' }}>No matches found</div>
+              <div style={{ padding: '10px 14px', color: '#64748B', fontSize: '0.88rem' }}>No matches found</div>
             ) : (
               filteredOptions.map(opt => (
                 <div 
@@ -100,14 +105,20 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({ options, val
                     setIsOpen(false);
                   }}
                   style={{
-                    padding: '8px 12px',
-                    color: '#f8fafc',
+                    padding: '8px 14px',
+                    color: opt.value === value ? '#2563EB' : '#0F172A',
                     cursor: 'pointer',
-                    fontSize: '0.9rem',
-                    background: value === opt.value ? 'rgba(59, 130, 246, 0.2)' : 'transparent'
+                    fontSize: '0.88rem',
+                    fontWeight: opt.value === value ? '700' : 'normal',
+                    background: value === opt.value ? '#EFF6FF' : 'transparent',
+                    transition: 'background 0.15s ease'
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = value === opt.value ? 'rgba(59, 130, 246, 0.2)' : 'transparent'}
+                  onMouseEnter={(e) => {
+                    if (opt.value !== value) e.currentTarget.style.background = '#F8FAFC';
+                  }}
+                  onMouseLeave={(e) => {
+                    if (opt.value !== value) e.currentTarget.style.background = 'transparent';
+                  }}
                 >
                   {opt.label}
                 </div>

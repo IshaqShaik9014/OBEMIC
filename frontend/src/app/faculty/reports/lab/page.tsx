@@ -97,10 +97,10 @@ export default function LabReportPage() {
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '28px' }}>
       <div>
-        <h1 style={{ fontSize: '1.8rem', color: '#f8fafc', marginBottom: '8px' }}>
+        <h1 style={{ fontSize: '1.8rem', color: '#0F172A', marginBottom: '8px', fontWeight: 700 }}>
           Lab Marks OBE Generator
         </h1>
-        <p style={{ color: '#94a3b8', fontSize: '0.95rem' }}>
+        <p style={{ color: '#64748B', fontSize: '0.95rem' }}>
           Upload single unified Lab marks Excel workbook (Day-to-day continuous evaluation + Internal Lab Exam + External Lab Exam) to compute 100% direct lab attainment.
         </p>
       </div>
@@ -108,11 +108,11 @@ export default function LabReportPage() {
       {error && (
         <div
           style={{
-            background: 'rgba(239, 68, 68, 0.12)',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
+            background: '#FEF2F2',
+            border: '1px solid #FCA5A5',
             padding: '16px',
             borderRadius: '12px',
-            color: '#fca5a5'
+            color: '#B91C1C'
           }}
         >
           ⚠️ {error}
@@ -122,11 +122,11 @@ export default function LabReportPage() {
       {successMsg && (
         <div
           style={{
-            background: 'rgba(16, 185, 129, 0.12)',
-            border: '1px solid rgba(16, 185, 129, 0.3)',
+            background: '#ECFDF5',
+            border: '1px solid #6EE7B7',
             padding: '16px',
             borderRadius: '12px',
-            color: '#6ee7b7'
+            color: '#047857'
           }}
         >
           ✅ {successMsg}
@@ -141,7 +141,7 @@ export default function LabReportPage() {
               style={{
                 fontSize: '0.85rem',
                 fontWeight: '600',
-                color: '#94a3b8',
+                color: '#475569',
                 marginBottom: '8px',
                 display: 'block'
               }}
@@ -154,12 +154,13 @@ export default function LabReportPage() {
               style={{
                 width: '100%',
                 padding: '12px 14px',
-                background: 'rgba(15, 23, 42, 0.7)',
-                border: '1px solid rgba(255, 255, 255, 0.12)',
+                background: '#FFFFFF',
+                border: '1px solid #CBD5E1',
                 borderRadius: '10px',
-                color: '#f8fafc',
+                color: '#0F172A',
                 fontSize: '0.95rem',
-                outline: 'none'
+                outline: 'none',
+                fontWeight: 500
               }}
             >
               {subjects.length === 0 ? (
@@ -180,7 +181,7 @@ export default function LabReportPage() {
               style={{
                 fontSize: '0.85rem',
                 fontWeight: '600',
-                color: '#94a3b8',
+                color: '#475569',
                 marginBottom: '8px',
                 display: 'block'
               }}

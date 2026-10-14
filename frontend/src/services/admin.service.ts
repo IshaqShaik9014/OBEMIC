@@ -171,5 +171,16 @@ export const adminService = {
       throw new Error(err.error || 'Failed to update attainment configuration');
     }
     return res.json();
+  },
+
+  async resetDatabase(): Promise<any> {
+    const res = await api.post('/admin/maintenance/reset-db', {
+      confirmPhrase: 'RESET_DATABASE'
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Failed to reset database');
+    }
+    return res.json();
   }
 };

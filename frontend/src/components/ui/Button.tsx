@@ -33,15 +33,15 @@ export const Button: React.FC<ButtonProps> = ({
         };
       case 'secondary':
         return {
-          background: 'rgba(255, 255, 255, 0.08)',
-          color: '#f8fafc',
-          border: '1px solid rgba(255, 255, 255, 0.15)',
-          boxShadow: 'none'
+          background: '#ffffff',
+          color: '#1e293b',
+          border: '1px solid #cbd5e1',
+          boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
         };
       case 'ghost':
         return {
           background: 'transparent',
-          color: '#94a3b8',
+          color: '#475569',
           border: 'none',
           boxShadow: 'none'
         };
@@ -50,7 +50,7 @@ export const Button: React.FC<ButtonProps> = ({
         return {
           background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
           color: '#ffffff',
-          boxShadow: '0 4px 14px rgba(59, 130, 246, 0.35)',
+          boxShadow: '0 2px 8px rgba(37, 99, 235, 0.25)',
           border: 'none'
         };
     }

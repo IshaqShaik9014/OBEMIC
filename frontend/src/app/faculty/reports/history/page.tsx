@@ -70,10 +70,10 @@ export default function ReportHistoryPage() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
       <div>
-        <h1 style={{ fontSize: '1.8rem', color: '#f8fafc', marginBottom: '8px' }}>
+        <h1 style={{ fontSize: '1.8rem', color: '#0F172A', marginBottom: '8px', fontWeight: 700 }}>
           Report History & Workflow Status
         </h1>
-        <p style={{ color: '#94a3b8', fontSize: '0.95rem' }}>
+        <p style={{ color: '#64748B', fontSize: '0.95rem' }}>
           Track all generated OBE calculation files, monitor Coordinator review status, and inspect approval feedback.
         </p>
       </div>
@@ -81,11 +81,11 @@ export default function ReportHistoryPage() {
       {error && (
         <div
           style={{
-            background: 'rgba(239, 68, 68, 0.12)',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
+            background: '#FEF2F2',
+            border: '1px solid #FCA5A5',
             padding: '16px',
             borderRadius: '12px',
-            color: '#fca5a5'
+            color: '#B91C1C'
           }}
         >
           ⚠️ {error}
@@ -94,40 +94,40 @@ export default function ReportHistoryPage() {
 
       <Card style={{ padding: '0px', overflow: 'hidden' }}>
         {isLoading ? (
-          <div style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>
+          <div style={{ padding: '40px', textAlign: 'center', color: '#64748B' }}>
             Loading report submissions...
           </div>
         ) : history.length === 0 ? (
-          <div style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>
+          <div style={{ padding: '40px', textAlign: 'center', color: '#64748B' }}>
             No report history found. Generate an internal, external, or lab report to get started.
           </div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
               <thead>
-                <tr style={{ background: 'rgba(15, 23, 42, 0.5)', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                  <th style={{ padding: '16px 20px', color: '#94a3b8', fontWeight: '600' }}>Subject</th>
-                  <th style={{ padding: '16px 20px', color: '#94a3b8', fontWeight: '600' }}>Report Type</th>
-                  <th style={{ padding: '16px 20px', color: '#94a3b8', fontWeight: '600' }}>Status</th>
-                  <th style={{ padding: '16px 20px', color: '#94a3b8', fontWeight: '600' }}>Generated At</th>
-                  <th style={{ padding: '16px 20px', color: '#94a3b8', fontWeight: '600', textAlign: 'right' }}>Actions</th>
+                <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
+                  <th style={{ padding: '16px 20px', color: '#475569', fontWeight: '600' }}>Subject</th>
+                  <th style={{ padding: '16px 20px', color: '#475569', fontWeight: '600' }}>Report Type</th>
+                  <th style={{ padding: '16px 20px', color: '#475569', fontWeight: '600' }}>Status</th>
+                  <th style={{ padding: '16px 20px', color: '#475569', fontWeight: '600' }}>Generated At</th>
+                  <th style={{ padding: '16px 20px', color: '#475569', fontWeight: '600', textAlign: 'right' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {history.map((item) => (
                   <tr
                     key={item.id}
-                    style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)', transition: 'background 0.2s ease' }}
+                    style={{ borderBottom: '1px solid #F1F5F9', transition: 'background 0.2s ease' }}
                   >
                     <td style={{ padding: '16px 20px' }}>
-                      <p style={{ fontWeight: '700', color: '#f8fafc' }}>
+                      <p style={{ fontWeight: '700', color: '#0F172A', margin: 0 }}>
                         {item.subject?.subjectCode || 'N/A'}
                       </p>
-                      <p style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                      <p style={{ fontSize: '0.75rem', color: '#64748B', margin: '4px 0 0 0' }}>
                         {item.subject?.subjectName || ''}
                       </p>
                     </td>
-                    <td style={{ padding: '16px 20px', color: '#cbd5e1' }}>
+                    <td style={{ padding: '16px 20px', color: '#334155', fontWeight: 500 }}>
                       {item.reportType}
                     </td>
                     <td style={{ padding: '16px 20px' }}>
@@ -142,11 +142,14 @@ export default function ReportHistoryPage() {
                               })
                             }
                             style={{
-                              background: 'transparent',
-                              border: 'none',
-                              color: '#f59e0b',
+                              background: '#FFFBEB',
+                              border: '1px solid #FDE68A',
+                              borderRadius: '4px',
+                              padding: '2px 6px',
+                              color: '#D97706',
                               cursor: 'pointer',
-                              fontSize: '0.85rem'
+                              fontSize: '0.8rem',
+                              fontWeight: 600
                             }}
                             title="View Coordinator Feedback"
                           >
@@ -155,7 +158,7 @@ export default function ReportHistoryPage() {
                         )}
                       </div>
                     </td>
-                    <td style={{ padding: '16px 20px', color: '#64748b', fontSize: '0.85rem' }}>
+                    <td style={{ padding: '16px 20px', color: '#64748B', fontSize: '0.85rem' }}>
                       {new Date(item.generatedAt).toLocaleDateString()} {new Date(item.generatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </td>
                     <td style={{ padding: '16px 20px', textAlign: 'right' }}>
@@ -199,10 +202,10 @@ export default function ReportHistoryPage() {
           <div
             style={{
               padding: '16px',
-              background: 'rgba(15, 23, 42, 0.6)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              background: '#F8FAFC',
+              border: '1px solid #CBD5E1',
               borderRadius: '10px',
-              color: '#f8fafc',
+              color: '#0F172A',
               fontSize: '0.9rem',
               lineHeight: 1.6
             }}

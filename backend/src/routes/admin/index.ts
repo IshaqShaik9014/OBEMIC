@@ -41,5 +41,9 @@ adminRouter.use('/attainment-configurations', attainmentRoutes);
 import loadtestRoutes from './loadtest.routes';
 adminRouter.use('/loadtest', loadtestRoutes);
 
+// Maintenance & Reset Database Routes
+import maintenanceRoutes from './maintenance.routes';
+adminRouter.use('/maintenance', maintenanceRoutes);
+
 export default adminRouter;
 

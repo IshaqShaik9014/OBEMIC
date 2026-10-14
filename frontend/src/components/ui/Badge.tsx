@@ -11,40 +11,40 @@ export const Badge: React.FC<BadgeProps> = ({ status }) => {
       case 'APPROVED':
       case 'PUBLISHED':
         return {
-          bg: 'rgba(16, 185, 129, 0.15)',
-          border: '1px solid rgba(16, 185, 129, 0.4)',
-          color: '#34d399',
-          dot: '#10b981'
+          bg: '#ECFDF5',
+          border: '1px solid #A7F3D0',
+          color: '#065F46',
+          dot: '#10B981'
         };
       case 'SUBMITTED':
       case 'REVIEWED':
         return {
-          bg: 'rgba(59, 130, 246, 0.15)',
-          border: '1px solid rgba(59, 130, 246, 0.4)',
-          color: '#60a5fa',
-          dot: '#3b82f6'
+          bg: '#EFF6FF',
+          border: '1px solid #BFDBFE',
+          color: '#1D4ED8',
+          dot: '#3B82F6'
         };
       case 'GENERATED':
         return {
-          bg: 'rgba(139, 92, 246, 0.15)',
-          border: '1px solid rgba(139, 92, 246, 0.4)',
-          color: '#a78bfa',
-          dot: '#8b5cf6'
+          bg: '#F5F3FF',
+          border: '1px solid #DDD6FE',
+          color: '#6D28D9',
+          dot: '#8B5CF6'
         };
       case 'REJECTED':
         return {
-          bg: 'rgba(239, 68, 68, 0.15)',
-          border: '1px solid rgba(239, 68, 68, 0.4)',
-          color: '#f87171',
-          dot: '#ef4444'
+          bg: '#FEF2F2',
+          border: '1px solid #FECACA',
+          color: '#B91C1C',
+          dot: '#EF4444'
         };
       case 'DRAFT':
       default:
         return {
-          bg: 'rgba(148, 163, 184, 0.15)',
-          border: '1px solid rgba(148, 163, 184, 0.3)',
-          color: '#cbd5e1',
-          dot: '#94a3b8'
+          bg: '#F1F5F9',
+          border: '1px solid #E2E8F0',
+          color: '#475569',
+          dot: '#94A3B8'
         };
     }
   };
