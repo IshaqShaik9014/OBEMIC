@@ -83,11 +83,15 @@ export class FacultyImportService {
         }
 
         // 5. Business Persistence
-        const role = await tx.role.findUnique({ where: { roleName: 'FACULTY' } });
-        if (!role) throw new Error('FACULTY role not found in database');
+        const roles = await tx.role.findMany();
+        const roleMap = new Map<string, string>();
+        roles.forEach(r => roleMap.set(r.roleName, r.id));
+        const defaultFacultyRoleId = roleMap.get('FACULTY') || roles[0]?.id;
 
         let processed = 0;
         for (const record of payload.validRecords) {
+          const targetRoleId = (record.roleName && roleMap.get(record.roleName)) || defaultFacultyRoleId;
+
           if (record.action === 'CREATE') {
              // Generate temporary password
              const tempPassword = `${record.employeeId}@${record.canonicalDepartmentCode}`;
@@ -102,7 +106,7 @@ export class FacultyImportService {
                  passwordHash,
                  mustChangePassword: true,
                  departmentId: record.departmentId!,
-                 roleId: role.id
+                 roleId: targetRoleId
                }
              });
 
@@ -118,8 +122,18 @@ export class FacultyImportService {
              if (options?.injectFailure) {
                 throw new Error('Injected failure during business write');
              }
+          } else {
+             // For existing users, update role if explicitly specified
+             if (record.roleName && targetRoleId) {
+               const existingUser = await tx.user.findFirst({ where: { employeeId: record.employeeId } });
+               if (existingUser && existingUser.roleId !== targetRoleId) {
+                 await tx.user.update({
+                   where: { id: existingUser.id },
+                   data: { roleId: targetRoleId }
+                 });
+               }
+             }
           }
-          // Note: UNCHANGED records are skipped, and conflicts (if somehow in validRecords) are ignored.
         }
 
         // 6. Audit Log

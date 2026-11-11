@@ -14,6 +14,7 @@ export default function LoginPage({ initialModalOpen = true }: LoginPageProps) {
   const [role, setRole] = useState('faculty');
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,6 +39,8 @@ export default function LoginPage({ initialModalOpen = true }: LoginPageProps) {
       // Route based on user role
       if (res.user.role === 'FACULTY') {
         router.push('/faculty/dashboard');
+      } else if (res.user.role === 'OBE_INCHARGE') {
+        router.push('/obe/dashboard');
       } else if (res.user.role === 'ADMIN' || res.user.role === 'COORDINATOR') {
         router.push('/admin/dashboard');
       } else if (res.user.role === 'MANAGEMENT') {
@@ -52,15 +55,23 @@ export default function LoginPage({ initialModalOpen = true }: LoginPageProps) {
     }
   };
 
-  const handleQuickFill = (userType: 'admin' | 'faculty') => {
+  const handleQuickFill = (userType: 'admin' | 'coordinator' | 'faculty' | 'obe') => {
     if (userType === 'admin') {
-      setRole('coordinator');
+      setRole('admin');
       setIdentifier('admin@mictech.ac.in');
-      setPassword('admin123');
+      setPassword('password123');
+    } else if (userType === 'coordinator') {
+      setRole('coordinator');
+      setIdentifier('coordinator@mictech.ac.in');
+      setPassword('password123');
+    } else if (userType === 'obe') {
+      setRole('obe_incharge');
+      setIdentifier('obe@mictech.ac.in');
+      setPassword('password123');
     } else {
       setRole('faculty');
-      setIdentifier('faculty@mic.ac.in');
-      setPassword('faculty123');
+      setIdentifier('faculty@college.edu');
+      setPassword('password123');
     }
     setError(null);
   };
@@ -267,7 +278,7 @@ export default function LoginPage({ initialModalOpen = true }: LoginPageProps) {
                     letterSpacing: '0.5px',
                     marginBottom: '6px'
                   }}>
-                    Select Role
+                    Select Institutional Role
                   </label>
                   <select
                     value={role}
@@ -281,14 +292,15 @@ export default function LoginPage({ initialModalOpen = true }: LoginPageProps) {
                       fontSize: '0.92rem',
                       color: '#0F172A',
                       outline: 'none',
-                      fontWeight: 500,
+                      fontWeight: 600,
                       cursor: 'pointer'
                     }}
                   >
-                    <option value="faculty">Faculty</option>
-                    <option value="coordinator">Coordinator / Admin</option>
+                    <option value="admin">HOD (Department Admin)</option>
+                    <option value="coordinator">Branch Coordinator</option>
+                    <option value="faculty">Faculty / Subject Coordinator</option>
+                    <option value="obe_incharge">OBE In-charge</option>
                     <option value="management">Management</option>
-                    <option value="hod">HOD</option>
                   </select>
                 </div>
 
@@ -309,7 +321,17 @@ export default function LoginPage({ initialModalOpen = true }: LoginPageProps) {
                     type="text"
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
-                    placeholder="Enter your username or email"
+                    placeholder={
+                      role === 'admin'
+                        ? 'e.g. admin@mictech.ac.in or HOD Employee ID'
+                        : role === 'coordinator'
+                        ? 'e.g. coordinator@mictech.ac.in or Coordinator ID'
+                        : role === 'obe_incharge'
+                        ? 'e.g. obe@mictech.ac.in or OBE001'
+                        : role === 'management'
+                        ? 'e.g. management@mictech.ac.in'
+                        : 'e.g. faculty@college.edu or Faculty ID'
+                    }
                     required
                     style={{
                       width: '100%',
@@ -338,24 +360,60 @@ export default function LoginPage({ initialModalOpen = true }: LoginPageProps) {
                   }}>
                     Password
                   </label>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter your password"
-                    required
-                    style={{
-                      width: '100%',
-                      padding: '11px 14px',
-                      background: '#F8FAFC',
-                      border: '1.5px solid #CBD5E1',
-                      borderRadius: '8px',
-                      fontSize: '0.92rem',
-                      color: '#0F172A',
-                      outline: 'none',
-                      transition: 'border-color 0.15s ease'
-                    }}
-                  />
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Enter your password"
+                      required
+                      style={{
+                        width: '100%',
+                        padding: '11px 44px 11px 14px',
+                        background: '#F8FAFC',
+                        border: '1.5px solid #CBD5E1',
+                        borderRadius: '8px',
+                        fontSize: '0.92rem',
+                        color: '#0F172A',
+                        outline: 'none',
+                        transition: 'border-color 0.15s ease'
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      title={showPassword ? 'Hide password' : 'Show password'}
+                      style={{
+                        position: 'absolute',
+                        right: '10px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'transparent',
+                        border: 'none',
+                        cursor: 'pointer',
+                        padding: '6px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: showPassword ? '#2563EB' : '#94A3B8',
+                        borderRadius: '6px',
+                        transition: 'color 0.15s ease'
+                      }}
+                    >
+                      {showPassword ? (
+                        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                          <line x1="1" y1="1" x2="23" y2="23" />
+                        </svg>
+                      ) : (
+                        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                          <circle cx="12" cy="12" r="3" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
                 </div>
 
                 {/* Submit Button */}
@@ -386,41 +444,89 @@ export default function LoginPage({ initialModalOpen = true }: LoginPageProps) {
 
               {/* Demo Credentials Quick-Fill */}
               <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid #F1F5F9', textAlign: 'center' }}>
-                <span style={{ fontSize: '0.78rem', color: '#64748B', display: 'block', marginBottom: '8px' }}>
+                <span style={{ fontSize: '0.78rem', color: '#64748B', display: 'block', marginBottom: '10px', fontWeight: 600 }}>
                   Quick Demo Login:
                 </span>
-                <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                   <button
                     type="button"
                     onClick={() => handleQuickFill('admin')}
                     style={{
                       background: '#EFF6FF',
-                      border: '1px solid #BFDBFE',
-                      color: '#2563EB',
-                      padding: '4px 10px',
-                      borderRadius: '6px',
-                      fontSize: '0.75rem',
-                      fontWeight: 600,
-                      cursor: 'pointer'
+                      border: '1.5px solid #BFDBFE',
+                      color: '#1D4ED8',
+                      padding: '7px 10px',
+                      borderRadius: '8px',
+                      fontSize: '0.78rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px'
                     }}
                   >
-                    System Admin
+                    🏛️ HOD (Admin)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickFill('coordinator')}
+                    style={{
+                      background: '#F5F3FF',
+                      border: '1.5px solid #DDD6FE',
+                      color: '#6D28D9',
+                      padding: '7px 10px',
+                      borderRadius: '8px',
+                      fontSize: '0.78rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    🚀 Branch Coordinator
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickFill('obe')}
+                    style={{
+                      background: '#FEF3C7',
+                      border: '1.5px solid #FDE68A',
+                      color: '#B45309',
+                      padding: '7px 10px',
+                      borderRadius: '8px',
+                      fontSize: '0.78rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    📦 OBE In-charge
                   </button>
                   <button
                     type="button"
                     onClick={() => handleQuickFill('faculty')}
                     style={{
                       background: '#F0FDF4',
-                      border: '1px solid #BBF7D0',
-                      color: '#16A34A',
-                      padding: '4px 10px',
-                      borderRadius: '6px',
-                      fontSize: '0.75rem',
-                      fontWeight: 600,
-                      cursor: 'pointer'
+                      border: '1.5px solid #BBF7D0',
+                      color: '#15803D',
+                      padding: '7px 10px',
+                      borderRadius: '8px',
+                      fontSize: '0.78rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px'
                     }}
                   >
-                    Demo Faculty
+                    👨‍🏫 Faculty
                   </button>
                 </div>
               </div>

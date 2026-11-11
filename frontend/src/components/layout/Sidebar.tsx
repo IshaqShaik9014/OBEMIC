@@ -1,13 +1,21 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { authService } from '@/services/auth.service';
 import { User } from '@/types/auth';
 
-export const Sidebar: React.FC = () => {
+interface NavItem {
+  label: string;
+  href: string;
+  iconType: string;
+  tabKey?: string;
+}
+
+function SidebarInner() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
@@ -43,7 +51,7 @@ export const Sidebar: React.FC = () => {
         return (
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="3"></circle>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0-.33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
           </svg>
         );
       case 'survey':
@@ -72,6 +80,25 @@ export const Sidebar: React.FC = () => {
             <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
           </svg>
         );
+      case 'script':
+      case 'file':
+        return (
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+        );
+      case 'upload':
+        return (
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+        );
       default:
         return (
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -81,22 +108,38 @@ export const Sidebar: React.FC = () => {
     }
   };
 
-  let navItems: { label: string; href: string; iconType: string }[] = [];
+  let navItems: NavItem[] = [];
 
   if (user?.role === 'ADMIN') {
     navItems = [
-      { label: 'Dashboard', href: '/admin/dashboard', iconType: 'dashboard' },
+      { label: 'HOD Dashboard', href: '/admin/dashboard', iconType: 'dashboard' },
       { label: 'Review Reports', href: '/admin/review', iconType: 'check' },
+      { label: 'Branch Scripts', href: '/admin/scripts', iconType: 'script' },
+      { label: 'Faculty Management', href: '/admin/faculty', iconType: 'faculty' },
       { label: 'System Setup', href: '/admin/setup', iconType: 'settings' },
       { label: 'Survey Management', href: '/admin/surveys', iconType: 'survey' },
-      { label: 'Faculty Management', href: '/admin/faculty', iconType: 'faculty' },
       { label: 'Subjects', href: '/admin/subjects', iconType: 'book' },
       { label: 'Assignments', href: '/admin/assignments', iconType: 'link' }
+    ];
+  } else if (user?.role === 'COORDINATOR') {
+    navItems = [
+      { label: 'Branch Coordinator Dashboard', href: '/admin/dashboard', iconType: 'dashboard' },
+      { label: 'Branch Scripts', href: '/admin/scripts', iconType: 'script' },
+      { label: 'Review Reports', href: '/admin/review', iconType: 'check' }
+    ];
+  } else if (user?.role === 'OBE_INCHARGE') {
+    navItems = [
+      { label: 'OBE Dashboard', href: '/obe/dashboard', tabKey: 'dashboard', iconType: 'dashboard' },
+      { label: 'Staff Onboarding', href: '/obe/dashboard?tab=staff', tabKey: 'staff', iconType: 'faculty' },
+      { label: 'Upload Scripts', href: '/obe/dashboard?tab=upload', tabKey: 'upload', iconType: 'upload' },
+      { label: 'Assign Scripts', href: '/obe/dashboard?tab=assign', tabKey: 'assign', iconType: 'link' },
+      { label: 'Script Bundles', href: '/obe/dashboard?tab=bundles', tabKey: 'bundles', iconType: 'script' }
     ];
   } else if (user?.role === 'FACULTY') {
     navItems = [
       { label: 'My Dashboard', href: '/faculty/dashboard', iconType: 'dashboard' },
-      { label: 'Assigned Subjects', href: '/faculty/dashboard#subjects', iconType: 'book' }
+      { label: 'Assigned Subjects', href: '/faculty/dashboard#subjects', iconType: 'book' },
+      { label: 'Scripts', href: '/faculty/scripts', iconType: 'script' }
     ];
   } else if (user?.role === 'MANAGEMENT') {
     navItems = [
@@ -104,6 +147,8 @@ export const Sidebar: React.FC = () => {
       { label: 'Verify Marks', href: '/management/verify', iconType: 'check' }
     ];
   }
+
+  const currentTab = searchParams.get('tab');
 
   return (
     <aside
@@ -180,10 +225,23 @@ export const Sidebar: React.FC = () => {
         {/* Nav Links */}
         <nav style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
           {navItems.map((item) => {
-            const isActive =
-              item.href.includes('#')
-                ? pathname === item.href.split('#')[0] && window?.location?.hash === '#subjects'
-                : pathname === item.href || (item.href !== '/admin/dashboard' && item.href !== '/faculty/dashboard' && pathname.startsWith(item.href));
+            const isActive = (() => {
+              if (user?.role === 'OBE_INCHARGE' && pathname.startsWith('/obe/dashboard')) {
+                const effectiveTab = (!currentTab || currentTab === 'dashboard') ? 'dashboard' : currentTab;
+                return item.tabKey === effectiveTab;
+              }
+              if (item.href.includes('#')) {
+                const [base, hash] = item.href.split('#');
+                return pathname === base && typeof window !== 'undefined' && window.location.hash === `#${hash}`;
+              }
+              return (
+                pathname === item.href ||
+                (item.href !== '/admin/dashboard' &&
+                  item.href !== '/faculty/dashboard' &&
+                  item.href !== '/obe/dashboard' &&
+                  pathname.startsWith(item.href))
+              );
+            })();
 
             return (
               <Link
@@ -234,47 +292,48 @@ export const Sidebar: React.FC = () => {
             fontSize: '0.75rem',
             color: '#475569',
             marginBottom: '12px',
-            letterSpacing: '0.04em'
+            borderTop: '1px solid rgba(255, 255, 255, 0.06)',
+            paddingTop: '12px'
           }}
         >
-          v1.0.0
+          Institutional OBE Core &bull; v2.4
         </div>
-
         <button
           onClick={() => authService.logout()}
           style={{
-            width: '100%',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            padding: '10px 16px',
+            gap: '10px',
+            width: '100%',
+            padding: '10px 14px',
             borderRadius: '10px',
-            background: 'rgba(239, 68, 68, 0.1)',
-            border: '1px solid rgba(239, 68, 68, 0.25)',
-            color: '#f87171',
-            fontSize: '0.85rem',
+            fontSize: '0.88rem',
             fontWeight: '600',
+            color: '#F87171',
+            background: 'rgba(239, 68, 68, 0.08)',
+            border: 'none',
             cursor: 'pointer',
-            transition: 'all 0.2s ease'
+            transition: 'background 0.2s ease'
           }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)';
-            e.currentTarget.style.color = '#ffffff';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)';
-            e.currentTarget.style.color = '#f87171';
-          }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(239, 68, 68, 0.16)')}
+          onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(239, 68, 68, 0.08)')}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
             <polyline points="16 17 21 12 16 7"></polyline>
             <line x1="21" y1="12" x2="9" y2="12"></line>
           </svg>
-          <span>Sign Out</span>
+          Sign Out
         </button>
       </div>
     </aside>
+  );
+}
+
+export const Sidebar: React.FC = () => {
+  return (
+    <Suspense fallback={<aside style={{ width: '260px', minHeight: '100vh', background: '#0B1D33' }} />}>
+      <SidebarInner />
+    </Suspense>
   );
 };

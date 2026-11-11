@@ -14,6 +14,7 @@ enum RoleName {
   ADMIN
   COORDINATOR
   MANAGEMENT
+  OBE_INCHARGE
 }
 
 enum ReportType {
@@ -67,6 +68,12 @@ enum ConfigScope {
   SUBJECT
 }
 
+enum ScriptAssignmentStatus {
+  SCHEDULED
+  ACTIVE
+  REVOKED
+}
+
 // -----------------------------------------
 // MODELS
 // -----------------------------------------
@@ -89,6 +96,7 @@ model Department {
   attainmentConfigs  AttainmentConfiguration[]
   studentEnrollments StudentEnrollment[]
   psos               ProgramSpecificObjective[]
+  scriptBundles      ScriptBundle[]
   createdAt          DateTime                   @default(now())
   updatedAt          DateTime                   @updatedAt
 }
@@ -120,6 +128,10 @@ model User {
   reports     ReportHistory[]
   auditLogs   AuditLog[]
 
+  uploadedScriptBundles     ScriptBundle[]
+  facultyScriptAssignments  FacultyScriptAssignment[] @relation("FacultyScriptAssignments")
+  assignedScriptAssignments FacultyScriptAssignment[] @relation("InchargeScriptAssignments")
+
   isDeleted Boolean   @default(false)
   deletedAt DateTime?
 
@@ -136,6 +148,7 @@ model AcademicYear {
   surveys            Survey[]
   attainmentConfigs  AttainmentConfiguration[]
   studentEnrollments StudentEnrollment[]
+  scriptBundles      ScriptBundle[]
   createdAt          DateTime                  @default(now())
   updatedAt          DateTime                  @updatedAt
 }
@@ -173,6 +186,7 @@ model Subject {
   reports           ReportHistory[]
   courseOutcomes    CourseOutcome[]
   attainmentConfigs AttainmentConfiguration[]
+  scriptBundles     ScriptBundle[]
 
   isDeleted Boolean   @default(false)
   deletedAt DateTime?
@@ -343,11 +357,12 @@ model CoPoMapping {
 }
 
 model Regulation {
-  id        String    @id @default(uuid())
-  name      String    @unique // e.g., "23", "MIC23"
-  subjects  Subject[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id            String         @id @default(uuid())
+  name          String         @unique // e.g., "23", "MIC23"
+  subjects      Subject[]
+  scriptBundles ScriptBundle[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 }
 
 model FacultyProfile {
@@ -504,4 +519,84 @@ model ProgramSpecificObjective {
   updatedAt    DateTime   @updatedAt
 
   @@unique([code, departmentId])
+}
+
+// -----------------------------------------
+// SCRIPT MANAGEMENT & DISTRIBUTION
+// -----------------------------------------
+
+model ScriptBundle {
+  id             String       @id @default(uuid())
+  bundleName     String
+
+  academicYearId String
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id])
+
+  regulationId   String?
+  regulation     Regulation?  @relation(fields: [regulationId], references: [id])
+
+  departmentId   String
+  department     Department   @relation(fields: [departmentId], references: [id])
+
+  yearLevel      String       // e.g. "I", "II", "III", "IV" or "1", "2", "3", "4"
+  semesterLevel  String       // e.g. "3-1", "1-2"
+  month          String       // e.g. "NOV-2026"
+
+  subjectId      String
+  subject        Subject      @relation(fields: [subjectId], references: [id])
+
+  uploadedById   String
+  uploadedBy     User         @relation(fields: [uploadedById], references: [id])
+
+  totalFiles     Int          @default(0)
+  totalSizeBytes BigInt       @default(0)
+
+  files          ScriptFile[]
+  assignments    FacultyScriptAssignment[]
+
+  isDeleted      Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([subjectId, academicYearId, semesterLevel])
+}
+
+model ScriptFile {
+  id             String       @id @default(uuid())
+  bundleId       String
+  bundle         ScriptBundle @relation(fields: [bundleId], references: [id], onDelete: Cascade)
+
+  fileName       String
+  relativePath   String       // relative path preserving directory structure
+  fileSize       Int
+  mimeType       String
+  storagePath    String
+
+  createdAt      DateTime     @default(now())
+
+  @@index([bundleId])
+}
+
+model FacultyScriptAssignment {
+  id             String                 @id @default(uuid())
+  bundleId       String
+  bundle         ScriptBundle           @relation(fields: [bundleId], references: [id], onDelete: Cascade)
+
+  facultyId      String
+  faculty        User                   @relation("FacultyScriptAssignments", fields: [facultyId], references: [id])
+
+  assignedById   String
+  assignedBy     User                   @relation("InchargeScriptAssignments", fields: [assignedById], references: [id])
+
+  visibleFrom    DateTime               // Scheduled release timestamp configured by in-charge
+  visibleUntil   DateTime?              // Optional deadline/cutoff timestamp
+
+  status         ScriptAssignmentStatus @default(SCHEDULED)
+  notes          String?
+
+  assignedAt     DateTime               @default(now())
+  unassignedAt   DateTime?
+
+  @@unique([bundleId, facultyId])
+  @@index([facultyId, status])
 }

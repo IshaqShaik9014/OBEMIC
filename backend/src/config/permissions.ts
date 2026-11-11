@@ -41,20 +41,32 @@ export enum Permissions {
   FACULTY_ASSIGNMENT_DELETE = 'FACULTY_ASSIGNMENT_DELETE',
   ATTAINMENT_CONFIG_VIEW = 'ATTAINMENT_CONFIG_VIEW',
   ATTAINMENT_CONFIG_UPDATE = 'ATTAINMENT_CONFIG_UPDATE',
-  MANAGE_SURVEYS = 'MANAGE_SURVEYS'
+  MANAGE_SURVEYS = 'MANAGE_SURVEYS',
+
+  // Script Management Permissions
+  MANAGE_SCRIPTS = 'MANAGE_SCRIPTS',
+  UPLOAD_SCRIPTS = 'UPLOAD_SCRIPTS',
+  ASSIGN_SCRIPTS = 'ASSIGN_SCRIPTS',
+  VIEW_SCRIPTS = 'VIEW_SCRIPTS'
 }
 
 export const RolePermissions: Record<Roles, Permissions[]> = {
   [Roles.FACULTY]: [
     Permissions.GENERATE_REPORT,
     Permissions.VIEW_SUBJECTS,
-    Permissions.VIEW_OWN_REPORTS
+    Permissions.VIEW_OWN_REPORTS,
+    Permissions.VIEW_SCRIPTS
   ],
   [Roles.COORDINATOR]: [
+    Permissions.VIEW_DASHBOARD,
+    Permissions.ADMIN_DASHBOARD_VIEW,
     Permissions.REVIEW_REPORT,
     Permissions.REJECT_REPORT,
     Permissions.APPROVE_REPORT,
-    Permissions.VIEW_SUBJECTS
+    Permissions.VIEW_SUBJECTS,
+    Permissions.VIEW_SCRIPTS,
+    Permissions.ASSIGN_SCRIPTS,
+    Permissions.MANAGE_SCRIPTS
   ],
   [Roles.ADMIN]: [
     Permissions.MANAGE_FACULTY,
@@ -91,7 +103,24 @@ export const RolePermissions: Record<Roles, Permissions[]> = {
     Permissions.FACULTY_ASSIGNMENT_DELETE,
     Permissions.ATTAINMENT_CONFIG_VIEW,
     Permissions.ATTAINMENT_CONFIG_UPDATE,
-    Permissions.MANAGE_SURVEYS
+    Permissions.MANAGE_SURVEYS,
+
+    // Scripts
+    Permissions.MANAGE_SCRIPTS,
+    Permissions.UPLOAD_SCRIPTS,
+    Permissions.ASSIGN_SCRIPTS,
+    Permissions.VIEW_SCRIPTS
+  ],
+  [Roles.OBE_INCHARGE]: [
+    Permissions.VIEW_SUBJECTS,
+    Permissions.MANAGE_SCRIPTS,
+    Permissions.UPLOAD_SCRIPTS,
+    Permissions.ASSIGN_SCRIPTS,
+    Permissions.VIEW_SCRIPTS,
+    Permissions.FACULTY_VIEW,
+    Permissions.FACULTY_UPLOAD,
+    Permissions.FACULTY_CREATE,
+    Permissions.MANAGE_FACULTY
   ],
   [Roles.MANAGEMENT]: [
     Permissions.VIEW_DASHBOARD,

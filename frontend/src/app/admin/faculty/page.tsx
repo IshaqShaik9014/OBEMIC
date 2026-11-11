@@ -27,18 +27,22 @@ export default function FacultyManagementPage() {
   const [isUnassigning, setIsUnassigning] = useState(false);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [newFaculty, setNewFaculty] = useState({ employeeId: '', name: '', email: '', departmentId: '' });
+  const [newFaculty, setNewFaculty] = useState({ employeeId: '', name: '', email: '', departmentId: '', roleName: 'FACULTY' });
   const [isCreating, setIsCreating] = useState(false);
-
 
   const handleCreateFaculty = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsCreating(true);
     try {
-      await adminService.createFaculty(newFaculty);
-      alert('Faculty created successfully');
+      const user = authService.getCurrentUser();
+      const payload = {
+        ...newFaculty,
+        departmentId: newFaculty.departmentId || user?.departmentId
+      };
+      await adminService.createFaculty(payload);
+      alert(`Staff member created successfully as ${newFaculty.roleName === 'COORDINATOR' ? 'Branch Coordinator' : 'Faculty'}!`);
       setShowCreateModal(false);
-      setNewFaculty({ employeeId: '', name: '', email: '', departmentId: '' });
+      setNewFaculty({ employeeId: '', name: '', email: '', departmentId: '', roleName: 'FACULTY' });
       fetchData();
     } catch (err: any) {
       alert(err.message || 'Failed to create faculty');
@@ -232,6 +236,17 @@ export default function FacultyManagementPage() {
               <div>
                 <label style={{ display: 'block', marginBottom: '6px', color: '#334155', fontSize: '0.85rem', fontWeight: 600 }}>Email (Required)</label>
                 <input required type="email" value={newFaculty.email} onChange={e => setNewFaculty({...newFaculty, email: e.target.value})} style={{ width: '100%', padding: '10px 12px', background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#0F172A', borderRadius: '8px' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '6px', color: '#334155', fontSize: '0.85rem', fontWeight: 600 }}>Staff Role (Required)</label>
+                <select
+                  value={newFaculty.roleName}
+                  onChange={e => setNewFaculty({...newFaculty, roleName: e.target.value})}
+                  style={{ width: '100%', padding: '10px 12px', background: '#FFFFFF', border: '1.5px solid #3B82F6', color: '#0F172A', borderRadius: '8px', fontWeight: 600 }}
+                >
+                  <option value="FACULTY">Faculty (Teaching Staff / Subject Coordinator)</option>
+                  <option value="COORDINATOR">Branch Coordinator (HOD Dashboard Scoped)</option>
+                </select>
               </div>
               <div>
                 <label style={{ display: 'block', marginBottom: '6px', color: '#334155', fontSize: '0.85rem', fontWeight: 600 }}>Department ID (Required)</label>

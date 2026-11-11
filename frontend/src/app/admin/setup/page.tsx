@@ -693,10 +693,26 @@ export default function AdminSetupPage() {
           COs Upload
         </button>
         <button 
-          onClick={() => handleTabChange('STAFF')}
-          style={{ padding: '12px 18px', background: activeTab === 'STAFF' ? '#EFF6FF' : 'transparent', color: activeTab === 'STAFF' ? '#2563EB' : '#64748B', border: 'none', borderBottom: activeTab === 'STAFF' ? '2px solid #2563EB' : '2px solid transparent', cursor: 'pointer', fontWeight: '700', borderRadius: '8px 8px 0 0', fontSize: '0.9rem' }}
+          type="button"
+          onClick={() => router.push('/admin/faculty')}
+          title="Manual faculty onboarding (Faculty ID, Name, Email, Role)"
+          style={{ 
+            padding: '12px 18px', 
+            background: '#F0FDF4', 
+            color: '#16A34A', 
+            border: 'none', 
+            borderBottom: '2px solid transparent', 
+            cursor: 'pointer', 
+            fontWeight: '700', 
+            borderRadius: '8px 8px 0 0', 
+            fontSize: '0.9rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px'
+          }}
         >
-          Staff Upload
+          <span>👤 Add Faculty</span>
+          <span style={{ fontSize: '0.72rem', background: '#DCFCE7', color: '#15803D', padding: '2px 6px', borderRadius: '4px' }}>Manual</span>
         </button>
         <button 
           onClick={() => handleTabChange('PO')}

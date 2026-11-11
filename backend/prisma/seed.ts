@@ -11,7 +11,7 @@ async function main() {
   console.log('Seeding database...');
 
   // 1. Roles
-  const roles = [RoleName.FACULTY, RoleName.ADMIN, RoleName.COORDINATOR, RoleName.MANAGEMENT];
+  const roles = [RoleName.FACULTY, RoleName.ADMIN, RoleName.COORDINATOR, RoleName.MANAGEMENT, RoleName.OBE_INCHARGE];
   for (const roleName of roles) {
     await prisma.role.upsert({
       where: { roleName },
@@ -21,6 +21,8 @@ async function main() {
   }
   const adminRole = await prisma.role.findUnique({ where: { roleName: RoleName.ADMIN } });
   const facultyRole = await prisma.role.findUnique({ where: { roleName: RoleName.FACULTY } });
+  const obeRole = await prisma.role.findUnique({ where: { roleName: RoleName.OBE_INCHARGE } });
+  const coordinatorRole = await prisma.role.findUnique({ where: { roleName: RoleName.COORDINATOR } });
 
   // 2. Departments
   const deptCSE = await prisma.department.upsert({
@@ -33,6 +35,12 @@ async function main() {
     where: { departmentName: 'IT' },
     update: {},
     create: { departmentName: 'IT' },
+  });
+
+  const deptMech = await prisma.department.upsert({
+    where: { departmentName: 'MECH' },
+    update: {},
+    create: { departmentName: 'MECH' },
   });
 
   // 3. Academic Year & Semester
@@ -98,18 +106,39 @@ async function main() {
     },
   });
 
+  const obeUser = await prisma.user.upsert({
+    where: { email: 'obe@mictech.ac.in' },
+    update: {},
+    create: {
+      name: 'Prof. K. Venkatesh (OBE In-charge)',
+      email: 'obe@mictech.ac.in',
+      employeeId: 'OBE001',
+      passwordHash,
+      roleId: obeRole!.id,
+      departmentId: deptCSE.id,
+      status: UserStatus.ACTIVE,
+    },
+  });
+
+  const coordinatorUser = await prisma.user.upsert({
+    where: { email: 'coordinator@mictech.ac.in' },
+    update: {},
+    create: {
+      name: 'Prof. Rajesh (Branch Coordinator - MECH)',
+      email: 'coordinator@mictech.ac.in',
+      employeeId: 'BC-MECH-01',
+      passwordHash,
+      roleId: coordinatorRole!.id,
+      departmentId: deptMech.id,
+      status: UserStatus.ACTIVE,
+    },
+  });
+
   // ==========================================
   // LEVEL 4 - INDIRECT ATTAINMENT DUMMY DATA
   // ==========================================
 
-  // Mechanical Department
-  const deptMech = await prisma.department.upsert({
-    where: { departmentName: 'Mechanical' },
-    update: {},
-    create: { departmentName: 'Mechanical' },
-  });
-
-  // Sections
+  // Sections (MECH)
   const secMechA = await prisma.section.upsert({
     where: { sectionName_departmentId_academicYearId: { sectionName: 'A', departmentId: deptMech.id, academicYearId: academicYear.id } },
     update: {},

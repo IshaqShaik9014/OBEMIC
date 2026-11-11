@@ -5,6 +5,7 @@ import { resolveDepartmentCodeByAlias } from '../../../../config/branch-codes';
 export interface RawFacultyRecord {
   employeeId: string;
   facultyName: string;
+  roleRaw: string | null;
   departmentRaw: string | null;
   canonicalDepartmentCode: string | null;
   worksheetName: string;
@@ -28,6 +29,7 @@ export class FacultyWorkbookReader {
       let employeeIdColIndex = -1;
       let nameColIndex = -1;
       let departmentColIndex = -1;
+      let roleColIndex = -1;
 
       for (let r = 0; r < rows.length; r++) {
         const row = rows[r];
@@ -63,6 +65,9 @@ export class FacultyWorkbookReader {
               if (normalizedHeader === 'DEPARTMENT' || normalizedHeader === 'BRANCH') {
                 departmentColIndex = c;
               }
+              if (normalizedHeader === 'ROLE' || normalizedHeader === 'DESIGNATION' || normalizedHeader.includes('ROLE') || normalizedHeader === 'STAFF ROLE' || normalizedHeader === 'USER ROLE') {
+                roleColIndex = c;
+              }
             }
           }
           
@@ -88,6 +93,9 @@ export class FacultyWorkbookReader {
               rowDept = String(row[departmentColIndex]).trim();
             }
 
+            // Extract inline role if column was present
+            let rowRole = roleColIndex !== -1 && row[roleColIndex] ? String(row[roleColIndex]).trim() : null;
+
             // Resolve using centralized config
             const deptConfig = rowDept ? resolveDepartmentCodeByAlias(rowDept) : null;
             
@@ -95,6 +103,7 @@ export class FacultyWorkbookReader {
               records.push({
                 employeeId: employeeIdStr,
                 facultyName: facultyNameStr,
+                roleRaw: rowRole,
                 departmentRaw: rowDept,
                 canonicalDepartmentCode: deptConfig ? deptConfig.departmentCode : null,
                 worksheetName: sheet.name(),

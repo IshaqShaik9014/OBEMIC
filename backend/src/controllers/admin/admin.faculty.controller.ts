@@ -11,7 +11,7 @@ export class AdminFacultyController {
 
   public createFaculty = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { employeeId, name, email, departmentId } = req.body;
+      const { employeeId, name, email, departmentId, roleName } = req.body;
       if (!employeeId || !name || !email || !departmentId) {
         res.status(400).json({ error: 'Missing required fields' });
         return;
@@ -24,8 +24,9 @@ export class AdminFacultyController {
         return;
       }
 
-      const role = await prisma.role.findUnique({ where: { roleName: 'FACULTY' } });
-      if (!role) throw new Error('FACULTY role not found in database');
+      const targetRoleName = roleName === 'COORDINATOR' ? 'COORDINATOR' : roleName === 'OBE_INCHARGE' ? 'OBE_INCHARGE' : 'FACULTY';
+      const role = await prisma.role.findUnique({ where: { roleName: targetRoleName as any } });
+      if (!role) throw new Error(`${targetRoleName} role not found in database`);
 
       // Generate temporary password based on employeeId and department
       const plainPassword = employeeId + '@' + departmentId;

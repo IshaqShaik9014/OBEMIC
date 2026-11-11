@@ -1,4 +1,4 @@
-export type RoleName = 'FACULTY' | 'ADMIN' | 'COORDINATOR' | 'MANAGEMENT';
+export type RoleName = 'FACULTY' | 'ADMIN' | 'COORDINATOR' | 'MANAGEMENT' | 'OBE_INCHARGE';
 
 export interface User {
   id: string;

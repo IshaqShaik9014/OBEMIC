@@ -3,30 +3,40 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { facultyService } from '@/services/faculty.service';
+import { scriptService } from '@/services/script.service';
 import { FacultyDashboardData, AssignedSubject } from '@/types/faculty';
+import { FacultyAssignedScript, FileTreeNode } from '@/types/script';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
 import { AttainmentDonutChart } from '@/components/ui/Charts';
 import { authService } from '@/services/auth.service';
+import { FolderTreeViewer } from '@/components/scripts/FolderTreeViewer';
+import { ScriptViewerModal } from '@/components/scripts/ScriptViewerModal';
 
 export default function FacultyDashboard() {
   const router = useRouter();
   const [data, setData] = useState<FacultyDashboardData | null>(null);
   const [subjects, setSubjects] = useState<AssignedSubject[]>([]);
+  const [scripts, setScripts] = useState<FacultyAssignedScript[]>([]);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [inspectScript, setInspectScript] = useState<FacultyAssignedScript | null>(null);
+  const [activeScriptFile, setActiveScriptFile] = useState<FileTreeNode | null>(null);
 
   useEffect(() => {
     setCurrentUser(authService.getCurrentUser());
     async function loadData() {
       try {
-        const [dashData, subjectList] = await Promise.all([
+        const [dashData, subjectList, scriptList] = await Promise.all([
           facultyService.getDashboardData(),
-          facultyService.getAssignedSubjects()
+          facultyService.getAssignedSubjects(),
+          scriptService.getFacultyScripts().catch(() => [])
         ]);
         setData(dashData);
         setSubjects(subjectList);
+        setScripts(scriptList);
       } catch (err: any) {
         setError(err.message || 'Failed to load dashboard data');
       } finally {
@@ -35,6 +45,11 @@ export default function FacultyDashboard() {
     }
     loadData();
   }, []);
+
+  const handleFilePreview = (node: FileTreeNode) => {
+    if (!node.fileId && !node.path) return;
+    setActiveScriptFile(node);
+  };
 
   if (isLoading) {
     return <div style={{ color: '#94a3b8' }}>Loading dashboard...</div>;
@@ -101,6 +116,37 @@ export default function FacultyDashboard() {
             </h2>
             <p style={{ color: '#64748B', fontSize: '0.88rem', margin: 0 }}>
               Average syllabus progress across your subjects
+            </p>
+          </div>
+        </Card>
+
+        {/* Assigned Scripts Metric Card */}
+        <Card>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 700, color: '#0F172A' }}>
+              Evaluation Scripts
+            </h3>
+            <button
+              type="button"
+              onClick={() => router.push('/faculty/scripts')}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#2563EB',
+                fontSize: '0.82rem',
+                fontWeight: 700,
+                cursor: 'pointer'
+              }}
+            >
+              Open Scripts Portal &rarr;
+            </button>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '170px', alignItems: 'center' }}>
+            <h2 style={{ fontSize: '3.75rem', color: '#16A34A', margin: '0 0 8px 0', fontWeight: 900, letterSpacing: '-0.03em' }}>
+              {scripts.filter(s => !s.isLocked).length}
+            </h2>
+            <p style={{ color: '#64748B', fontSize: '0.88rem', margin: 0 }}>
+              Available now &bull; {scripts.filter(s => s.isLocked).length} scheduled for release
             </p>
           </div>
         </Card>
@@ -201,6 +247,202 @@ export default function FacultyDashboard() {
             </tbody>
           </table>
         </div>
+      </Card>
+
+      {/* Assigned Scripts Section (Subject Coordinator) */}
+      <Card id="scripts-section" glow>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: '#0F172A' }}>
+                📁 Assigned Examination Scripts (Subject Coordinator)
+              </h3>
+              <span style={{ background: '#EFF6FF', color: '#1D4ED8', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 700 }}>
+                {scripts.length} Total Bundles
+              </span>
+            </div>
+            <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: '#64748B' }}>
+              Examination script bundles delegated to you by the Branch Coordinator for assessment &amp; grading.
+            </p>
+          </div>
+          <Button variant="secondary" onClick={() => router.push('/faculty/scripts')} style={{ fontSize: '0.82rem' }}>
+            Open Dedicated Scripts Portal &rarr;
+          </Button>
+        </div>
+
+        {/* Scrollable Scripts Table Container */}
+        <div style={{
+          maxHeight: '380px',
+          overflowY: 'auto',
+          overflowX: 'auto',
+          border: '1px solid #E2E8F0',
+          borderRadius: '10px',
+          boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.02)'
+        }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+            <thead style={{ position: 'sticky', top: 0, zIndex: 10, background: '#F8FAFC', borderBottom: '1.5px solid #E2E8F0' }}>
+              <tr>
+                <th style={{ padding: '12px 16px', fontSize: '0.72rem', fontWeight: 700, color: '#64748B', letterSpacing: '0.08em', textTransform: 'uppercase' }}>CODE</th>
+                <th style={{ padding: '12px 16px', fontSize: '0.72rem', fontWeight: 700, color: '#64748B', letterSpacing: '0.08em', textTransform: 'uppercase' }}>SUBJECT</th>
+                <th style={{ padding: '12px 16px', fontSize: '0.72rem', fontWeight: 700, color: '#64748B', letterSpacing: '0.08em', textTransform: 'uppercase' }}>BUNDLE</th>
+                <th style={{ padding: '12px 16px', fontSize: '0.72rem', fontWeight: 700, color: '#64748B', letterSpacing: '0.08em', textTransform: 'uppercase' }}>DELEGATED BY</th>
+                <th style={{ padding: '12px 16px', fontSize: '0.72rem', fontWeight: 700, color: '#64748B', letterSpacing: '0.08em', textTransform: 'uppercase' }}>RELEASE SCHEDULE</th>
+                <th style={{ padding: '12px 16px', fontSize: '0.72rem', fontWeight: 700, color: '#64748B', letterSpacing: '0.08em', textTransform: 'uppercase' }}>VISIBILITY STATUS</th>
+                <th style={{ padding: '12px 16px', fontSize: '0.72rem', fontWeight: 700, color: '#64748B', letterSpacing: '0.08em', textTransform: 'uppercase', textAlign: 'right' }}>ACTION</th>
+              </tr>
+            </thead>
+            <tbody>
+              {scripts.length === 0 ? (
+                <tr>
+                  <td colSpan={7} style={{ padding: '36px 16px', textAlign: 'center', color: '#64748B', fontSize: '0.9rem' }}>
+                    No evaluation scripts assigned yet. When your Branch Coordinator delegates bundles for your subjects, they will appear here.
+                  </td>
+                </tr>
+              ) : (
+                scripts.map((item) => {
+                  const isSelected = inspectScript?.assignmentId === item.assignmentId;
+                  return (
+                    <tr
+                      key={item.assignmentId}
+                      style={{
+                        borderBottom: '1px solid #F1F5F9',
+                        background: isSelected ? '#EFF6FF' : 'transparent',
+                        transition: 'background 0.15s ease'
+                      }}
+                    >
+                      <td style={{ padding: '14px 16px' }}>
+                        <span style={{ background: '#EFF6FF', color: '#2563EB', padding: '4px 10px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 700 }}>
+                          {item.bundle.subject.subjectCode}
+                        </span>
+                      </td>
+                      <td style={{ padding: '14px 16px', fontWeight: 600, color: '#0F172A', fontSize: '0.92rem' }}>
+                        {item.bundle.subject.subjectName}
+                      </td>
+                      <td style={{ padding: '14px 16px', color: '#334155', fontSize: '0.88rem', fontWeight: 500 }}>
+                        <div>{item.bundle.bundleName}</div>
+                        <div style={{ fontSize: '0.76rem', color: '#64748B' }}>{item.bundle.totalFiles} files &bull; {item.bundle.semesterLevel}</div>
+                      </td>
+                      <td style={{ padding: '14px 16px', color: '#334155', fontSize: '0.85rem' }}>
+                        <span style={{ fontWeight: 600, color: '#0F172A' }}>{item.assignedBy}</span>
+                        <div style={{ fontSize: '0.72rem', color: '#64748B' }}>Branch Coordinator</div>
+                      </td>
+                      <td style={{ padding: '14px 16px', color: '#0F172A', fontSize: '0.85rem' }}>
+                        {new Date(item.visibleFrom).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
+                      </td>
+                      <td style={{ padding: '14px 16px' }}>
+                        <span style={{
+                          padding: '4px 10px',
+                          borderRadius: '9999px',
+                          fontSize: '0.78rem',
+                          fontWeight: 700,
+                          background: item.isLocked ? '#FEF3C7' : '#DCFCE7',
+                          color: item.isLocked ? '#B45309' : '#15803D'
+                        }}>
+                          {item.isLocked ? '🔒 Scheduled' : '🟢 Ready / Visible'}
+                        </span>
+                      </td>
+                      <td style={{ padding: '14px 16px', textAlign: 'right' }}>
+                        <Button
+                          variant={isSelected ? 'primary' : 'secondary'}
+                          style={{ fontSize: '0.8rem', padding: '5px 12px' }}
+                          onClick={() => {
+                            if (isSelected) {
+                              setInspectScript(null);
+                              setActiveScriptFile(null);
+                            } else {
+                              setInspectScript(item);
+                              setActiveScriptFile(null);
+                            }
+                          }}
+                        >
+                          {isSelected ? 'Close' : 'View Scripts'}
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Inline Direct Script Inspection & File Viewer */}
+        {inspectScript && (
+          <div style={{ marginTop: '24px', borderTop: '2px solid #E2E8F0', paddingTop: '20px', animation: 'fadeIn 0.2s ease' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                  <span style={{ background: '#EFF6FF', color: '#2563EB', padding: '3px 8px', borderRadius: '5px', fontSize: '0.8rem', fontWeight: 700 }}>
+                    {inspectScript.bundle.subject.subjectCode}
+                  </span>
+                  <span style={{ fontSize: '0.85rem', color: '#64748B' }}>
+                    {inspectScript.bundle.semesterLevel} &bull; {inspectScript.bundle.month} &bull; {inspectScript.bundle.totalFiles} files
+                  </span>
+                </div>
+                <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#0F172A' }}>
+                  {inspectScript.bundle.bundleName}
+                </h3>
+                <p style={{ margin: '4px 0 0 0', fontSize: '0.9rem', color: '#475569' }}>
+                  {inspectScript.bundle.subject.subjectName} &bull; Delegated by Branch Coordinator: <strong>{inspectScript.assignedBy}</strong>
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setInspectScript(null); setActiveScriptFile(null); }}
+                style={{ background: 'none', border: 'none', fontSize: '1.5rem', color: '#64748B', cursor: 'pointer', lineHeight: 1 }}
+                title="Close inspection"
+              >
+                &times;
+              </button>
+            </div>
+
+            {inspectScript.notes && (
+              <div style={{ background: '#F8FAFC', borderLeft: '4px solid #3B82F6', padding: '10px 14px', borderRadius: '6px', marginBottom: '16px', fontSize: '0.88rem', color: '#334155' }}>
+                <strong>Instructions from Branch Coordinator:</strong> {inspectScript.notes}
+              </div>
+            )}
+
+            {inspectScript.isLocked ? (
+              <div style={{ padding: '32px 20px', textAlign: 'center', background: '#FFFBEB', border: '1.5px dashed #FDE68A', borderRadius: '12px' }}>
+                <div style={{ fontSize: '2.5rem', marginBottom: '8px' }}>🔒</div>
+                <h4 style={{ margin: '0 0 6px 0', fontSize: '1.1rem', fontWeight: 800, color: '#92400E' }}>
+                  Scripts Locked Until Scheduled Release Time
+                </h4>
+                <p style={{ margin: 0, fontSize: '0.88rem', color: '#B45309' }}>
+                  Available on {new Date(inspectScript.visibleFrom).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#0F172A' }}>
+                    📁 Script Folder Hierarchy &amp; Files ({inspectScript.bundle.totalFiles} files)
+                  </span>
+                  <span style={{ fontSize: '0.78rem', color: '#16A34A', fontWeight: 700 }}>
+                    🟢 Visible &amp; Ready for Evaluation
+                  </span>
+                </div>
+                
+                <div style={{ border: '1px solid #E2E8F0', borderRadius: '8px', padding: '14px', background: '#FFFFFF', maxHeight: '340px', overflowY: 'auto' }}>
+                  <FolderTreeViewer
+                    nodes={inspectScript.bundle.fileTree || []}
+                    onFileSelect={handleFilePreview}
+                  />
+                </div>
+
+                {activeScriptFile && (
+                  <ScriptViewerModal
+                    files={inspectScript.bundle.fileTree || []}
+                    activeFile={activeScriptFile}
+                    onSelectFile={setActiveScriptFile}
+                    onClose={() => setActiveScriptFile(null)}
+                    bundleTitle={inspectScript.bundle.bundleName}
+                  />
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </Card>
     </div>
   );

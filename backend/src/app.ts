@@ -11,6 +11,7 @@ import reviewRoutes from './routes/review.routes';
 import studentAuthRoutes from './routes/student.auth.routes';
 import studentSurveyRoutes from './routes/student.survey.routes';
 import adminRoutes from './routes/admin/index';
+import scriptRoutes from './routes/script.routes';
 import { setupSwagger } from './config/swagger.config';
 
 const app = express();
@@ -60,6 +61,7 @@ app.use('/api/v1/faculty', facultyRoutes);
 app.use('/api/v1/reports', reportRoutes);
 app.use('/api/v1/review', reviewRoutes);
 app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/scripts', scriptRoutes);
 
 app.use('/api/v1/student', studentAuthRoutes);
 app.use('/api/v1/student', studentSurveyRoutes);

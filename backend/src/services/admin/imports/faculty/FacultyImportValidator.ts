@@ -13,10 +13,30 @@ export type FacultyRecordAction =
 export interface ValidatedFacultyRecord {
   employeeId: string;
   facultyName: string;
+  roleName: string;
   canonicalDepartmentCode: string | null;
   departmentId: string | null; // Resolved database ID
   action: FacultyRecordAction;
   issues: string[];
+}
+
+export function resolveRoleName(rawRole: string | null | undefined): string {
+  if (!rawRole) return 'FACULTY';
+  const clean = rawRole.toUpperCase().trim();
+  if (clean.includes('HOD') || clean.includes('ADMIN')) {
+    return 'ADMIN'; // HOD = Admin
+  }
+  if (clean.includes('OBE')) {
+    return 'OBE_INCHARGE';
+  }
+  if (clean.includes('BRANCH') || (clean.includes('COORD') && !clean.includes('SUBJECT'))) {
+    return 'COORDINATOR'; // Branch Coordinator only
+  }
+  if (clean.includes('MANAGEMENT')) {
+    return 'MANAGEMENT';
+  }
+  // Faculty (and any Subject Coordinator in file maps to Faculty)
+  return 'FACULTY';
 }
 
 export interface FacultyImportPayload {
@@ -57,6 +77,7 @@ export class FacultyImportValidator {
       const validated: ValidatedFacultyRecord = {
         employeeId: empId,
         facultyName: record.facultyName,
+        roleName: resolveRoleName(record.roleRaw),
         canonicalDepartmentCode: record.canonicalDepartmentCode,
         departmentId: null,
         action: 'CREATE',

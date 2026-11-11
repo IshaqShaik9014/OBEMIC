@@ -17,8 +17,12 @@ backend/uploads/*
 !backend/uploads/.gitkeep
 storage/reports/*
 !storage/reports/.gitkeep
+backend/storage/scripts/*
+!backend/storage/scripts/.gitkeep
+sample_scripts_bundle*
 
 # ── Test & debug one-off scripts ─────────────────────────
+backend/data_team.js
 test_*.ts
 test_*.js
 check_*.ts
