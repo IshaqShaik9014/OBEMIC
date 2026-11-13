@@ -84,7 +84,7 @@ export class AdminLoadTestController {
           subjectCode: '23CS3T01_TEST',
           subjectName: 'Cloud & Distributed Systems (Load Test)',
           credits: 3,
-          semesterId: semester.id,
+          semesterLevel: '3-1',
           departmentId: dept.id
         }
       });
