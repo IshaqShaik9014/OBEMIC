@@ -134,7 +134,8 @@ async function main() {
   console.log(`📚 Target Subject ID: ${subjectId || 'None assigned yet (dashboard load only)'}`);
 
   startTime = Date.now();
-  const perWorker = Math.ceil(TOTAL_REQUESTS / (CONCURRENCY * 6));
+  const cycleMultiplier = subjectId ? 6 : 1;
+  const perWorker = Math.ceil(TOTAL_REQUESTS / (CONCURRENCY * cycleMultiplier));
   const workers = Array.from({ length: CONCURRENCY }, () => runWorker(token, subjectId, perWorker));
 
   const progressTimer = setInterval(() => {
