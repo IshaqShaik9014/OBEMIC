@@ -28,6 +28,16 @@ export class ObeDatabaseService {
    * Return schema metadata & lookup tables for smart dropdowns
    */
   public async getMetadata() {
+    // Ensure all standard roles exist in DB
+    const standardRoles = ['FACULTY', 'ADMIN', 'COORDINATOR', 'MANAGEMENT', 'OBE_INCHARGE'] as const;
+    for (const r of standardRoles) {
+      await prisma.role.upsert({
+        where: { roleName: r as any },
+        update: {},
+        create: { roleName: r as any }
+      });
+    }
+
     const [
       departments,
       academicYears,

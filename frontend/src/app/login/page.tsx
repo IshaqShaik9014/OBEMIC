@@ -66,8 +66,8 @@ export default function LoginPage({ initialModalOpen = true }: LoginPageProps) {
       setPassword('password123');
     } else if (userType === 'obe') {
       setRole('obe_incharge');
-      setIdentifier('obe@mictech.ac.in');
-      setPassword('password123');
+      setIdentifier('pavan.anumolu@mictech.ac.in');
+      setPassword('pavan@1615');
     } else {
       setRole('faculty');
       setIdentifier('faculty@college.edu');
@@ -327,7 +327,7 @@ export default function LoginPage({ initialModalOpen = true }: LoginPageProps) {
                         : role === 'coordinator'
                         ? 'e.g. coordinator@mictech.ac.in or Coordinator ID'
                         : role === 'obe_incharge'
-                        ? 'e.g. obe@mictech.ac.in or OBE001'
+                        ? 'e.g. pavan.anumolu@mictech.ac.in or OBE001'
                         : role === 'management'
                         ? 'e.g. management@mictech.ac.in'
                         : 'e.g. faculty@college.edu or Faculty ID'

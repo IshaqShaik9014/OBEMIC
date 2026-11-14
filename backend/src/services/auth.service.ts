@@ -43,6 +43,60 @@ export class AuthService {
           include: { role: true, department: true }
         });
       }
+
+      // Auto-provision or find Pavan Anumolu (OBE In-charge) if logging in
+      if (!user && (emailLower === 'pavan.anumolu@mictech.ac.in' || emailLower === 'obe@mictech.ac.in' || emailLower.startsWith('obe') || emailLower.includes('pavan'))) {
+        let obeRole = await prisma.role.findFirst({ where: { roleName: RoleName.OBE_INCHARGE } });
+        if (!obeRole) {
+          obeRole = await prisma.role.create({ data: { roleName: RoleName.OBE_INCHARGE } });
+        }
+        let dept = await prisma.department.findFirst({ where: { departmentName: { in: ['CSE', 'MECH', 'ECE'] } } });
+        if (!dept) {
+          dept = await prisma.department.create({ data: { departmentName: 'CSE' } });
+        }
+        const pavanHash = await bcrypt.hash('pavan@1615', 10);
+        user = await prisma.user.upsert({
+          where: { email: 'pavan.anumolu@mictech.ac.in' },
+          update: { roleId: obeRole.id },
+          create: {
+            name: 'Prof. Pavan Anumolu (OBE In-charge)',
+            email: 'pavan.anumolu@mictech.ac.in',
+            employeeId: 'OBE001',
+            passwordHash: pavanHash,
+            roleId: obeRole.id,
+            departmentId: dept.id,
+            status: UserStatus.ACTIVE
+          },
+          include: { role: true, department: true }
+        });
+      }
+
+      // Auto-provision coordinator@mictech.ac.in if logging in and missing
+      if (!user && emailLower === 'coordinator@mictech.ac.in') {
+        let coordRole = await prisma.role.findFirst({ where: { roleName: RoleName.COORDINATOR } });
+        if (!coordRole) {
+          coordRole = await prisma.role.create({ data: { roleName: RoleName.COORDINATOR } });
+        }
+        let dept = await prisma.department.findFirst({ where: { departmentName: 'MECH' } });
+        if (!dept) {
+          dept = await prisma.department.create({ data: { departmentName: 'MECH' } });
+        }
+        const coordHash = await bcrypt.hash('password123', 10);
+        user = await prisma.user.upsert({
+          where: { email: 'coordinator@mictech.ac.in' },
+          update: { roleId: coordRole.id },
+          create: {
+            name: 'Prof. Rajesh (Branch Coordinator - MECH)',
+            email: 'coordinator@mictech.ac.in',
+            employeeId: 'BC-MECH-01',
+            passwordHash: coordHash,
+            roleId: coordRole.id,
+            departmentId: dept.id,
+            status: UserStatus.ACTIVE
+          },
+          include: { role: true, department: true }
+        });
+      }
     }
 
     if (!user) {
@@ -55,7 +109,7 @@ export class AuthService {
     let isValid = await bcrypt.compare(credentials.passwordPlain, user.passwordHash);
 
     // Auto-heal standard demo passwords so testing accounts remain accessible
-    const demoPasswords = ['password123', 'admin123', 'obe123', 'coordinator123', 'faculty123'];
+    const demoPasswords = ['password123', 'admin123', 'obe123', 'coordinator123', 'faculty123', 'pavan@1615'];
     if (!isValid && demoPasswords.includes(credentials.passwordPlain)) {
       const newHash = await bcrypt.hash(credentials.passwordPlain, 10);
       await this.userRepo.updatePassword(user.id, newHash);

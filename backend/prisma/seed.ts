@@ -120,6 +120,25 @@ async function main() {
     },
   });
 
+  const pavanPasswordHash = await bcrypt.hash('pavan@1615', 10);
+  const pavanObeUser = await prisma.user.upsert({
+    where: { email: 'pavan.anumolu@mictech.ac.in' },
+    update: {
+      passwordHash: pavanPasswordHash,
+      roleId: obeRole!.id,
+      status: UserStatus.ACTIVE,
+    },
+    create: {
+      name: 'Prof. Pavan Anumolu (OBE In-charge)',
+      email: 'pavan.anumolu@mictech.ac.in',
+      employeeId: 'OBE001',
+      passwordHash: pavanPasswordHash,
+      roleId: obeRole!.id,
+      departmentId: deptCSE.id,
+      status: UserStatus.ACTIVE,
+    },
+  });
+
   const coordinatorUser = await prisma.user.upsert({
     where: { email: 'coordinator@mictech.ac.in' },
     update: {},
