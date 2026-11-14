@@ -33,6 +33,14 @@ function SidebarInner() {
             <rect x="3" y="14" width="7" height="7" rx="1"></rect>
           </svg>
         );
+      case 'database':
+        return (
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+          </svg>
+        );
       case 'book':
         return (
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -130,6 +138,7 @@ function SidebarInner() {
   } else if (user?.role === 'OBE_INCHARGE') {
     navItems = [
       { label: 'OBE Dashboard', href: '/obe/dashboard', tabKey: 'dashboard', iconType: 'dashboard' },
+      { label: 'Database Hub', href: '/obe/dashboard?tab=database', tabKey: 'database', iconType: 'database' },
       { label: 'Staff Onboarding', href: '/obe/dashboard?tab=staff', tabKey: 'staff', iconType: 'faculty' },
       { label: 'Upload Scripts', href: '/obe/dashboard?tab=upload', tabKey: 'upload', iconType: 'upload' },
       { label: 'Assign Scripts', href: '/obe/dashboard?tab=assign', tabKey: 'assign', iconType: 'link' },

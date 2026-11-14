@@ -10,6 +10,7 @@ import { adminService } from '@/services/admin.service';
 import { MetadataOptions, ScriptBundle, FileTreeNode } from '@/types/script';
 import { FolderTreeViewer } from '@/components/scripts/FolderTreeViewer';
 import { ScriptViewerModal } from '@/components/scripts/ScriptViewerModal';
+import { DatabaseManagerView } from '@/components/obe/DatabaseManagerView';
 import { toast } from 'react-hot-toast';
 
 function ObeDashboardContent() {
@@ -18,7 +19,8 @@ function ObeDashboardContent() {
   const tabParam = searchParams.get('tab');
 
   // Direct reactive tab resolution derived from URL query parameters
-  const activeTab: 'dashboard' | 'upload' | 'assign' | 'staff' | 'bundles' = (() => {
+  const activeTab: 'dashboard' | 'upload' | 'assign' | 'staff' | 'bundles' | 'database' = (() => {
+    if (tabParam === 'database') return 'database';
     if (tabParam === 'staff') return 'staff';
     if (tabParam === 'upload') return 'upload';
     if (tabParam === 'assign') return 'assign';
@@ -27,7 +29,7 @@ function ObeDashboardContent() {
     return 'dashboard';
   })();
 
-  const switchTab = (tab: 'dashboard' | 'upload' | 'assign' | 'staff' | 'bundles') => {
+  const switchTab = (tab: 'dashboard' | 'upload' | 'assign' | 'staff' | 'bundles' | 'database') => {
     if (tab === 'dashboard') {
       router.push('/obe/dashboard');
     } else {
@@ -392,6 +394,7 @@ function ObeDashboardContent() {
         <div>
           <h1 style={{ fontSize: '1.85rem', fontWeight: 800, color: '#0F172A', margin: 0, letterSpacing: '-0.02em' }}>
             {activeTab === 'dashboard' && 'OBE In-charge Dashboard'}
+            {activeTab === 'database' && 'Master Database Management Hub'}
             {activeTab === 'upload' && 'Upload Script Bundles'}
             {activeTab === 'assign' && 'Allocate Scripts to Branch Coordinator'}
             {activeTab === 'staff' && 'Central Staff Onboarding'}
@@ -399,6 +402,7 @@ function ObeDashboardContent() {
           </h1>
           <p style={{ color: '#64748B', fontSize: '0.92rem', margin: '4px 0 0 0' }}>
             {activeTab === 'dashboard' && 'Central institutional authority for examination script ingestion, branch coordinator allocation, and staff onboarding.'}
+            {activeTab === 'database' && 'Direct full-access database console — Add, edit, or delete records across all institutional tables.'}
             {activeTab === 'upload' && 'Select examination subject and ingest scripts via ZIP compressed archive or folder hierarchy.'}
             {activeTab === 'assign' && 'Allocate uploaded examination script bundles to the corresponding Branch Coordinator.'}
             {activeTab === 'staff' && 'Onboard faculty members and designate Branch Coordinators vs Teaching Faculty.'}
@@ -1401,6 +1405,13 @@ function ObeDashboardContent() {
             />
           )}
         </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* TAB 5: MASTER DATABASE MANAGER VIEW                      */}
+      {/* ======================================================== */}
+      {activeTab === 'database' && (
+        <DatabaseManagerView />
       )}
     </div>
   );
