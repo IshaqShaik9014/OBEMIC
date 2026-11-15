@@ -33,6 +33,10 @@ export function DatabaseManagerView() {
   const [deleteConfirmationPrompt, setDeleteConfirmationPrompt] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Hover states for interactive elements
+  const [hoveredTab, setHoveredTab] = useState<string | null>(null);
+  const [hoveredRowId, setHoveredRowId] = useState<string | null>(null);
+
   // 1. Load Metadata
   useEffect(() => {
     let isMounted = true;
@@ -41,7 +45,7 @@ export function DatabaseManagerView() {
         const meta = await obeDatabaseService.getMetadata();
         if (isMounted) {
           setMetadata(meta);
-          if (meta.entities.length > 0) {
+          if (meta.entities.length > 0 && !selectedEntityKey) {
             setSelectedEntityKey(meta.entities[0].key);
           }
         }
@@ -80,7 +84,7 @@ export function DatabaseManagerView() {
   useEffect(() => {
     setCurrentPage(1);
     fetchRecords(1, searchQuery);
-  }, [selectedEntityKey, fetchRecords, searchQuery]);
+  }, [selectedEntityKey, pageSize]);
 
   // Handle Search Submission
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -109,7 +113,7 @@ export function DatabaseManagerView() {
     const initial: Record<string, any> = {};
     currentEntity.fields.forEach(f => {
       if (f.name === 'password') {
-        initial.password = ''; // empty password means don't change
+        initial.password = ''; // empty password means keep unchanged
       } else {
         initial[f.name] = item[f.name] !== undefined && item[f.name] !== null ? item[f.name] : '';
       }
@@ -128,7 +132,7 @@ export function DatabaseManagerView() {
     try {
       if (modalMode === 'create') {
         await obeDatabaseService.createRecord(selectedEntityKey, formData);
-        toast.success(`Successfully created ${currentEntity.singularLabel}!`);
+        toast.success(`Successfully added to ${currentEntity.label}!`);
       } else if (modalMode === 'edit' && activeRecord) {
         await obeDatabaseService.updateRecord(selectedEntityKey, activeRecord.id, formData);
         toast.success(`Successfully updated ${currentEntity.singularLabel}!`);
@@ -168,22 +172,73 @@ export function DatabaseManagerView() {
     }
   };
 
-  // Helper to resolve cell display text
+  // Helper to resolve cell display text with custom badge styling
   const renderCellContent = (item: any, field: FieldDefinition) => {
     const val = item[field.name];
 
     // Relations
     if (field.name === 'departmentId' || field.name === 'department') {
-      return item.department?.departmentName || item.departmentName || val || '—';
+      const name = item.department?.departmentName || item.departmentName || val;
+      return name ? (
+        <span style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '4px',
+          fontWeight: 600,
+          color: '#1E293B'
+        }}>
+          🏛️ {name}
+        </span>
+      ) : '—';
     }
     if (field.name === 'roleId') {
-      return item.role?.roleName || val || '—';
+      const roleName = item.role?.roleName || val;
+      if (!roleName) return '—';
+      const isCoord = roleName === 'COORDINATOR';
+      const isObe = roleName === 'OBE_INCHARGE';
+      const isAdmin = roleName === 'ADMIN';
+      return (
+        <span style={{
+          padding: '3px 8px',
+          borderRadius: '6px',
+          fontSize: '0.75rem',
+          fontWeight: 700,
+          background: isObe ? '#FEF3C7' : isCoord ? '#DCFCE7' : isAdmin ? '#F3E8FF' : '#EFF6FF',
+          color: isObe ? '#92400E' : isCoord ? '#15803D' : isAdmin ? '#7E22CE' : '#1D4ED8',
+          border: isObe ? '1px solid #FDE68A' : isCoord ? '1px solid #BBF7D0' : isAdmin ? '1px solid #E9D5FF' : '1px solid #BFDBFE'
+        }}>
+          {isObe ? '⭐ OBE In-charge' : isCoord ? '🛡️ Coordinator' : isAdmin ? '👑 Admin' : '👤 Faculty'}
+        </span>
+      );
     }
     if (field.name === 'facultyId') {
-      return item.faculty ? `${item.faculty.name} (${item.faculty.employeeId || item.faculty.email})` : val || '—';
+      return item.faculty ? (
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <span style={{ fontWeight: 600, color: '#0F172A' }}>{item.faculty.name}</span>
+          <span style={{ fontSize: '0.75rem', color: '#64748B' }}>
+            {item.faculty.employeeId ? `[${item.faculty.employeeId}] ` : ''}{item.faculty.email}
+          </span>
+        </div>
+      ) : val || '—';
     }
     if (field.name === 'subjectId') {
-      return item.subject ? `[${item.subject.subjectCode}] ${item.subject.subjectName}` : val || '—';
+      return item.subject ? (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{
+            background: '#EFF6FF',
+            color: '#1D4ED8',
+            border: '1px solid #BFDBFE',
+            padding: '2px 6px',
+            borderRadius: '4px',
+            fontFamily: 'monospace',
+            fontWeight: 700,
+            fontSize: '0.78rem'
+          }}>
+            {item.subject.subjectCode}
+          </span>
+          <span style={{ fontWeight: 500, color: '#1E293B' }}>{item.subject.subjectName}</span>
+        </div>
+      ) : val || '—';
     }
     if (field.name === 'academicYearId' || field.name === 'academicYear') {
       return item.academicYear?.year || item.academicYear || val || '—';
@@ -200,7 +255,11 @@ export function DatabaseManagerView() {
     if (field.name === 'createdAt' || field.name === 'updatedAt') {
       if (!val) return '—';
       try {
-        return new Date(val).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' });
+        return (
+          <span style={{ color: '#64748B', fontSize: '0.8rem' }}>
+            {new Date(val).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })}
+          </span>
+        );
       } catch {
         return val;
       }
@@ -208,103 +267,274 @@ export function DatabaseManagerView() {
 
     if (val === null || val === undefined || val === '') return '—';
 
-    // Badge styling for special columns
+    // Badge styling for codes / roll numbers / keys
     if (field.name === 'subjectCode' || field.name === 'rollNumber' || field.name === 'coCode') {
       return (
-        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-bold bg-blue-50 text-blue-800 border border-blue-200">
+        <span style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          padding: '2px 8px',
+          borderRadius: '5px',
+          fontSize: '0.8rem',
+          fontFamily: 'monospace',
+          fontWeight: 700,
+          background: '#EFF6FF',
+          color: '#1D4ED8',
+          border: '1px solid #BFDBFE'
+        }}>
           {val}
         </span>
       );
+    }
+
+    // Passwords masked
+    if (field.name === 'password') {
+      return <span style={{ color: '#94A3B8', fontFamily: 'monospace' }}>••••••••</span>;
     }
 
     return String(val);
   };
 
   return (
-    <div className="space-y-6">
-      {/* 1. Header Banner */}
-      <div className="bg-gradient-to-r from-[#0B1D33] via-[#1E3A5F] to-[#0B1D33] p-6 rounded-2xl shadow-xl border border-slate-700/50 text-white flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3">
-            <span className="p-2.5 bg-blue-500/20 text-blue-300 rounded-xl border border-blue-400/30 text-xl font-bold">
-              🗄️
-            </span>
-            <div>
-              <h2 className="text-2xl font-bold tracking-tight">OBE Master Database Hub</h2>
-              <p className="text-sm text-slate-300 mt-0.5">
-                Full-access administrative database console — Add, modify, or remove institution records directly.
-              </p>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      
+      {/* 1. Header Toolbar Card */}
+      <div style={{
+        background: '#FFFFFF',
+        border: '1px solid #E2E8F0',
+        borderRadius: '16px',
+        padding: '20px 24px',
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '16px'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div style={{
+            width: '46px',
+            height: '46px',
+            borderRadius: '12px',
+            background: 'linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%)',
+            border: '1px solid #BFDBFE',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '1.45rem',
+            boxShadow: '0 2px 4px rgba(37, 99, 235, 0.08)'
+          }}>
+            {currentEntity?.icon || '🗄️'}
+          </div>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <h2 style={{
+                fontSize: '1.35rem',
+                fontWeight: 800,
+                color: '#0F172A',
+                margin: 0,
+                letterSpacing: '-0.02em'
+              }}>
+                {currentEntity?.label || 'Database Records'}
+              </h2>
+              <span style={{
+                padding: '3px 10px',
+                borderRadius: '9999px',
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                background: '#F1F5F9',
+                color: '#1E293B',
+                border: '1px solid #CBD5E1'
+              }}>
+                {totalRecords} {totalRecords === 1 ? 'record' : 'records'}
+              </span>
             </div>
+            <p style={{
+              margin: '3px 0 0 0',
+              fontSize: '0.84rem',
+              color: '#64748B'
+            }}>
+              {currentEntity?.description || 'Browse, filter, insert, edit, or remove records across institution tables.'}
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <button
+            type="button"
             onClick={() => fetchRecords(currentPage, searchQuery)}
             disabled={isLoading}
-            className="px-3.5 py-2 rounded-xl text-sm font-medium bg-slate-800/80 hover:bg-slate-700 border border-slate-600 text-slate-200 transition-all flex items-center gap-2"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '9px 16px',
+              borderRadius: '8px',
+              fontSize: '0.85rem',
+              fontWeight: 600,
+              background: '#FFFFFF',
+              border: '1px solid #CBD5E1',
+              color: '#334155',
+              cursor: isLoading ? 'not-allowed' : 'pointer',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+              transition: 'all 0.15s ease'
+            }}
           >
-            <span className={isLoading ? 'animate-spin' : ''}>🔄</span>
+            <span style={{ display: 'inline-block', transform: isLoading ? 'rotate(360deg)' : 'none', transition: 'transform 0.5s ease' }}>
+              🔄
+            </span>
             Refresh
           </button>
+
           {currentEntity && (
             <button
+              type="button"
               onClick={openCreateModal}
-              className="px-4 py-2 rounded-xl text-sm font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/30 transition-all flex items-center gap-2 hover:scale-[1.02]"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '9px 18px',
+                borderRadius: '8px',
+                fontSize: '0.85rem',
+                fontWeight: 700,
+                background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
+                color: '#FFFFFF',
+                border: 'none',
+                cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(37, 99, 235, 0.3)',
+                transition: 'all 0.15s ease'
+              }}
             >
-              <span>➕</span>
+              <span style={{ fontSize: '0.95rem' }}>➕</span>
               Add {currentEntity.singularLabel}
             </button>
           )}
         </div>
       </div>
 
-      {/* 2. Entity Selector Pills */}
-      <div className="bg-white p-2 rounded-2xl shadow-sm border border-slate-200 overflow-x-auto">
-        <div className="flex items-center gap-2 min-w-max">
-          {metadata?.entities.map(ent => {
-            const isSelected = ent.key === selectedEntityKey;
-            return (
-              <button
-                key={ent.key}
-                onClick={() => {
-                  setSelectedEntityKey(ent.key);
-                  setSearchQuery('');
-                }}
-                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${
-                  isSelected
-                    ? 'bg-[#0B1D33] text-white shadow-md shadow-slate-900/20'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                }`}
-              >
-                <span>{ent.label}</span>
-                {isSelected && (
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500 text-white font-mono">
-                    {totalRecords}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
+      {/* 2. Entity Navigation Tab Strip */}
+      <div style={{
+        background: '#FFFFFF',
+        border: '1px solid #E2E8F0',
+        borderRadius: '14px',
+        padding: '8px',
+        boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)',
+        overflowX: 'auto',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px'
+      }}>
+        {metadata?.entities.map(ent => {
+          const isSelected = ent.key === selectedEntityKey;
+          const isHovered = hoveredTab === ent.key;
+          return (
+            <button
+              key={ent.key}
+              type="button"
+              onClick={() => {
+                setSelectedEntityKey(ent.key);
+                setSearchQuery('');
+              }}
+              onMouseEnter={() => setHoveredTab(ent.key)}
+              onMouseLeave={() => setHoveredTab(null)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 14px',
+                borderRadius: '8px',
+                fontSize: '0.84rem',
+                fontWeight: isSelected ? 700 : 600,
+                whiteSpace: 'nowrap',
+                cursor: 'pointer',
+                border: isSelected ? '1px solid #0B1D33' : '1px solid transparent',
+                background: isSelected
+                  ? '#0B1D33'
+                  : isHovered
+                  ? '#F1F5F9'
+                  : 'transparent',
+                color: isSelected ? '#FFFFFF' : isHovered ? '#0F172A' : '#475569',
+                boxShadow: isSelected ? '0 2px 6px rgba(11, 29, 51, 0.18)' : 'none',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <span>{ent.icon}</span>
+              <span>{ent.label}</span>
+              {isSelected && (
+                <span style={{
+                  padding: '1px 7px',
+                  borderRadius: '9999px',
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  background: '#3B82F6',
+                  color: '#FFFFFF'
+                }}>
+                  {totalRecords}
+                </span>
+              )}
+            </button>
+          );
+        })}
       </div>
 
-      {/* 3. Search & Control Bar */}
-      <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4">
-        <form onSubmit={handleSearchSubmit} className="flex items-center gap-2 w-full md:w-96">
-          <div className="relative w-full">
-            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
+      {/* 3. Search & Control Toolbar */}
+      <div style={{
+        background: '#FFFFFF',
+        border: '1px solid #E2E8F0',
+        borderRadius: '12px',
+        padding: '12px 18px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '12px',
+        boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)'
+      }}>
+        <form onSubmit={handleSearchSubmit} style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: '1 1 320px', maxWidth: '480px' }}>
+          <div style={{ position: 'relative', width: '100%' }}>
+            <span style={{
+              position: 'absolute',
+              left: '12px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: '#94A3B8',
+              fontSize: '0.88rem',
+              pointerEvents: 'none'
+            }}>
+              🔍
+            </span>
             <input
               type="text"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder={`Search ${currentEntity?.label || 'records'}...`}
-              className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-300 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              style={{
+                width: '100%',
+                padding: '9px 12px 9px 36px',
+                borderRadius: '8px',
+                border: '1px solid #CBD5E1',
+                fontSize: '0.86rem',
+                color: '#0F172A',
+                backgroundColor: '#FFFFFF',
+                outline: 'none',
+                boxSizing: 'border-box'
+              }}
             />
           </div>
           <button
             type="submit"
-            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-xl border border-slate-300 transition-all"
+            style={{
+              padding: '9px 16px',
+              background: '#F1F5F9',
+              border: '1px solid #CBD5E1',
+              borderRadius: '8px',
+              color: '#334155',
+              fontWeight: 600,
+              fontSize: '0.85rem',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap'
+            }}
           >
             Find
           </button>
@@ -315,233 +545,571 @@ export function DatabaseManagerView() {
                 setSearchQuery('');
                 fetchRecords(1, '');
               }}
-              className="px-2.5 py-2 text-slate-400 hover:text-slate-600 text-sm font-semibold"
+              style={{
+                padding: '9px 12px',
+                background: 'transparent',
+                border: 'none',
+                color: '#64748B',
+                fontWeight: 600,
+                fontSize: '0.85rem',
+                cursor: 'pointer'
+              }}
             >
               Clear
             </button>
           )}
         </form>
 
-        <div className="flex items-center gap-3 text-xs text-slate-500 font-medium">
-          <span>Showing {records.length} of {totalRecords} records</span>
-          <span className="text-slate-300">|</span>
-          <span>Page {currentPage} of {totalPages || 1}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '0.82rem', color: '#64748B' }}>
+          <span>
+            Showing <strong style={{ color: '#0F172A' }}>{records.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}</strong> - <strong style={{ color: '#0F172A' }}>{Math.min(currentPage * pageSize, totalRecords)}</strong> of <strong style={{ color: '#0F172A' }}>{totalRecords}</strong>
+          </span>
+          <span style={{ color: '#CBD5E1' }}>|</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span>Per page:</span>
+            <select
+              value={pageSize}
+              onChange={e => {
+                setPageSize(Number(e.target.value));
+                setCurrentPage(1);
+              }}
+              style={{
+                padding: '4px 8px',
+                borderRadius: '6px',
+                border: '1px solid #CBD5E1',
+                fontSize: '0.8rem',
+                color: '#334155',
+                background: '#FFFFFF',
+                outline: 'none',
+                cursor: 'pointer'
+              }}
+            >
+              <option value={10}>10</option>
+              <option value={25}>25</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+          </div>
         </div>
       </div>
 
-      {/* 4. Data Table */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      {/* 4. Modern Data Table Card */}
+      <div style={{
+        background: '#FFFFFF',
+        border: '1px solid #E2E8F0',
+        borderRadius: '14px',
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+        overflow: 'hidden'
+      }}>
         {isLoading ? (
-          <div className="p-16 text-center text-slate-400">
-            <div className="inline-block animate-spin text-3xl mb-3">🔄</div>
-            <p className="text-sm font-medium">Fetching records from database...</p>
+          <div style={{ padding: '60px 20px', textAlign: 'center', color: '#64748B' }}>
+            <div style={{ fontSize: '2rem', marginBottom: '10px' }}>🔄</div>
+            <p style={{ margin: 0, fontWeight: 600, fontSize: '0.92rem', color: '#334155' }}>
+              Querying {currentEntity?.label}...
+            </p>
+            <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: '#94A3B8' }}>
+              Fetching latest records directly from database
+            </p>
           </div>
         ) : records.length === 0 ? (
-          <div className="p-16 text-center text-slate-400">
-            <span className="text-4xl block mb-2">📂</span>
-            <p className="text-base font-semibold text-slate-600">No records found</p>
-            <p className="text-xs text-slate-400 mt-1">
-              {searchQuery ? `No results matching "${searchQuery}".` : `No entries currently stored in ${currentEntity?.label}.`}
+          <div style={{ padding: '60px 20px', textAlign: 'center', color: '#64748B' }}>
+            <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>📂</div>
+            <h3 style={{ margin: '0 0 6px 0', fontSize: '1.1rem', fontWeight: 700, color: '#0F172A' }}>
+              No records found
+            </h3>
+            <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748B' }}>
+              {searchQuery
+                ? `No records matching "${searchQuery}" in ${currentEntity?.label}.`
+                : `There are currently no records stored in ${currentEntity?.label}.`}
             </p>
             {currentEntity && (
               <button
+                type="button"
                 onClick={openCreateModal}
-                className="mt-4 px-4 py-2 text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 rounded-xl hover:bg-blue-100 transition-all"
+                style={{
+                  marginTop: '16px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  fontSize: '0.82rem',
+                  fontWeight: 700,
+                  background: '#EFF6FF',
+                  border: '1px solid #BFDBFE',
+                  color: '#1D4ED8',
+                  cursor: 'pointer'
+                }}
               >
                 + Add First {currentEntity.singularLabel}
               </button>
             )}
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-sm">
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 text-xs font-bold uppercase tracking-wider">
-                  <th className="py-3.5 px-4 w-12 text-center text-slate-400">#</th>
+                <tr style={{ background: '#F8FAFC', borderBottom: '1.5px solid #E2E8F0' }}>
+                  <th style={{
+                    padding: '12px 16px',
+                    fontSize: '0.74rem',
+                    fontWeight: 700,
+                    color: '#64748B',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.04em',
+                    width: '48px',
+                    textAlign: 'center'
+                  }}>
+                    #
+                  </th>
                   {currentEntity?.fields
                     .filter(f => f.showInTable)
                     .map(f => (
-                      <th key={f.name} className="py-3.5 px-4">
+                      <th
+                        key={f.name}
+                        style={{
+                          padding: '12px 16px',
+                          fontSize: '0.74rem',
+                          fontWeight: 700,
+                          color: '#64748B',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.04em',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
                         {f.label}
                       </th>
                     ))}
-                  <th className="py-3.5 px-4 text-right w-36">Actions</th>
+                  <th style={{
+                    padding: '12px 16px',
+                    fontSize: '0.74rem',
+                    fontWeight: 700,
+                    color: '#64748B',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.04em',
+                    textAlign: 'right',
+                    width: '140px'
+                  }}>
+                    Actions
+                  </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700 font-medium">
-                {records.map((item, idx) => (
-                  <tr key={item.id || idx} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-3.5 px-4 text-center text-xs text-slate-400 font-mono">
-                      {(currentPage - 1) * pageSize + idx + 1}
-                    </td>
-                    {currentEntity?.fields
-                      .filter(f => f.showInTable)
-                      .map(f => (
-                        <td key={f.name} className="py-3.5 px-4 whitespace-nowrap">
-                          {renderCellContent(item, f)}
-                        </td>
-                      ))}
-                    <td className="py-3.5 px-4 text-right whitespace-nowrap space-x-2">
-                      <button
-                        onClick={() => openEditModal(item)}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-all"
-                        title="Edit record"
-                      >
-                        <span>✏️</span> Edit
-                      </button>
-                      <button
-                        onClick={() => triggerDelete(item)}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-all"
-                        title="Delete record"
-                      >
-                        <span>🗑️</span> Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+              <tbody>
+                {records.map((item, idx) => {
+                  const rowId = item.id || String(idx);
+                  const isHovered = hoveredRowId === rowId;
+                  return (
+                    <tr
+                      key={rowId}
+                      onMouseEnter={() => setHoveredRowId(rowId)}
+                      onMouseLeave={() => setHoveredRowId(null)}
+                      style={{
+                        borderBottom: '1px solid #F1F5F9',
+                        background: isHovered ? '#F8FAFC' : '#FFFFFF',
+                        transition: 'background 0.15s ease'
+                      }}
+                    >
+                      <td style={{
+                        padding: '12px 16px',
+                        textAlign: 'center',
+                        fontSize: '0.78rem',
+                        fontFamily: 'monospace',
+                        color: '#94A3B8',
+                        fontWeight: 600
+                      }}>
+                        {(currentPage - 1) * pageSize + idx + 1}
+                      </td>
+                      {currentEntity?.fields
+                        .filter(f => f.showInTable)
+                        .map(f => (
+                          <td
+                            key={f.name}
+                            style={{
+                              padding: '12px 16px',
+                              fontSize: '0.86rem',
+                              color: '#1E293B',
+                              whiteSpace: 'nowrap',
+                              verticalAlign: 'middle'
+                            }}
+                          >
+                            {renderCellContent(item, f)}
+                          </td>
+                        ))}
+                      <td style={{
+                        padding: '12px 16px',
+                        textAlign: 'right',
+                        whiteSpace: 'nowrap',
+                        verticalAlign: 'middle'
+                      }}>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                          <button
+                            type="button"
+                            onClick={() => openEditModal(item)}
+                            title={`Edit ${currentEntity?.singularLabel}`}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              padding: '5px 10px',
+                              borderRadius: '6px',
+                              fontSize: '0.78rem',
+                              fontWeight: 600,
+                              background: '#EFF6FF',
+                              color: '#1D4ED8',
+                              border: '1px solid #BFDBFE',
+                              cursor: 'pointer',
+                              transition: 'all 0.15s ease'
+                            }}
+                          >
+                            <span>✏️</span> Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => triggerDelete(item)}
+                            title={`Delete ${currentEntity?.singularLabel}`}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              padding: '5px 10px',
+                              borderRadius: '6px',
+                              fontSize: '0.78rem',
+                              fontWeight: 600,
+                              background: '#FEF2F2',
+                              color: '#DC2626',
+                              border: '1px solid #FECACA',
+                              cursor: 'pointer',
+                              transition: 'all 0.15s ease'
+                            }}
+                          >
+                            <span>🗑️</span> Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         )}
 
-        {/* 5. Pagination Controls */}
+        {/* 5. Pagination Footer */}
         {totalPages > 1 && (
-          <div className="bg-slate-50 px-4 py-3 border-t border-slate-200 flex items-center justify-between">
+          <div style={{
+            background: '#F8FAFC',
+            padding: '12px 20px',
+            borderTop: '1px solid #E2E8F0',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '12px'
+          }}>
             <button
+              type="button"
               onClick={() => fetchRecords(currentPage - 1, searchQuery)}
               disabled={currentPage <= 1 || isLoading}
-              className="px-3.5 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold text-slate-600 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              style={{
+                padding: '6px 14px',
+                borderRadius: '6px',
+                border: '1px solid #CBD5E1',
+                fontSize: '0.8rem',
+                fontWeight: 600,
+                color: currentPage <= 1 ? '#94A3B8' : '#334155',
+                background: '#FFFFFF',
+                cursor: currentPage <= 1 ? 'not-allowed' : 'pointer'
+              }}
             >
-              ← Previous
+              &larr; Previous
             </button>
-            <div className="flex items-center gap-1 text-xs font-bold text-slate-600">
-              Page {currentPage} of {totalPages}
+
+            <div style={{ fontSize: '0.82rem', fontWeight: 600, color: '#475569' }}>
+              Page <strong style={{ color: '#0F172A' }}>{currentPage}</strong> of <strong style={{ color: '#0F172A' }}>{totalPages}</strong>
             </div>
+
             <button
+              type="button"
               onClick={() => fetchRecords(currentPage + 1, searchQuery)}
               disabled={currentPage >= totalPages || isLoading}
-              className="px-3.5 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold text-slate-600 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              style={{
+                padding: '6px 14px',
+                borderRadius: '6px',
+                border: '1px solid #CBD5E1',
+                fontSize: '0.8rem',
+                fontWeight: 600,
+                color: currentPage >= totalPages ? '#94A3B8' : '#334155',
+                background: '#FFFFFF',
+                cursor: currentPage >= totalPages ? 'not-allowed' : 'pointer'
+              }}
             >
-              Next →
+              Next &rarr;
             </button>
           </div>
         )}
       </div>
 
-      {/* 6. Form Modal (Add / Edit) */}
+      {/* 6. Form Modal (Create or Edit Record) */}
       {modalMode && currentEntity && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden animate-scaleIn">
-            <div className="px-6 py-4 border-b border-slate-200 bg-slate-50/50 flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-bold text-slate-900">
-                  {modalMode === 'create' ? `Add New ${currentEntity.singularLabel}` : `Edit ${currentEntity.singularLabel}`}
-                </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  {modalMode === 'create' ? 'Fill out the details to insert a new row.' : 'Update fields and save changes.'}
-                </p>
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(15, 23, 42, 0.65)',
+          backdropFilter: 'blur(4px)',
+          zIndex: 1000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }}>
+          <div style={{
+            background: '#FFFFFF',
+            borderRadius: '16px',
+            maxWidth: '620px',
+            width: '100%',
+            maxHeight: '90vh',
+            display: 'flex',
+            flexDirection: 'column',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+            border: '1px solid #CBD5E1',
+            overflow: 'hidden'
+          }}>
+            {/* Modal Header */}
+            <div style={{
+              padding: '18px 24px',
+              borderBottom: '1px solid #E2E8F0',
+              background: '#F8FAFC',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '1.3rem' }}>{currentEntity.icon}</span>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#0F172A' }}>
+                    {modalMode === 'create' ? `Add New ${currentEntity.singularLabel}` : `Edit ${currentEntity.singularLabel}`}
+                  </h3>
+                  <p style={{ margin: '2px 0 0 0', fontSize: '0.8rem', color: '#64748B' }}>
+                    {modalMode === 'create'
+                      ? `Create a new record in ${currentEntity.label}`
+                      : `Update record properties in ${currentEntity.label}`}
+                  </p>
+                </div>
               </div>
               <button
+                type="button"
                 onClick={() => setModalMode(null)}
-                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg text-lg"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '1.25rem',
+                  color: '#64748B',
+                  cursor: 'pointer',
+                  padding: '4px'
+                }}
               >
-                ✕
+                &times;
               </button>
             </div>
 
-            <form onSubmit={handleFormSubmit} className="flex-1 overflow-y-auto p-6 space-y-4">
-              {currentEntity.fields
-                .filter(f => (modalMode === 'create' ? f.creatable : f.editable))
-                .map(field => {
-                  const val = formData[field.name] !== undefined ? formData[field.name] : '';
+            {/* Modal Form Body */}
+            <form onSubmit={handleFormSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
+              <div style={{
+                padding: '22px 24px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '16px',
+                overflowY: 'auto',
+                flex: 1
+              }}>
+                {currentEntity.fields
+                  .filter(f => (modalMode === 'create' ? f.creatable : f.editable))
+                  .map(field => {
+                    const val = formData[field.name] !== undefined ? formData[field.name] : '';
 
-                  if (field.type === 'select') {
-                    const options: LookupOption[] = field.optionsKey && metadata?.lookups
-                      ? (metadata.lookups as any)[field.optionsKey] || []
-                      : [];
+                    if (field.type === 'select') {
+                      const options: LookupOption[] = field.optionsKey && metadata?.lookups
+                        ? (metadata.lookups as any)[field.optionsKey] || []
+                        : [];
+
+                      return (
+                        <div key={field.name}>
+                          <label style={{
+                            display: 'block',
+                            fontSize: '0.82rem',
+                            fontWeight: 700,
+                            color: '#334155',
+                            marginBottom: '6px'
+                          }}>
+                            {field.label} {field.required && <span style={{ color: '#EF4444' }}>*</span>}
+                          </label>
+                          <select
+                            value={val}
+                            onChange={e => setFormData({ ...formData, [field.name]: e.target.value })}
+                            required={field.required}
+                            style={{
+                              width: '100%',
+                              padding: '10px 12px',
+                              borderRadius: '8px',
+                              border: '1px solid #CBD5E1',
+                              fontSize: '0.88rem',
+                              color: '#0F172A',
+                              background: '#FFFFFF',
+                              outline: 'none',
+                              boxSizing: 'border-box'
+                            }}
+                          >
+                            <option value="">-- Select {field.label} --</option>
+                            {options.map((opt: LookupOption) => (
+                              <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      );
+                    }
+
+                    if (field.type === 'password') {
+                      return (
+                        <div key={field.name}>
+                          <label style={{
+                            display: 'block',
+                            fontSize: '0.82rem',
+                            fontWeight: 700,
+                            color: '#334155',
+                            marginBottom: '6px'
+                          }}>
+                            {field.label}{' '}
+                            {modalMode === 'edit' ? (
+                              <span style={{ color: '#94A3B8', fontWeight: 400, fontSize: '0.78rem' }}>
+                                (leave blank to keep current password)
+                              </span>
+                            ) : field.required ? (
+                              <span style={{ color: '#EF4444' }}>*</span>
+                            ) : null}
+                          </label>
+                          <div style={{ position: 'relative' }}>
+                            <input
+                              type={showPassword ? 'text' : 'password'}
+                              value={val}
+                              onChange={e => setFormData({ ...formData, [field.name]: e.target.value })}
+                              placeholder={modalMode === 'edit' ? '••••••••' : 'Enter account password'}
+                              required={modalMode === 'create' && field.required}
+                              style={{
+                                width: '100%',
+                                padding: '10px 40px 10px 12px',
+                                borderRadius: '8px',
+                                border: '1px solid #CBD5E1',
+                                fontSize: '0.88rem',
+                                color: '#0F172A',
+                                outline: 'none',
+                                boxSizing: 'border-box',
+                                fontFamily: 'monospace'
+                              }}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              style={{
+                                position: 'absolute',
+                                right: '10px',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                background: 'none',
+                                border: 'none',
+                                color: '#64748B',
+                                cursor: 'pointer',
+                                fontSize: '1rem',
+                                padding: '4px'
+                              }}
+                            >
+                              {showPassword ? '👁️' : '🙈'}
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    }
 
                     return (
-                      <div key={field.name} className="space-y-1">
-                        <label className="block text-xs font-bold text-slate-700">
-                          {field.label} {field.required && <span className="text-red-500">*</span>}
+                      <div key={field.name}>
+                        <label style={{
+                          display: 'block',
+                          fontSize: '0.82rem',
+                          fontWeight: 700,
+                          color: '#334155',
+                          marginBottom: '6px'
+                        }}>
+                          {field.label} {field.required && <span style={{ color: '#EF4444' }}>*</span>}
                         </label>
-                        <select
+                        <input
+                          type={field.type === 'number' ? 'number' : 'text'}
+                          step={field.type === 'number' ? 'any' : undefined}
                           value={val}
                           onChange={e => setFormData({ ...formData, [field.name]: e.target.value })}
                           required={field.required}
-                          className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                        >
-                          <option value="">-- Select {field.label} --</option>
-                          {options.map((opt: LookupOption) => (
-                            <option key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </option>
-                          ))}
-                        </select>
+                          placeholder={`Enter ${field.label.toLowerCase()}...`}
+                          style={{
+                            width: '100%',
+                            padding: '10px 12px',
+                            borderRadius: '8px',
+                            border: '1px solid #CBD5E1',
+                            fontSize: '0.88rem',
+                            color: '#0F172A',
+                            outline: 'none',
+                            boxSizing: 'border-box'
+                          }}
+                        />
                       </div>
                     );
-                  }
+                  })}
+              </div>
 
-                  if (field.type === 'password') {
-                    return (
-                      <div key={field.name} className="space-y-1">
-                        <label className="block text-xs font-bold text-slate-700">
-                          {field.label} {modalMode === 'edit' && <span className="text-slate-400 font-normal">(leave blank to keep unchanged)</span>}
-                        </label>
-                        <div className="relative">
-                          <input
-                            type={showPassword ? 'text' : 'password'}
-                            value={val}
-                            onChange={e => setFormData({ ...formData, [field.name]: e.target.value })}
-                            placeholder={modalMode === 'edit' ? '••••••••' : 'Enter initial password'}
-                            required={modalMode === 'create' && field.required}
-                            className="w-full px-3.5 py-2 pr-10 text-sm rounded-xl border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-mono"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-sm"
-                          >
-                            {showPassword ? '👁️' : '🙈'}
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <div key={field.name} className="space-y-1">
-                      <label className="block text-xs font-bold text-slate-700">
-                        {field.label} {field.required && <span className="text-red-500">*</span>}
-                      </label>
-                      <input
-                        type={field.type === 'number' ? 'number' : 'text'}
-                        step={field.type === 'number' ? 'any' : undefined}
-                        value={val}
-                        onChange={e => setFormData({ ...formData, [field.name]: e.target.value })}
-                        required={field.required}
-                        placeholder={`Enter ${field.label.toLowerCase()}...`}
-                        className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                      />
-                    </div>
-                  );
-                })}
-
-              <div className="pt-4 border-t border-slate-200 flex items-center justify-end gap-3">
+              {/* Modal Footer */}
+              <div style={{
+                padding: '14px 24px',
+                background: '#F8FAFC',
+                borderTop: '1px solid #E2E8F0',
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: '10px'
+              }}>
                 <button
                   type="button"
                   onClick={() => setModalMode(null)}
-                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition-all"
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    border: '1px solid #CBD5E1',
+                    background: '#FFFFFF',
+                    color: '#475569',
+                    fontSize: '0.84rem',
+                    fontWeight: 600,
+                    cursor: 'pointer'
+                  }}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 shadow-md shadow-blue-600/30 disabled:opacity-50 transition-all flex items-center gap-2"
+                  style={{
+                    padding: '8px 20px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
+                    color: '#FFFFFF',
+                    fontSize: '0.84rem',
+                    fontWeight: 700,
+                    cursor: isSaving ? 'not-allowed' : 'pointer',
+                    boxShadow: '0 2px 6px rgba(37, 99, 235, 0.25)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
                 >
-                  {isSaving && <span className="animate-spin text-sm">🔄</span>}
-                  {modalMode === 'create' ? 'Insert Record' : 'Save Changes'}
+                  {isSaving && <span>🔄</span>}
+                  {modalMode === 'create' ? 'Save New Record' : 'Save Changes'}
                 </button>
               </div>
             </form>
@@ -551,59 +1119,137 @@ export function DatabaseManagerView() {
 
       {/* 7. Delete Confirmation Modal */}
       {deleteTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-6 space-y-4 animate-scaleIn">
-            <div className="flex items-center gap-3">
-              <span className="p-3 bg-red-100 text-red-600 rounded-xl text-xl">⚠️</span>
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(15, 23, 42, 0.65)',
+          backdropFilter: 'blur(4px)',
+          zIndex: 1000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }}>
+          <div style={{
+            background: '#FFFFFF',
+            borderRadius: '16px',
+            maxWidth: '460px',
+            width: '100%',
+            padding: '24px',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+            border: '1px solid #CBD5E1',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{
+                width: '44px',
+                height: '44px',
+                borderRadius: '12px',
+                background: '#FEF2F2',
+                border: '1px solid #FECACA',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '1.4rem'
+              }}>
+                ⚠️
+              </div>
               <div>
-                <h3 className="text-base font-bold text-slate-900">Delete {currentEntity?.singularLabel}?</h3>
-                <p className="text-xs text-slate-500 mt-0.5">This action cannot be undone.</p>
+                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: '#0F172A' }}>
+                  Delete {currentEntity?.singularLabel}?
+                </h3>
+                <p style={{ margin: '2px 0 0 0', fontSize: '0.8rem', color: '#64748B' }}>
+                  This action will permanently delete this record from the database.
+                </p>
               </div>
             </div>
 
             {deleteConfirmationPrompt ? (
-              <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 space-y-1">
-                <span className="font-bold block">⚠️ Cascade Warning:</span>
-                <p>{deleteConfirmationPrompt}</p>
+              <div style={{
+                padding: '12px 14px',
+                background: '#FFFBEB',
+                border: '1px solid #FDE68A',
+                borderRadius: '10px',
+                fontSize: '0.82rem',
+                color: '#92400E',
+                lineHeight: '1.45'
+              }}>
+                <strong style={{ display: 'block', marginBottom: '4px' }}>⚠️ Cascade Notice:</strong>
+                {deleteConfirmationPrompt}
               </div>
             ) : (
-              <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-600">
-                Are you sure you want to permanently delete record{' '}
-                <span className="font-mono font-bold text-slate-900">
+              <div style={{
+                padding: '12px 14px',
+                background: '#F8FAFC',
+                border: '1px solid #E2E8F0',
+                borderRadius: '10px',
+                fontSize: '0.84rem',
+                color: '#475569'
+              }}>
+                Are you sure you want to permanently remove{' '}
+                <strong style={{ color: '#0F172A' }}>
                   {deleteTarget.departmentName ||
                     deleteTarget.subjectCode ||
                     deleteTarget.name ||
                     deleteTarget.rollNumber ||
                     deleteTarget.year ||
-                    deleteTarget.id}
-                </span>{' '}
-                from <span className="font-bold">{currentEntity?.label}</span>?
+                    deleteTarget.bundleName ||
+                    `#${deleteTarget.id}`}
+                </strong>{' '}
+                from <strong style={{ color: '#0F172A' }}>{currentEntity?.label}</strong>?
               </div>
             )}
 
-            <div className="flex items-center justify-end gap-2 pt-2">
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', paddingTop: '6px' }}>
               <button
+                type="button"
                 onClick={() => {
                   setDeleteTarget(null);
                   setDeleteConfirmationPrompt(null);
                 }}
                 disabled={isDeleting}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-all"
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  border: '1px solid #CBD5E1',
+                  background: '#FFFFFF',
+                  color: '#475569',
+                  fontSize: '0.84rem',
+                  fontWeight: 600,
+                  cursor: isDeleting ? 'not-allowed' : 'pointer'
+                }}
               >
                 Cancel
               </button>
               <button
+                type="button"
                 onClick={() => confirmDelete(!!deleteConfirmationPrompt)}
                 disabled={isDeleting}
-                className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-red-600 hover:bg-red-500 shadow-md shadow-red-600/30 disabled:opacity-50 transition-all flex items-center gap-1.5"
+                style={{
+                  padding: '8px 18px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)',
+                  color: '#FFFFFF',
+                  fontSize: '0.84rem',
+                  fontWeight: 700,
+                  cursor: isDeleting ? 'not-allowed' : 'pointer',
+                  boxShadow: '0 2px 6px rgba(239, 68, 68, 0.3)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
               >
-                {isDeleting && <span className="animate-spin text-sm">🔄</span>}
+                {isDeleting && <span>🔄</span>}
                 {deleteConfirmationPrompt ? 'Confirm Cascade Delete' : 'Confirm Delete'}
               </button>
             </div>
           </div>
         </div>
       )}
+
     </div>
   );
 }
