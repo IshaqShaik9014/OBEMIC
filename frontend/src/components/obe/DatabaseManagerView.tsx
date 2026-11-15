@@ -10,6 +10,43 @@ import {
 } from '@/services/obe.database.service';
 import { toast } from 'react-hot-toast';
 
+function getEntityEmoji(key?: string, icon?: string): string {
+  // If icon is already a clean graphical emoji (<= 4 chars or unicode emoji block)
+  if (icon && (icon.length <= 4 || /[\u{1F300}-\u{1FAFF}]/u.test(icon))) {
+    return icon;
+  }
+  switch (key) {
+    case 'departments': return '🏛️';
+    case 'subjects': return '📚';
+    case 'users': return '👥';
+    case 'faculty-assignments':
+    case 'facultySubjectAssignments': return '🔗';
+    case 'academic-years':
+    case 'academicYears': return '📅';
+    case 'semesters': return '⏳';
+    case 'sections': return '🔠';
+    case 'regulations': return '📜';
+    case 'course-outcomes':
+    case 'courseOutcomes': return '🎯';
+    case 'students': return '🎓';
+    case 'script-bundles':
+    case 'scriptBundles': return '📦';
+    default:
+      if (icon === 'building') return '🏛️';
+      if (icon === 'book') return '📚';
+      if (icon === 'users') return '👥';
+      if (icon === 'link') return '🔗';
+      if (icon === 'calendar') return '📅';
+      if (icon === 'clock') return '⏳';
+      if (icon === 'grid') return '🔠';
+      if (icon === 'file-text' || icon === 'file') return '📜';
+      if (icon === 'target') return '🎯';
+      if (icon === 'graduation-cap') return '🎓';
+      if (icon === 'layers') return '📦';
+      return '🗄️';
+  }
+}
+
 export function DatabaseManagerView() {
   const [metadata, setMetadata] = useState<MetadataResponse | null>(null);
   const [selectedEntityKey, setSelectedEntityKey] = useState<string>('departments');
@@ -321,10 +358,11 @@ export function DatabaseManagerView() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: '1.45rem',
-            boxShadow: '0 2px 4px rgba(37, 99, 235, 0.08)'
+            fontSize: '1.6rem',
+            boxShadow: '0 2px 4px rgba(37, 99, 235, 0.08)',
+            flexShrink: 0
           }}>
-            {currentEntity?.icon || '🗄️'}
+            {getEntityEmoji(currentEntity?.key, currentEntity?.icon)}
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -418,16 +456,17 @@ export function DatabaseManagerView() {
         background: '#FFFFFF',
         border: '1px solid #E2E8F0',
         borderRadius: '14px',
-        padding: '8px',
+        padding: '10px 12px',
         boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)',
-        overflowX: 'auto',
         display: 'flex',
+        flexWrap: 'wrap',
         alignItems: 'center',
-        gap: '6px'
+        gap: '8px'
       }}>
         {metadata?.entities.map(ent => {
           const isSelected = ent.key === selectedEntityKey;
           const isHovered = hoveredTab === ent.key;
+          const emoji = getEntityEmoji(ent.key, ent.icon);
           return (
             <button
               key={ent.key}
@@ -448,22 +487,22 @@ export function DatabaseManagerView() {
                 fontWeight: isSelected ? 700 : 600,
                 whiteSpace: 'nowrap',
                 cursor: 'pointer',
-                border: isSelected ? '1px solid #0B1D33' : '1px solid transparent',
+                border: isSelected ? '1px solid #0B1D33' : '1px solid #E2E8F0',
                 background: isSelected
                   ? '#0B1D33'
                   : isHovered
-                  ? '#F1F5F9'
-                  : 'transparent',
-                color: isSelected ? '#FFFFFF' : isHovered ? '#0F172A' : '#475569',
+                  ? '#EFF6FF'
+                  : '#F8FAFC',
+                color: isSelected ? '#FFFFFF' : isHovered ? '#1D4ED8' : '#334155',
                 boxShadow: isSelected ? '0 2px 6px rgba(11, 29, 51, 0.18)' : 'none',
                 transition: 'all 0.15s ease'
               }}
             >
-              <span>{ent.icon}</span>
+              <span style={{ fontSize: '1.1rem', lineHeight: 1 }}>{emoji}</span>
               <span>{ent.label}</span>
               {isSelected && (
                 <span style={{
-                  padding: '1px 7px',
+                  padding: '2px 7px',
                   borderRadius: '9999px',
                   fontSize: '0.72rem',
                   fontWeight: 700,
@@ -884,7 +923,7 @@ export function DatabaseManagerView() {
               justifyContent: 'space-between'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ fontSize: '1.3rem' }}>{currentEntity.icon}</span>
+                <span style={{ fontSize: '1.3rem' }}>{getEntityEmoji(currentEntity.key, currentEntity.icon)}</span>
                 <div>
                   <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#0F172A' }}>
                     {modalMode === 'create' ? `Add New ${currentEntity.singularLabel}` : `Edit ${currentEntity.singularLabel}`}

@@ -135,7 +135,7 @@ export class ObeDatabaseService {
         label: 'Departments',
         singularLabel: 'Department',
         description: 'Academic branches/departments (CSE, MECH, ECE, etc.)',
-        icon: 'building',
+        icon: '🏛️',
         searchableColumns: ['departmentName'],
         fields: [
           { name: 'id', label: 'ID', type: 'text', editable: false, creatable: false, showInTable: false },
@@ -148,7 +148,7 @@ export class ObeDatabaseService {
         label: 'Subjects / Courses',
         singularLabel: 'Subject',
         description: 'Curriculum subjects mapped to departments and semesters',
-        icon: 'book',
+        icon: '📚',
         searchableColumns: ['subjectCode', 'subjectName'],
         fields: [
           { name: 'id', label: 'ID', type: 'text', editable: false, creatable: false, showInTable: false },
@@ -165,7 +165,7 @@ export class ObeDatabaseService {
         label: 'Staff & Faculty Accounts',
         singularLabel: 'Staff Account',
         description: 'User accounts across all roles (HOD, Coordinator, Faculty, OBE)',
-        icon: 'users',
+        icon: '👥',
         searchableColumns: ['name', 'email', 'employeeId'],
         fields: [
           { name: 'id', label: 'ID', type: 'text', editable: false, creatable: false, showInTable: false },
@@ -182,7 +182,7 @@ export class ObeDatabaseService {
         label: 'Faculty Subject Assignments',
         singularLabel: 'Subject Assignment',
         description: 'Allocation of faculty members to teach subjects by section & semester',
-        icon: 'link',
+        icon: '🔗',
         searchableColumns: [],
         fields: [
           { name: 'id', label: 'ID', type: 'text', editable: false, creatable: false, showInTable: false },
@@ -199,7 +199,7 @@ export class ObeDatabaseService {
         label: 'Academic Years',
         singularLabel: 'Academic Year',
         description: 'Institutional academic years (e.g. 2024-2025, 2025-2026)',
-        icon: 'calendar',
+        icon: '📅',
         searchableColumns: ['year'],
         fields: [
           { name: 'id', label: 'ID', type: 'text', editable: false, creatable: false, showInTable: false },
@@ -212,7 +212,7 @@ export class ObeDatabaseService {
         label: 'Semesters',
         singularLabel: 'Semester',
         description: 'Semester periods tied to academic years',
-        icon: 'clock',
+        icon: '⏳',
         searchableColumns: ['semester'],
         fields: [
           { name: 'id', label: 'ID', type: 'text', editable: false, creatable: false, showInTable: false },
@@ -225,7 +225,7 @@ export class ObeDatabaseService {
         label: 'Sections',
         singularLabel: 'Section',
         description: 'Department sections (A, B, C, D) per academic year',
-        icon: 'grid',
+        icon: '🔠',
         searchableColumns: ['sectionName'],
         fields: [
           { name: 'id', label: 'ID', type: 'text', editable: false, creatable: false, showInTable: false },
@@ -239,7 +239,7 @@ export class ObeDatabaseService {
         label: 'Regulations',
         singularLabel: 'Regulation',
         description: 'Curriculum frameworks (R20, R23, etc.)',
-        icon: 'file-text',
+        icon: '📜',
         searchableColumns: ['name'],
         fields: [
           { name: 'id', label: 'ID', type: 'text', editable: false, creatable: false, showInTable: false },
@@ -253,7 +253,7 @@ export class ObeDatabaseService {
         label: 'Course Outcomes (COs)',
         singularLabel: 'Course Outcome',
         description: 'Subject course outcomes (CO1 - CO5) and statements',
-        icon: 'target',
+        icon: '🎯',
         searchableColumns: ['coCode', 'description'],
         fields: [
           { name: 'id', label: 'ID', type: 'text', editable: false, creatable: false, showInTable: false },
@@ -267,7 +267,7 @@ export class ObeDatabaseService {
         label: 'Students',
         singularLabel: 'Student',
         description: 'Student enrollments and credentials',
-        icon: 'graduation-cap',
+        icon: '🎓',
         searchableColumns: ['rollNumber', 'name'],
         fields: [
           { name: 'id', label: 'ID', type: 'text', editable: false, creatable: false, showInTable: false },
@@ -281,7 +281,7 @@ export class ObeDatabaseService {
         label: 'Exam Script Bundles',
         singularLabel: 'Script Bundle',
         description: 'Uploaded script batch archives and metadata',
-        icon: 'layers',
+        icon: '📦',
         searchableColumns: ['title', 'department', 'semester'],
         fields: [
           { name: 'id', label: 'ID', type: 'text', editable: false, creatable: false, showInTable: false },
