@@ -102,5 +102,14 @@ export const obeDatabaseService = {
       throw new Error(err.error || 'Failed to delete record');
     }
     return res.json();
+  },
+
+  async seedMasterData(): Promise<any> {
+    const res = await api.post('/obe/database/seed/master', {});
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Failed to seed master database');
+    }
+    return res.json();
   }
 };

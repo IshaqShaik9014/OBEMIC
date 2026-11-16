@@ -25,6 +25,9 @@ router.use(requireObeOrAdmin);
 // Metadata & lookups
 router.get('/metadata', controller.getMetadata);
 
+// Seed master institutional data
+router.post('/seed/master', controller.seedMaster);
+
 // CRUD operations on any entity
 router.get('/:entity', controller.getRecords);
 router.post('/:entity', controller.createRecord);

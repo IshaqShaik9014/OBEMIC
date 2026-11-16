@@ -1,6 +1,11 @@
 import prisma from '../../database';
 import bcrypt from 'bcrypt';
 import { logger } from '../../logs/logger';
+import {
+  DEFAULT_PROGRAM_OUTCOMES,
+  DEFAULT_PROGRAM_EDUCATIONAL_OBJECTIVES,
+  getDepartmentPSOs
+} from '../../database/outcomeSeeds';
 
 export interface FieldDefinition {
   name: string;
@@ -243,9 +248,8 @@ export class ObeDatabaseService {
         searchableColumns: ['name'],
         fields: [
           { name: 'id', label: 'ID', type: 'text', editable: false, creatable: false, showInTable: false },
-          { name: 'name', label: 'Regulation Name (e.g. R23)', type: 'text', required: true, editable: true, creatable: true, showInTable: true },
-          { name: 'startYear', label: 'Start Year', type: 'number', required: false, editable: true, creatable: true, showInTable: true },
-          { name: 'endYear', label: 'End Year', type: 'number', required: false, editable: true, creatable: true, showInTable: true }
+          { name: 'name', label: 'Regulation Name (e.g. R23, MIC23)', type: 'text', required: true, editable: true, creatable: true, showInTable: true },
+          { name: 'createdAt', label: 'Created At', type: 'text', editable: false, creatable: false, showInTable: true }
         ]
       },
       {
@@ -693,9 +697,7 @@ export class ObeDatabaseService {
         if (!payload.name) throw new Error('Regulation name is required');
         createdItem = await prisma.regulation.create({
           data: {
-            name: payload.name.trim(),
-            startYear: payload.startYear ? parseInt(payload.startYear, 10) : null,
-            endYear: payload.endYear ? parseInt(payload.endYear, 10) : null
+            name: payload.name.trim()
           }
         });
         break;
@@ -852,9 +854,7 @@ export class ObeDatabaseService {
         updatedItem = await prisma.regulation.update({
           where: { id },
           data: {
-            name: payload.name ? payload.name.trim() : undefined,
-            startYear: payload.startYear !== undefined ? (payload.startYear ? parseInt(payload.startYear, 10) : null) : undefined,
-            endYear: payload.endYear !== undefined ? (payload.endYear ? parseInt(payload.endYear, 10) : null) : undefined
+            name: payload.name ? payload.name.trim() : undefined
           }
         });
         break;
@@ -1078,5 +1078,245 @@ export class ObeDatabaseService {
     }
 
     return { success: true, message: `Successfully deleted record from ${entity}` };
+  }
+
+  /**
+   * Seed all institutional master data (Departments, Regulations, Academic Years, Semesters, Sections, Standard Roles, Outcomes)
+   */
+  public async seedMasterData(userId?: string) {
+    const summary: Record<string, number> = {
+      roles: 0,
+      departments: 0,
+      regulations: 0,
+      academicYears: 0,
+      semesters: 0,
+      sections: 0,
+      programOutcomes: 0,
+      peos: 0,
+      psos: 0,
+      subjects: 0
+    };
+
+    // 1. Roles
+    const standardRoles = ['FACULTY', 'ADMIN', 'COORDINATOR', 'MANAGEMENT', 'OBE_INCHARGE'] as const;
+    for (const r of standardRoles) {
+      await prisma.role.upsert({
+        where: { roleName: r as any },
+        update: {},
+        create: { roleName: r as any }
+      });
+      summary.roles++;
+    }
+
+    // 2. Departments
+    const depts = ['CSE', 'MECH', 'ECE', 'EEE', 'IT', 'AIML', 'AIDS', 'CIVIL'];
+    const createdDepts: Record<string, any> = {};
+    for (const dept of depts) {
+      const d = await prisma.department.upsert({
+        where: { departmentName: dept },
+        update: {},
+        create: { departmentName: dept }
+      });
+      createdDepts[dept] = d;
+      summary.departments++;
+    }
+
+    // 3. Regulations
+    const regulations = ['MIC20', 'MIC23', 'R20', 'R23'];
+    const createdRegs: Record<string, any> = {};
+    for (const reg of regulations) {
+      const r = await prisma.regulation.upsert({
+        where: { name: reg },
+        update: {},
+        create: { name: reg }
+      });
+      createdRegs[reg] = r;
+      summary.regulations++;
+    }
+
+    // 4. Academic Years & Semesters
+    const years = ['2023-2024', '2024-2025', '2025-2026', '2026-2027', '2027-2028'];
+    const sems = ['1-1', '1-2', '2-1', '2-2', '3-1', '3-2', '4-1', '4-2'];
+
+    let activeYearRecord: any = null;
+    for (const year of years) {
+      const ay = await prisma.academicYear.upsert({
+        where: { year },
+        update: {},
+        create: { year }
+      });
+      if (year === '2025-2026') activeYearRecord = ay;
+      summary.academicYears++;
+
+      for (const sem of sems) {
+        await prisma.semester.upsert({
+          where: {
+            semester_academicYearId: {
+              semester: sem,
+              academicYearId: ay.id
+            }
+          },
+          update: {},
+          create: {
+            semester: sem,
+            academicYearId: ay.id
+          }
+        });
+        summary.semesters++;
+      }
+    }
+
+    // 5. Sections for 2025-2026 across departments
+    if (activeYearRecord) {
+      for (const deptName of depts) {
+        const d = createdDepts[deptName];
+        if (!d) continue;
+        for (const sec of ['A', 'B']) {
+          await prisma.section.upsert({
+            where: {
+              sectionName_departmentId_academicYearId: {
+                sectionName: sec,
+                departmentId: d.id,
+                academicYearId: activeYearRecord.id
+              }
+            },
+            update: {},
+            create: {
+              sectionName: sec,
+              departmentId: d.id,
+              academicYearId: activeYearRecord.id
+            }
+          });
+          summary.sections++;
+        }
+      }
+    }
+
+    // 6. Program Outcomes (PO1 - PO12)
+    for (const po of DEFAULT_PROGRAM_OUTCOMES) {
+      await prisma.programOutcome.upsert({
+        where: { code: po.code },
+        update: { title: po.title, description: po.description },
+        create: {
+          code: po.code,
+          title: po.title,
+          description: po.description
+        }
+      });
+      summary.programOutcomes++;
+    }
+
+    // 7. Program Educational Objectives (PEO1 - PEO4)
+    for (const peo of DEFAULT_PROGRAM_EDUCATIONAL_OBJECTIVES) {
+      await prisma.programEducationalObjective.upsert({
+        where: { code: peo.code },
+        update: { title: peo.title, description: peo.description },
+        create: {
+          code: peo.code,
+          title: peo.title,
+          description: peo.description
+        }
+      });
+      summary.peos++;
+    }
+
+    // 8. Program Specific Outcomes (PSOs) for core departments
+    for (const deptName of depts) {
+      const d = createdDepts[deptName];
+      if (!d) continue;
+      const psos = getDepartmentPSOs(deptName);
+      for (const pso of psos) {
+        await prisma.programSpecificObjective.upsert({
+          where: {
+            code_departmentId: {
+              code: pso.code,
+              departmentId: d.id
+            }
+          },
+          update: { title: pso.title, description: pso.description },
+          create: {
+            code: pso.code,
+            title: pso.title,
+            description: pso.description,
+            departmentId: d.id
+          }
+        });
+        summary.psos++;
+      }
+    }
+
+    // 9. Standard Sample Subjects & COs
+    if (createdDepts['CSE']) {
+      const reg23 = createdRegs['MIC23'] || createdRegs['R23'];
+      const cseSubjects = [
+        { code: '23CS3T01', name: 'Cloud & Distributed Computing', credits: 3, sem: '3-1' },
+        { code: '23CS3T02', name: 'Compiler Design', credits: 3, sem: '3-1' },
+        { code: '23CS3T03', name: 'Machine Learning', credits: 3, sem: '3-1' },
+        { code: '23CS3L01', name: 'Cloud Computing Lab', credits: 1.5, sem: '3-1' }
+      ];
+
+      for (const sub of cseSubjects) {
+        const createdSub = await prisma.subject.upsert({
+          where: { subjectCode: sub.code },
+          update: {},
+          create: {
+            subjectCode: sub.code,
+            subjectName: sub.name,
+            credits: sub.credits,
+            semesterLevel: sub.sem,
+            departmentId: createdDepts['CSE'].id,
+            regulationId: reg23?.id || null
+          }
+        });
+        summary.subjects++;
+
+        // Add 5 COs for each
+        for (let i = 1; i <= 5; i++) {
+          const coCode = `CO${i}`;
+          const existingCO = await prisma.courseOutcome.findFirst({
+            where: { subjectId: createdSub.id, coCode }
+          });
+          if (!existingCO) {
+            await prisma.courseOutcome.create({
+              data: {
+                subjectId: createdSub.id,
+                coCode,
+                description: `Attain competency in ${sub.name} Module ${i}`
+              }
+            });
+          }
+        }
+      }
+    }
+
+    if (createdDepts['MECH']) {
+      const reg23 = createdRegs['MIC23'] || createdRegs['R23'];
+      const mechSubjects = [
+        { code: '23ME3T01', name: 'Dynamics of Machinery', credits: 3, sem: '3-1' },
+        { code: '23ME3T02', name: 'Thermal Engineering-II', credits: 3, sem: '3-1' }
+      ];
+
+      for (const sub of mechSubjects) {
+        await prisma.subject.upsert({
+          where: { subjectCode: sub.code },
+          update: {},
+          create: {
+            subjectCode: sub.code,
+            subjectName: sub.name,
+            credits: sub.credits,
+            semesterLevel: sub.sem,
+            departmentId: createdDepts['MECH'].id,
+            regulationId: reg23?.id || null
+          }
+        });
+        summary.subjects++;
+      }
+    }
+
+    return {
+      success: true,
+      message: 'Master institutional data successfully seeded into database!',
+      summary
+    };
   }
 }

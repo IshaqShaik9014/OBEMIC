@@ -69,6 +69,7 @@ export function DatabaseManagerView() {
   const [deleteTarget, setDeleteTarget] = useState<any | null>(null);
   const [deleteConfirmationPrompt, setDeleteConfirmationPrompt] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isSeeding, setIsSeeding] = useState(false);
 
   // Hover states for interactive elements
   const [hoveredTab, setHoveredTab] = useState<string | null>(null);
@@ -206,6 +207,25 @@ export function DatabaseManagerView() {
       toast.error(err.message || 'Failed to delete record');
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  // 7. Seed Master Data Flow
+  const handleSeedMaster = async () => {
+    if (!window.confirm('Initialize & seed all standard institutional master data (Departments, Regulations, Academic Years, Semesters, Sections, Program Outcomes, and Sample Subjects)?')) {
+      return;
+    }
+    setIsSeeding(true);
+    try {
+      const res = await obeDatabaseService.seedMasterData();
+      toast.success(res.message || 'Master institutional data seeded successfully!');
+      const meta = await obeDatabaseService.getMetadata();
+      setMetadata(meta);
+      fetchRecords(currentPage, searchQuery);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to seed master data');
+    } finally {
+      setIsSeeding(false);
     }
   };
 
@@ -422,6 +442,31 @@ export function DatabaseManagerView() {
               🔄
             </span>
             Refresh
+          </button>
+
+          <button
+            type="button"
+            onClick={handleSeedMaster}
+            disabled={isSeeding}
+            title="Seed standard institutional master data (Departments, Regulations, Academic Years, Semesters, Sections, Outcomes)"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '9px 16px',
+              borderRadius: '8px',
+              fontSize: '0.85rem',
+              fontWeight: 600,
+              background: '#F0FDF4',
+              border: '1px solid #BBF7D0',
+              color: '#15803D',
+              cursor: isSeeding ? 'not-allowed' : 'pointer',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            <span>{isSeeding ? '🔄' : '🌱'}</span>
+            {isSeeding ? 'Seeding...' : 'Seed Master Data'}
           </button>
 
           {currentEntity && (

@@ -80,4 +80,15 @@ export class ObeDatabaseController {
       res.status(400).json({ error: error.message || 'Failed to delete record' });
     }
   };
+
+  public seedMaster = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const userId = req.user?.userId || 'SYSTEM';
+      const result = await this.service.seedMasterData(userId);
+      res.json(result);
+    } catch (error: any) {
+      logger.error('Error seeding master database: ' + (error.message || error));
+      res.status(500).json({ error: error.message || 'Failed to seed master database' });
+    }
+  };
 }
