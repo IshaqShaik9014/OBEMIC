@@ -24,9 +24,9 @@ export const DEPARTMENT_CONFIGS: DepartmentCodeConfig[] = [
   {
     departmentCode: 'AIDS',
     subjectCodeToken: 'DS',
-    subjectCodeTokens: ['DS', 'AD', 'AIDS', 'AI&DS'],
+    subjectCodeTokens: ['DS', 'AD', 'AIDS', 'AI&DS', 'AI'],
     departmentName: 'Artificial Intelligence and Data Science',
-    aliases: ['AIDS', 'AI&DS', 'ARTIFICIAL INTELLIGENCE AND DATA SCIENCE', 'AI AND DS', 'AI & DS', 'DATA SCIENCE'],
+    aliases: ['AIDS', 'AI&DS', 'ARTIFICIAL INTELLIGENCE AND DATA SCIENCE', 'AI AND DS', 'AI & DS', 'DATA SCIENCE', 'AI'],
   },
   {
     departmentCode: 'AIML',
@@ -73,13 +73,16 @@ export const DEPARTMENT_CONFIGS: DepartmentCodeConfig[] = [
   {
     departmentCode: 'BED',
     subjectCodeToken: 'HS',
-    subjectCodeTokens: ['BED', 'BS', 'HS', 'ES', 'SH', 'HU', 'FED', 'ENG', 'MAT', 'PHY', 'CHY'],
+    subjectCodeTokens: ['BED', 'BS', 'HS', 'ES', 'SH', 'HU', 'FED', 'ENG', 'MAT', 'PHY', 'CHY', 'TNP', 'PD'],
     departmentName: 'Basic Engineering Department',
     aliases: [
       'BED', 'B.ED', 'B.ED.', 'BASIC ENGINEERING', 'BASIC ENGINEERING DEPARTMENT',
       'FRESHERS', 'FIRST YEAR', '1ST YEAR', 'H&S', 'HS', 'H & S', 'BSH', 'FED',
       'HUMANITIES AND SCIENCES', 'BASIC SCIENCES AND HUMANITIES',
-      'HUMANITIES AND BASIC SCIENCES', 'FRESHMAN ENGINEERING', 'HUMANITIES'
+      'HUMANITIES AND BASIC SCIENCES', 'FRESHMAN ENGINEERING', 'HUMANITIES',
+      'TNP', 'TRAINING AND PLACEMENT', 'T&P', 'TRAINING',
+      'DIPLOMA', 'POLYTECHNIC',
+      'PD', 'PHYSICAL DIRECTOR', 'PERSONALITY DEVELOPMENT', 'SPORTS', 'PHYSICAL EDUCATION'
     ],
   },
   {

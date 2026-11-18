@@ -1309,12 +1309,37 @@ function ObeDashboardContent() {
                     <tbody>
                       {((staffPreviewData.validRecords || staffPreviewData.data?.validRecords || []) as any[]).map((r: any, idx: number) => {
                         const isCoordinator = r.roleName === 'COORDINATOR' || (r.roleRaw && r.roleRaw.toLowerCase().includes('coord'));
+                        const isHod = r.roleName === 'ADMIN' || (r.roleRaw && r.roleRaw.toLowerCase().includes('hod'));
+                        const isObe = r.roleName === 'OBE_INCHARGE' || (r.roleRaw && r.roleRaw.toLowerCase().includes('obe'));
+
+                        let badgeBg = '#F1F5F9';
+                        let badgeColor = '#334155';
+                        let badgeLabel = 'Faculty';
+                        let badgeIcon = <IconUser size={13} color="#2563EB" />;
+
+                        if (isObe) {
+                          badgeBg = '#FEF3C7';
+                          badgeColor = '#B45309';
+                          badgeLabel = 'OBE In-charge';
+                          badgeIcon = <IconShield size={13} color="#B45309" />;
+                        } else if (isHod) {
+                          badgeBg = '#EFF6FF';
+                          badgeColor = '#1D4ED8';
+                          badgeLabel = 'HOD (Admin)';
+                          badgeIcon = <IconShield size={13} color="#1D4ED8" />;
+                        } else if (isCoordinator) {
+                          badgeBg = '#DCFCE7';
+                          badgeColor = '#15803D';
+                          badgeLabel = 'Branch Coordinator';
+                          badgeIcon = <IconShield size={13} color="#15803D" />;
+                        }
+
                         return (
                           <tr key={idx} style={{ borderBottom: '1px solid #F1F5F9' }}>
                             <td style={{ padding: '12px 14px', fontWeight: 700, color: '#0F172A', fontSize: '0.88rem' }}>{r.employeeId}</td>
-                            <td style={{ padding: '12px 14px', fontWeight: 600, color: '#1E293B', fontSize: '0.88rem' }}>{r.name}</td>
+                            <td style={{ padding: '12px 14px', fontWeight: 600, color: '#1E293B', fontSize: '0.88rem' }}>{r.name || r.facultyName}</td>
                             <td style={{ padding: '12px 14px', color: '#64748B', fontSize: '0.85rem' }}>{r.email}</td>
-                            <td style={{ padding: '12px 14px', color: '#334155', fontSize: '0.85rem' }}>{r.department || 'Assigned'}</td>
+                            <td style={{ padding: '12px 14px', color: '#334155', fontSize: '0.85rem' }}>{r.department || r.canonicalDepartmentCode || 'Assigned'}</td>
                             <td style={{ padding: '12px 14px' }}>
                               <span
                                 style={{
@@ -1322,24 +1347,15 @@ function ObeDashboardContent() {
                                   borderRadius: '6px',
                                   fontSize: '0.75rem',
                                   fontWeight: 700,
-                                  background: isCoordinator ? '#DCFCE7' : '#EFF6FF',
-                                  color: isCoordinator ? '#15803D' : '#2563EB',
+                                  background: badgeBg,
+                                  color: badgeColor,
                                   display: 'inline-flex',
                                   alignItems: 'center',
                                   gap: '6px'
                                 }}
                               >
-                                {isCoordinator ? (
-                                  <>
-                                    <IconShield size={13} color="#15803D" />
-                                    <span>Branch Coordinator</span>
-                                  </>
-                                ) : (
-                                  <>
-                                    <IconUser size={13} color="#2563EB" />
-                                    <span>Faculty</span>
-                                  </>
-                                )}
+                                {badgeIcon}
+                                <span>{badgeLabel}</span>
                               </span>
                             </td>
                             <td style={{ padding: '12px 14px' }}>
