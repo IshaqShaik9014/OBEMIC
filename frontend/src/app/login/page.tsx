@@ -55,27 +55,6 @@ export default function LoginPage({ initialModalOpen = true }: LoginPageProps) {
     }
   };
 
-  const handleQuickFill = (userType: 'admin' | 'coordinator' | 'faculty' | 'obe') => {
-    if (userType === 'admin') {
-      setRole('admin');
-      setIdentifier('admin@mictech.ac.in');
-      setPassword('password123');
-    } else if (userType === 'coordinator') {
-      setRole('coordinator');
-      setIdentifier('coordinator@mictech.ac.in');
-      setPassword('password123');
-    } else if (userType === 'obe') {
-      setRole('obe_incharge');
-      setIdentifier('pavan.anumolu@mictech.ac.in');
-      setPassword('pavan@1615');
-    } else {
-      setRole('faculty');
-      setIdentifier('faculty@college.edu');
-      setPassword('password123');
-    }
-    setError(null);
-  };
-
   return (
     <div className="login-page">
       {/* Hero Landing Content */}
@@ -441,95 +420,6 @@ export default function LoginPage({ initialModalOpen = true }: LoginPageProps) {
                   {isLoading ? 'Signing In...' : 'Sign In'}
                 </button>
               </form>
-
-              {/* Demo Credentials Quick-Fill */}
-              <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid #F1F5F9', textAlign: 'center' }}>
-                <span style={{ fontSize: '0.78rem', color: '#64748B', display: 'block', marginBottom: '10px', fontWeight: 600 }}>
-                  Quick Demo Login:
-                </span>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                  <button
-                    type="button"
-                    onClick={() => handleQuickFill('admin')}
-                    style={{
-                      background: '#EFF6FF',
-                      border: '1.5px solid #BFDBFE',
-                      color: '#1D4ED8',
-                      padding: '7px 10px',
-                      borderRadius: '8px',
-                      fontSize: '0.78rem',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '6px'
-                    }}
-                  >
-                    🏛️ HOD (Admin)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleQuickFill('coordinator')}
-                    style={{
-                      background: '#F5F3FF',
-                      border: '1.5px solid #DDD6FE',
-                      color: '#6D28D9',
-                      padding: '7px 10px',
-                      borderRadius: '8px',
-                      fontSize: '0.78rem',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '6px'
-                    }}
-                  >
-                    🚀 Branch Coordinator
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleQuickFill('obe')}
-                    style={{
-                      background: '#FEF3C7',
-                      border: '1.5px solid #FDE68A',
-                      color: '#B45309',
-                      padding: '7px 10px',
-                      borderRadius: '8px',
-                      fontSize: '0.78rem',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '6px'
-                    }}
-                  >
-                    📦 OBE In-charge
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleQuickFill('faculty')}
-                    style={{
-                      background: '#F0FDF4',
-                      border: '1.5px solid #BBF7D0',
-                      color: '#15803D',
-                      padding: '7px 10px',
-                      borderRadius: '8px',
-                      fontSize: '0.78rem',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '6px'
-                    }}
-                  >
-                    👨‍🏫 Faculty
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
         </div>
