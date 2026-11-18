@@ -12,6 +12,24 @@ import { FolderTreeViewer } from '@/components/scripts/FolderTreeViewer';
 import { ScriptViewerModal } from '@/components/scripts/ScriptViewerModal';
 import { DatabaseManagerView } from '@/components/obe/DatabaseManagerView';
 import { toast } from 'react-hot-toast';
+import {
+  IconLayers,
+  IconSend,
+  IconClock,
+  IconBook,
+  IconUsers,
+  IconUpload,
+  IconFolder,
+  IconFolderOpen,
+  IconCheck,
+  IconRefresh,
+  IconFileText,
+  IconArchive,
+  IconShield,
+  IconUser,
+  IconInfo,
+  IconX
+} from '@/components/ui/Icons';
 
 function ObeDashboardContent() {
   const searchParams = useSearchParams();
@@ -420,19 +438,23 @@ function ObeDashboardContent() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
             <Card glow style={{ padding: '20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Ingested Bundles</span>
-                <span style={{ fontSize: '1.4rem' }}>📦</span>
+                <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Ingested Bundles</span>
+                <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#EFF6FF', border: '1px solid #DBEAFE', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <IconLayers size={18} color="#2563EB" />
+                </div>
               </div>
-              <div style={{ fontSize: '2rem', fontWeight: 800, color: '#0F172A' }}>{bundles.length}</div>
+              <div style={{ fontSize: '2rem', fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em' }}>{bundles.length}</div>
               <div style={{ fontSize: '0.8rem', color: '#10B981', fontWeight: 600, marginTop: '4px' }}>Examination batches</div>
             </Card>
 
             <Card glow style={{ padding: '20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Allocated to HOD/Coord</span>
-                <span style={{ fontSize: '1.4rem' }}>🚀</span>
+                <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Allocated to HOD/Coord</span>
+                <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#F0FDF4', border: '1px solid #DCFCE7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <IconSend size={18} color="#16A34A" />
+                </div>
               </div>
-              <div style={{ fontSize: '2rem', fontWeight: 800, color: '#2563EB' }}>
+              <div style={{ fontSize: '2rem', fontWeight: 800, color: '#16A34A', letterSpacing: '-0.02em' }}>
                 {bundles.filter(b => (b as any).branchCoordinatorAssignment || (b as any).assignedToCoordinatorId).length}
               </div>
               <div style={{ fontSize: '0.8rem', color: '#64748B', marginTop: '4px' }}>Tier-1 delegated</div>
@@ -440,10 +462,12 @@ function ObeDashboardContent() {
 
             <Card glow style={{ padding: '20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Pending Allocation</span>
-                <span style={{ fontSize: '1.4rem' }}>⏳</span>
+                <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Pending Allocation</span>
+                <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#FEF3C7', border: '1px solid #FDE68A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <IconClock size={18} color="#D97706" />
+                </div>
               </div>
-              <div style={{ fontSize: '2rem', fontWeight: 800, color: '#D97706' }}>
+              <div style={{ fontSize: '2rem', fontWeight: 800, color: '#D97706', letterSpacing: '-0.02em' }}>
                 {bundles.filter(b => !(b as any).branchCoordinatorAssignment && !(b as any).assignedToCoordinatorId).length}
               </div>
               <div style={{ fontSize: '0.8rem', color: '#D97706', fontWeight: 600, marginTop: '4px' }}>Requires allocation</div>
@@ -451,10 +475,12 @@ function ObeDashboardContent() {
 
             <Card glow style={{ padding: '20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Active Subjects</span>
-                <span style={{ fontSize: '1.4rem' }}>📚</span>
+                <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Active Subjects</span>
+                <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#F5F3FF', border: '1px solid #EDE9FE', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <IconBook size={18} color="#7C3AED" />
+                </div>
               </div>
-              <div style={{ fontSize: '2rem', fontWeight: 800, color: '#0F172A' }}>{subjects.length}</div>
+              <div style={{ fontSize: '2rem', fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em' }}>{subjects.length}</div>
               <div style={{ fontSize: '0.8rem', color: '#64748B', marginTop: '4px' }}>Current department/term</div>
             </Card>
           </div>
@@ -463,7 +489,9 @@ function ObeDashboardContent() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px' }}>
             <Card glow style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
               <div>
-                <div style={{ fontSize: '2rem', marginBottom: '10px' }}>👥</div>
+                <div style={{ width: '44px', height: '44px', borderRadius: '10px', background: '#EFF6FF', border: '1px solid #DBEAFE', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '14px' }}>
+                  <IconUsers size={22} color="#2563EB" />
+                </div>
                 <h3 style={{ margin: '0 0 6px 0', fontSize: '1.1rem', fontWeight: 700, color: '#0F172A' }}>Staff Onboarding</h3>
                 <p style={{ margin: '0 0 16px 0', fontSize: '0.85rem', color: '#64748B', lineHeight: '1.5' }}>
                   Upload Excel/CSV staff rosters to onboard faculty members and designate Branch Coordinators vs Teaching Faculty.
@@ -481,7 +509,9 @@ function ObeDashboardContent() {
 
             <Card glow style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
               <div>
-                <div style={{ fontSize: '2rem', marginBottom: '10px' }}>📦</div>
+                <div style={{ width: '44px', height: '44px', borderRadius: '10px', background: '#F0FDF4', border: '1px solid #DCFCE7', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '14px' }}>
+                  <IconUpload size={22} color="#16A34A" />
+                </div>
                 <h3 style={{ margin: '0 0 6px 0', fontSize: '1.1rem', fontWeight: 700, color: '#0F172A' }}>Upload Scripts</h3>
                 <p style={{ margin: '0 0 16px 0', fontSize: '0.85rem', color: '#64748B', lineHeight: '1.5' }}>
                   Ingest examination scripts via ZIP compressed archive (.zip) or folder directory preserving question hierarchies.
@@ -499,7 +529,9 @@ function ObeDashboardContent() {
 
             <Card glow style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
               <div>
-                <div style={{ fontSize: '2rem', marginBottom: '10px' }}>🚀</div>
+                <div style={{ width: '44px', height: '44px', borderRadius: '10px', background: '#FEF3C7', border: '1px solid #FDE68A', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '14px' }}>
+                  <IconSend size={22} color="#D97706" />
+                </div>
                 <h3 style={{ margin: '0 0 6px 0', fontSize: '1.1rem', fontWeight: 700, color: '#0F172A' }}>Assign to Branch Coordinator</h3>
                 <p style={{ margin: '0 0 16px 0', fontSize: '0.85rem', color: '#64748B', lineHeight: '1.5' }}>
                   Allocate uploaded script bundles to Branch Coordinators for departmental verification and Tier-2 delegation.
@@ -517,7 +549,9 @@ function ObeDashboardContent() {
 
             <Card glow style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
               <div>
-                <div style={{ fontSize: '2rem', marginBottom: '10px' }}>📁</div>
+                <div style={{ width: '44px', height: '44px', borderRadius: '10px', background: '#F5F3FF', border: '1px solid #EDE9FE', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '14px' }}>
+                  <IconFolder size={22} color="#7C3AED" />
+                </div>
                 <h3 style={{ margin: '0 0 6px 0', fontSize: '1.1rem', fontWeight: 700, color: '#0F172A' }}>Script Bundles Repository</h3>
                 <p style={{ margin: '0 0 16px 0', fontSize: '0.85rem', color: '#64748B', lineHeight: '1.5' }}>
                   Browse directory structures, inspect scanned files, and check multi-tier coordinator delegation statuses.
@@ -623,7 +657,7 @@ function ObeDashboardContent() {
           {/* Metadata Filter Panel */}
           <Card glow>
             <h3 style={{ margin: '0 0 16px 0', fontSize: '1.05rem', fontWeight: 700, color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span>📋</span> Step 1: Select Subject & Metadata
+              <IconFileText size={18} color="#2563EB" /> Step 1: Select Subject & Metadata
             </h3>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
@@ -764,7 +798,7 @@ function ObeDashboardContent() {
           <Card glow>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
               <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 700, color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span>📦</span> Step 2: Upload Script Archive / Folders
+                <IconUpload size={18} color="#2563EB" /> Step 2: Upload Script Archive / Folders
               </h3>
 
               {/* Upload Mode Selector */}
@@ -782,10 +816,14 @@ function ObeDashboardContent() {
                     background: uploadMode === 'zip' ? '#2563EB' : 'transparent',
                     color: uploadMode === 'zip' ? '#FFFFFF' : '#475569',
                     boxShadow: uploadMode === 'zip' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                    transition: 'all 0.15s ease'
+                    transition: 'all 0.15s ease',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px'
                   }}
                 >
-                  📦 ZIP Compressed Folder (.zip) [Recommended]
+                  <IconArchive size={14} color={uploadMode === 'zip' ? '#FFFFFF' : '#64748B'} />
+                  ZIP Compressed Folder (.zip) [Recommended]
                 </button>
                 <button
                   type="button"
@@ -800,10 +838,14 @@ function ObeDashboardContent() {
                     background: uploadMode === 'folder' ? '#2563EB' : 'transparent',
                     color: uploadMode === 'folder' ? '#FFFFFF' : '#475569',
                     boxShadow: uploadMode === 'folder' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                    transition: 'all 0.15s ease'
+                    transition: 'all 0.15s ease',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px'
                   }}
                 >
-                  📁 Browser Folder Structure
+                  <IconFolder size={14} color={uploadMode === 'folder' ? '#FFFFFF' : '#64748B'} />
+                  Browser Folder Structure
                 </button>
               </div>
             </div>
@@ -838,7 +880,9 @@ function ObeDashboardContent() {
               {/* MODE A: ZIP Compressed Folder */}
               {uploadMode === 'zip' && (
                 <div style={{ border: '2px dashed #93C5FD', background: '#EFF6FF', borderRadius: '12px', padding: '36px 20px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '2.5rem', marginBottom: '10px' }}>📦</div>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#DBEAFE', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px auto' }}>
+                    <IconArchive size={24} color="#1D4ED8" />
+                  </div>
                   <h4 style={{ margin: '0 0 6px 0', fontSize: '1.05rem', fontWeight: 700, color: '#1E40AF' }}>
                     Select ZIP Compressed Archive (.zip)
                   </h4>
@@ -865,7 +909,7 @@ function ObeDashboardContent() {
 
                   {selectedZipFile && (
                     <div style={{ marginTop: '16px', display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#FFFFFF', padding: '8px 16px', borderRadius: '8px', border: '1px solid #BFDBFE' }}>
-                      <span style={{ fontSize: '1.2rem' }}>📄</span>
+                      <IconFileText size={18} color="#2563EB" />
                       <div style={{ textAlign: 'left' }}>
                         <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#1E293B' }}>{selectedZipFile.name}</div>
                         <div style={{ fontSize: '0.78rem', color: '#64748B' }}>{(selectedZipFile.size / (1024 * 1024)).toFixed(2)} MB</div>
@@ -873,9 +917,9 @@ function ObeDashboardContent() {
                       <button
                         type="button"
                         onClick={() => setSelectedZipFile(null)}
-                        style={{ background: 'none', border: 'none', color: '#EF4444', fontWeight: 700, cursor: 'pointer', marginLeft: '8px' }}
+                        style={{ background: 'none', border: 'none', color: '#EF4444', fontWeight: 700, cursor: 'pointer', marginLeft: '8px', display: 'flex', alignItems: 'center' }}
                       >
-                        ✕
+                        <IconX size={16} />
                       </button>
                     </div>
                   )}
@@ -885,7 +929,9 @@ function ObeDashboardContent() {
               {/* MODE B: Direct Folder Directory Ingestion */}
               {uploadMode === 'folder' && (
                 <div style={{ border: '2px dashed #CBD5E1', background: '#F8FAFC', borderRadius: '12px', padding: '36px 20px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '2.5rem', marginBottom: '10px' }}>📁</div>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px auto' }}>
+                    <IconFolder size={24} color="#475569" />
+                  </div>
                   <h4 style={{ margin: '0 0 6px 0', fontSize: '1.05rem', fontWeight: 700, color: '#0F172A' }}>
                     Click to Select Folder with Script Structure
                   </h4>
@@ -952,7 +998,7 @@ function ObeDashboardContent() {
           {/* Assignment Control Card */}
           <Card glow>
             <h3 style={{ margin: '0 0 16px 0', fontSize: '1.05rem', fontWeight: 700, color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span>🚀</span> Tier 1: Allocate Script Bundle to Branch Coordinator
+              <IconSend size={18} color="#2563EB" /> Tier 1: Allocate Script Bundle to Branch Coordinator
             </h3>
 
             <p style={{ color: '#475569', fontSize: '0.9rem', margin: '0 0 20px 0', lineHeight: '1.5' }}>
@@ -1159,8 +1205,8 @@ function ObeDashboardContent() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           <Card glow>
             <div style={{ borderBottom: '1px solid #E2E8F0', paddingBottom: '16px', marginBottom: '20px' }}>
-              <h3 style={{ margin: '0 0 6px 0', fontSize: '1.15rem', fontWeight: 800, color: '#0F172A' }}>
-                👥 Central Staff Onboarding
+              <h3 style={{ margin: '0 0 6px 0', fontSize: '1.15rem', fontWeight: 800, color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <IconUsers size={22} color="#2563EB" /> Central Staff Onboarding
               </h3>
               <p style={{ margin: 0, fontSize: '0.9rem', color: '#64748B', lineHeight: '1.5' }}>
                 As the central institutional authority, the OBE In-charge onboards staff and specifies their institutional roles.
@@ -1171,7 +1217,9 @@ function ObeDashboardContent() {
 
             {/* Template & Guidelines Alert */}
             <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '14px 18px', marginBottom: '20px', fontSize: '0.88rem', color: '#334155' }}>
-              <div style={{ fontWeight: 700, color: '#0F172A', marginBottom: '6px' }}>📋 Supported Excel/CSV Columns:</div>
+              <div style={{ fontWeight: 700, color: '#0F172A', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <IconFileText size={16} color="#475569" /> Supported Excel/CSV Columns:
+              </div>
               <ul style={{ margin: '4px 0 0 0', paddingLeft: '20px', lineHeight: '1.6' }}>
                 <li><strong>Employee ID</strong>: Unique staff identifier (e.g., <code>FAC001</code>, <code>HOD-MECH-01</code>)</li>
                 <li><strong>Name</strong>: Full staff / faculty member name</li>
@@ -1185,8 +1233,11 @@ function ObeDashboardContent() {
                   <span style={{ background: '#FEF3C7', color: '#B45309', padding: '2px 6px', borderRadius: '4px', fontWeight: 700, marginLeft: '4px' }}>OBE In-charge</span>
                 </li>
               </ul>
-              <div style={{ marginTop: '10px', padding: '8px 12px', background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '6px', fontSize: '0.82rem', color: '#1E40AF' }}>
-                💡 <strong>Note on Subject Coordinators:</strong> There is no separate &quot;Subject Coordinator&quot; role in the staff roster. A faculty member becomes a Subject Coordinator dynamically when the Branch Coordinator delegates that subject&apos;s examination script bundle to them.
+              <div style={{ marginTop: '10px', padding: '8px 12px', background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '6px', fontSize: '0.82rem', color: '#1E40AF', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <IconInfo size={16} color="#2563EB" style={{ flexShrink: 0 }} />
+                <div>
+                  <strong>Note on Subject Coordinators:</strong> There is no separate &quot;Subject Coordinator&quot; role in the staff roster. A faculty member becomes a Subject Coordinator dynamically when the Branch Coordinator delegates that subject&apos;s examination script bundle to them.
+                </div>
               </div>
             </div>
 
@@ -1275,10 +1326,20 @@ function ObeDashboardContent() {
                                   color: isCoordinator ? '#15803D' : '#2563EB',
                                   display: 'inline-flex',
                                   alignItems: 'center',
-                                  gap: '4px'
+                                  gap: '6px'
                                 }}
                               >
-                                {isCoordinator ? '🛡️ Branch Coordinator' : '👤 Faculty'}
+                                {isCoordinator ? (
+                                  <>
+                                    <IconShield size={13} color="#15803D" />
+                                    <span>Branch Coordinator</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <IconUser size={13} color="#2563EB" />
+                                    <span>Faculty</span>
+                                  </>
+                                )}
                               </span>
                             </td>
                             <td style={{ padding: '12px 14px' }}>
@@ -1340,13 +1401,14 @@ function ObeDashboardContent() {
                       <Button
                         type="button"
                         variant="secondary"
-                        style={{ flex: 1, fontSize: '0.85rem' }}
+                        style={{ flex: 1, fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                         onClick={async () => {
                           const detailed = await scriptService.getBundleDetails(bundle.id);
                           setInspectBundle(detailed);
                         }}
                       >
-                        📂 Browse Folder Tree
+                        <IconFolderOpen size={15} color="#475569" />
+                        <span>Browse Folder Tree</span>
                       </Button>
                       <Button
                         type="button"
@@ -1381,9 +1443,9 @@ function ObeDashboardContent() {
                 <button
                   type="button"
                   onClick={() => setInspectBundle(null)}
-                  style={{ background: 'none', border: 'none', fontSize: '1.4rem', color: '#64748B', cursor: 'pointer' }}
+                  style={{ background: 'none', border: 'none', padding: '4px', color: '#64748B', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 >
-                  &times;
+                  <IconX size={18} color="#64748B" />
                 </button>
               </div>
 

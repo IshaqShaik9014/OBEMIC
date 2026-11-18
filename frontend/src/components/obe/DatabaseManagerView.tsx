@@ -9,43 +9,21 @@ import {
   MetadataResponse
 } from '@/services/obe.database.service';
 import { toast } from 'react-hot-toast';
-
-function getEntityEmoji(key?: string, icon?: string): string {
-  // If icon is already a clean graphical emoji (<= 4 chars or unicode emoji block)
-  if (icon && (icon.length <= 4 || /[\u{1F300}-\u{1FAFF}]/u.test(icon))) {
-    return icon;
-  }
-  switch (key) {
-    case 'departments': return '🏛️';
-    case 'subjects': return '📚';
-    case 'users': return '👥';
-    case 'faculty-assignments':
-    case 'facultySubjectAssignments': return '🔗';
-    case 'academic-years':
-    case 'academicYears': return '📅';
-    case 'semesters': return '⏳';
-    case 'sections': return '🔠';
-    case 'regulations': return '📜';
-    case 'course-outcomes':
-    case 'courseOutcomes': return '🎯';
-    case 'students': return '🎓';
-    case 'script-bundles':
-    case 'scriptBundles': return '📦';
-    default:
-      if (icon === 'building') return '🏛️';
-      if (icon === 'book') return '📚';
-      if (icon === 'users') return '👥';
-      if (icon === 'link') return '🔗';
-      if (icon === 'calendar') return '📅';
-      if (icon === 'clock') return '⏳';
-      if (icon === 'grid') return '🔠';
-      if (icon === 'file-text' || icon === 'file') return '📜';
-      if (icon === 'target') return '🎯';
-      if (icon === 'graduation-cap') return '🎓';
-      if (icon === 'layers') return '📦';
-      return '🗄️';
-  }
-}
+import {
+  EntityIcon,
+  IconRefresh,
+  IconSprout,
+  IconPlus,
+  IconSearch,
+  IconEdit,
+  IconTrash,
+  IconFolderEmpty,
+  IconX,
+  IconCheck,
+  IconBuilding,
+  IconEye,
+  IconEyeOff
+} from '@/components/ui/Icons';
 
 export function DatabaseManagerView() {
   const [metadata, setMetadata] = useState<MetadataResponse | null>(null);
@@ -240,11 +218,12 @@ export function DatabaseManagerView() {
         <span style={{
           display: 'inline-flex',
           alignItems: 'center',
-          gap: '4px',
+          gap: '6px',
           fontWeight: 600,
           color: '#1E293B'
         }}>
-          🏛️ {name}
+          <IconBuilding size={14} color="#64748B" />
+          {name}
         </span>
       ) : '—';
     }
@@ -264,7 +243,7 @@ export function DatabaseManagerView() {
           color: isObe ? '#92400E' : isCoord ? '#15803D' : isAdmin ? '#7E22CE' : '#1D4ED8',
           border: isObe ? '1px solid #FDE68A' : isCoord ? '1px solid #BBF7D0' : isAdmin ? '1px solid #E9D5FF' : '1px solid #BFDBFE'
         }}>
-          {isObe ? '⭐ OBE In-charge' : isCoord ? '🛡️ Coordinator' : isAdmin ? '👑 Admin' : '👤 Faculty'}
+          {isObe ? 'OBE In-charge' : isCoord ? 'Branch Coordinator' : isAdmin ? 'HOD / Admin' : 'Faculty'}
         </span>
       );
     }
@@ -370,19 +349,18 @@ export function DatabaseManagerView() {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
           <div style={{
-            width: '46px',
-            height: '46px',
-            borderRadius: '12px',
+            width: '44px',
+            height: '44px',
+            borderRadius: '10px',
             background: 'linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%)',
             border: '1px solid #BFDBFE',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: '1.6rem',
-            boxShadow: '0 2px 4px rgba(37, 99, 235, 0.08)',
+            boxShadow: '0 1px 3px rgba(37, 99, 235, 0.08)',
             flexShrink: 0
           }}>
-            {getEntityEmoji(currentEntity?.key, currentEntity?.icon)}
+            <EntityIcon entityKey={currentEntity?.key} iconName={currentEntity?.icon} size={22} color="#1D4ED8" />
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -396,13 +374,13 @@ export function DatabaseManagerView() {
                 {currentEntity?.label || 'Database Records'}
               </h2>
               <span style={{
-                padding: '3px 10px',
+                padding: '2px 9px',
                 borderRadius: '9999px',
-                fontSize: '0.75rem',
+                fontSize: '0.74rem',
                 fontWeight: 700,
                 background: '#F1F5F9',
-                color: '#1E293B',
-                border: '1px solid #CBD5E1'
+                color: '#334155',
+                border: '1px solid #E2E8F0'
               }}>
                 {totalRecords} {totalRecords === 1 ? 'record' : 'records'}
               </span>
@@ -425,10 +403,10 @@ export function DatabaseManagerView() {
             style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '6px',
-              padding: '9px 16px',
+              gap: '7px',
+              padding: '8px 14px',
               borderRadius: '8px',
-              fontSize: '0.85rem',
+              fontSize: '0.84rem',
               fontWeight: 600,
               background: '#FFFFFF',
               border: '1px solid #CBD5E1',
@@ -438,9 +416,7 @@ export function DatabaseManagerView() {
               transition: 'all 0.15s ease'
             }}
           >
-            <span style={{ display: 'inline-block', transform: isLoading ? 'rotate(360deg)' : 'none', transition: 'transform 0.5s ease' }}>
-              🔄
-            </span>
+            <IconRefresh size={15} color="#64748B" style={{ transform: isLoading ? 'rotate(360deg)' : 'none', transition: 'transform 0.5s ease' }} />
             Refresh
           </button>
 
@@ -452,10 +428,10 @@ export function DatabaseManagerView() {
             style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '6px',
-              padding: '9px 16px',
+              gap: '7px',
+              padding: '8px 14px',
               borderRadius: '8px',
-              fontSize: '0.85rem',
+              fontSize: '0.84rem',
               fontWeight: 600,
               background: '#F0FDF4',
               border: '1px solid #BBF7D0',
@@ -465,7 +441,7 @@ export function DatabaseManagerView() {
               transition: 'all 0.15s ease'
             }}
           >
-            <span>{isSeeding ? '🔄' : '🌱'}</span>
+            <IconSprout size={15} color="#15803D" />
             {isSeeding ? 'Seeding...' : 'Seed Master Data'}
           </button>
 
@@ -476,20 +452,20 @@ export function DatabaseManagerView() {
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '6px',
-                padding: '9px 18px',
+                gap: '7px',
+                padding: '8px 16px',
                 borderRadius: '8px',
-                fontSize: '0.85rem',
+                fontSize: '0.84rem',
                 fontWeight: 700,
                 background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
                 color: '#FFFFFF',
                 border: 'none',
                 cursor: 'pointer',
-                boxShadow: '0 2px 8px rgba(37, 99, 235, 0.3)',
+                boxShadow: '0 2px 6px rgba(37, 99, 235, 0.28)',
                 transition: 'all 0.15s ease'
               }}
             >
-              <span style={{ fontSize: '0.95rem' }}>➕</span>
+              <IconPlus size={15} color="#FFFFFF" />
               Add {currentEntity.singularLabel}
             </button>
           )}
@@ -500,18 +476,17 @@ export function DatabaseManagerView() {
       <div style={{
         background: '#FFFFFF',
         border: '1px solid #E2E8F0',
-        borderRadius: '14px',
-        padding: '10px 12px',
+        borderRadius: '12px',
+        padding: '8px 10px',
         boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)',
         display: 'flex',
         flexWrap: 'wrap',
         alignItems: 'center',
-        gap: '8px'
+        gap: '6px'
       }}>
         {metadata?.entities.map(ent => {
           const isSelected = ent.key === selectedEntityKey;
           const isHovered = hoveredTab === ent.key;
-          const emoji = getEntityEmoji(ent.key, ent.icon);
           return (
             <button
               key={ent.key}
@@ -525,33 +500,38 @@ export function DatabaseManagerView() {
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '8px',
-                padding: '8px 14px',
+                gap: '7px',
+                padding: '7px 13px',
                 borderRadius: '8px',
-                fontSize: '0.84rem',
-                fontWeight: isSelected ? 700 : 600,
+                fontSize: '0.83rem',
+                fontWeight: isSelected ? 700 : 500,
                 whiteSpace: 'nowrap',
                 cursor: 'pointer',
-                border: isSelected ? '1px solid #0B1D33' : '1px solid #E2E8F0',
+                border: isSelected ? '1px solid #0B1D33' : '1px solid transparent',
                 background: isSelected
                   ? '#0B1D33'
                   : isHovered
-                  ? '#EFF6FF'
-                  : '#F8FAFC',
-                color: isSelected ? '#FFFFFF' : isHovered ? '#1D4ED8' : '#334155',
-                boxShadow: isSelected ? '0 2px 6px rgba(11, 29, 51, 0.18)' : 'none',
+                  ? '#F1F5F9'
+                  : 'transparent',
+                color: isSelected ? '#FFFFFF' : isHovered ? '#0F172A' : '#475569',
+                boxShadow: isSelected ? '0 1px 4px rgba(11, 29, 51, 0.2)' : 'none',
                 transition: 'all 0.15s ease'
               }}
             >
-              <span style={{ fontSize: '1.1rem', lineHeight: 1 }}>{emoji}</span>
+              <EntityIcon
+                entityKey={ent.key}
+                iconName={ent.icon}
+                size={15}
+                color={isSelected ? '#60A5FA' : isHovered ? '#2563EB' : '#64748B'}
+              />
               <span>{ent.label}</span>
               {isSelected && (
                 <span style={{
-                  padding: '2px 7px',
+                  padding: '1px 6px',
                   borderRadius: '9999px',
-                  fontSize: '0.72rem',
+                  fontSize: '0.7rem',
                   fontWeight: 700,
-                  background: '#3B82F6',
+                  background: '#2563EB',
                   color: '#FFFFFF'
                 }}>
                   {totalRecords}
@@ -567,15 +547,15 @@ export function DatabaseManagerView() {
         background: '#FFFFFF',
         border: '1px solid #E2E8F0',
         borderRadius: '12px',
-        padding: '12px 18px',
+        padding: '12px 16px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         flexWrap: 'wrap',
         gap: '12px',
-        boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)'
+        boxShadow: '0 1px 2px rgba(0, 0, 0, 0.02)'
       }}>
-        <form onSubmit={handleSearchSubmit} style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: '1 1 320px', maxWidth: '480px' }}>
+        <form onSubmit={handleSearchSubmit} style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: '1 1 300px', maxWidth: '440px' }}>
           <div style={{ position: 'relative', width: '100%' }}>
             <span style={{
               position: 'absolute',
@@ -583,10 +563,11 @@ export function DatabaseManagerView() {
               top: '50%',
               transform: 'translateY(-50%)',
               color: '#94A3B8',
-              fontSize: '0.88rem',
+              display: 'flex',
+              alignItems: 'center',
               pointerEvents: 'none'
             }}>
-              🔍
+              <IconSearch size={15} color="#94A3B8" />
             </span>
             <input
               type="text"
@@ -595,10 +576,10 @@ export function DatabaseManagerView() {
               placeholder={`Search ${currentEntity?.label || 'records'}...`}
               style={{
                 width: '100%',
-                padding: '9px 12px 9px 36px',
+                padding: '8px 12px 8px 34px',
                 borderRadius: '8px',
                 border: '1px solid #CBD5E1',
-                fontSize: '0.86rem',
+                fontSize: '0.85rem',
                 color: '#0F172A',
                 backgroundColor: '#FFFFFF',
                 outline: 'none',
@@ -609,13 +590,13 @@ export function DatabaseManagerView() {
           <button
             type="submit"
             style={{
-              padding: '9px 16px',
-              background: '#F1F5F9',
+              padding: '8px 14px',
+              background: '#F8FAFC',
               border: '1px solid #CBD5E1',
               borderRadius: '8px',
               color: '#334155',
               fontWeight: 600,
-              fontSize: '0.85rem',
+              fontSize: '0.84rem',
               cursor: 'pointer',
               whiteSpace: 'nowrap'
             }}
@@ -630,16 +611,19 @@ export function DatabaseManagerView() {
                 fetchRecords(1, '');
               }}
               style={{
-                padding: '9px 12px',
+                padding: '8px 10px',
                 background: 'transparent',
                 border: 'none',
                 color: '#64748B',
                 fontWeight: 600,
-                fontSize: '0.85rem',
-                cursor: 'pointer'
+                fontSize: '0.84rem',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px'
               }}
             >
-              Clear
+              <IconX size={14} /> Clear
             </button>
           )}
         </form>
@@ -687,7 +671,9 @@ export function DatabaseManagerView() {
       }}>
         {isLoading ? (
           <div style={{ padding: '60px 20px', textAlign: 'center', color: '#64748B' }}>
-            <div style={{ fontSize: '2rem', marginBottom: '10px' }}>🔄</div>
+            <div style={{ display: 'inline-flex', padding: '12px', borderRadius: '50%', background: '#EFF6FF', marginBottom: '12px' }}>
+              <IconRefresh size={24} color="#2563EB" style={{ animation: 'spin 1s linear infinite' }} />
+            </div>
             <p style={{ margin: 0, fontWeight: 600, fontSize: '0.92rem', color: '#334155' }}>
               Querying {currentEntity?.label}...
             </p>
@@ -696,12 +682,14 @@ export function DatabaseManagerView() {
             </p>
           </div>
         ) : records.length === 0 ? (
-          <div style={{ padding: '60px 20px', textAlign: 'center', color: '#64748B' }}>
-            <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>📂</div>
-            <h3 style={{ margin: '0 0 6px 0', fontSize: '1.1rem', fontWeight: 700, color: '#0F172A' }}>
+          <div style={{ padding: '56px 20px', textAlign: 'center', color: '#64748B' }}>
+            <div style={{ display: 'inline-flex', padding: '14px', borderRadius: '12px', background: '#F8FAFC', border: '1px solid #E2E8F0', marginBottom: '14px' }}>
+              <IconFolderEmpty size={36} color="#94A3B8" />
+            </div>
+            <h3 style={{ margin: '0 0 6px 0', fontSize: '1.05rem', fontWeight: 700, color: '#0F172A' }}>
               No records found
             </h3>
-            <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748B' }}>
+            <p style={{ margin: 0, fontSize: '0.84rem', color: '#64748B' }}>
               {searchQuery
                 ? `No records matching "${searchQuery}" in ${currentEntity?.label}.`
                 : `There are currently no records stored in ${currentEntity?.label}.`}
@@ -715,7 +703,7 @@ export function DatabaseManagerView() {
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '6px',
-                  padding: '8px 16px',
+                  padding: '7px 14px',
                   borderRadius: '8px',
                   fontSize: '0.82rem',
                   fontWeight: 700,
@@ -725,7 +713,7 @@ export function DatabaseManagerView() {
                   cursor: 'pointer'
                 }}
               >
-                + Add First {currentEntity.singularLabel}
+                <IconPlus size={14} color="#1D4ED8" /> Add First {currentEntity.singularLabel}
               </button>
             )}
           </div>
@@ -833,7 +821,7 @@ export function DatabaseManagerView() {
                             style={{
                               display: 'inline-flex',
                               alignItems: 'center',
-                              gap: '4px',
+                              gap: '5px',
                               padding: '5px 10px',
                               borderRadius: '6px',
                               fontSize: '0.78rem',
@@ -845,7 +833,7 @@ export function DatabaseManagerView() {
                               transition: 'all 0.15s ease'
                             }}
                           >
-                            <span>✏️</span> Edit
+                            <IconEdit size={13} color="#1D4ED8" /> Edit
                           </button>
                           <button
                             type="button"
@@ -854,7 +842,7 @@ export function DatabaseManagerView() {
                             style={{
                               display: 'inline-flex',
                               alignItems: 'center',
-                              gap: '4px',
+                              gap: '5px',
                               padding: '5px 10px',
                               borderRadius: '6px',
                               fontSize: '0.78rem',
@@ -866,7 +854,7 @@ export function DatabaseManagerView() {
                               transition: 'all 0.15s ease'
                             }}
                           >
-                            <span>🗑️</span> Delete
+                            <IconTrash size={13} color="#DC2626" /> Delete
                           </button>
                         </div>
                       </td>
@@ -968,12 +956,23 @@ export function DatabaseManagerView() {
               justifyContent: 'space-between'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ fontSize: '1.3rem' }}>{getEntityEmoji(currentEntity.key, currentEntity.icon)}</span>
+                <div style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '8px',
+                  background: '#EFF6FF',
+                  border: '1px solid #BFDBFE',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <EntityIcon entityKey={currentEntity.key} iconName={currentEntity.icon} size={18} color="#2563EB" />
+                </div>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#0F172A' }}>
+                  <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: '#0F172A' }}>
                     {modalMode === 'create' ? `Add New ${currentEntity.singularLabel}` : `Edit ${currentEntity.singularLabel}`}
                   </h3>
-                  <p style={{ margin: '2px 0 0 0', fontSize: '0.8rem', color: '#64748B' }}>
+                  <p style={{ margin: '2px 0 0 0', fontSize: '0.78rem', color: '#64748B' }}>
                     {modalMode === 'create'
                       ? `Create a new record in ${currentEntity.label}`
                       : `Update record properties in ${currentEntity.label}`}
@@ -986,13 +985,16 @@ export function DatabaseManagerView() {
                 style={{
                   background: 'none',
                   border: 'none',
-                  fontSize: '1.25rem',
                   color: '#64748B',
                   cursor: 'pointer',
-                  padding: '4px'
+                  padding: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '6px'
                 }}
               >
-                &times;
+                <IconX size={18} color="#64748B" />
               </button>
             </div>
 
@@ -1104,11 +1106,12 @@ export function DatabaseManagerView() {
                                 border: 'none',
                                 color: '#64748B',
                                 cursor: 'pointer',
-                                fontSize: '1rem',
+                                display: 'flex',
+                                alignItems: 'center',
                                 padding: '4px'
                               }}
                             >
-                              {showPassword ? '👁️' : '🙈'}
+                              {showPassword ? <IconEyeOff size={16} /> : <IconEye size={16} />}
                             </button>
                           </div>
                         </div>
@@ -1192,7 +1195,7 @@ export function DatabaseManagerView() {
                     gap: '6px'
                   }}
                 >
-                  {isSaving && <span>🔄</span>}
+                  {isSaving && <IconRefresh size={14} color="#FFFFFF" style={{ animation: 'spin 1s linear infinite' }} />}
                   {modalMode === 'create' ? 'Save New Record' : 'Save Changes'}
                 </button>
               </div>
@@ -1326,7 +1329,7 @@ export function DatabaseManagerView() {
                   gap: '6px'
                 }}
               >
-                {isDeleting && <span>🔄</span>}
+                {isDeleting && <IconRefresh size={14} color="#FFFFFF" style={{ animation: 'spin 1s linear infinite' }} />}
                 {deleteConfirmationPrompt ? 'Confirm Cascade Delete' : 'Confirm Delete'}
               </button>
             </div>
