@@ -11,12 +11,16 @@ export class ReviewController {
   }
 
   private getDepartmentFilter(req: Request): string | undefined {
-    // If the user is an admin, they can see all departments (return undefined filter)
-    if (req.user?.role === Roles.ADMIN) {
-      return undefined;
+    // If an explicit departmentId is passed in query params, respect it
+    if (req.query.departmentId) {
+      return String(req.query.departmentId);
     }
-    // Otherwise, restrict to their department (e.g. Coordinator)
-    return (req.user as any)?.departmentId;
+    // Scope to user's assigned department (e.g. B.Ed. HOD, Branch HOD, Coordinator)
+    if ((req.user as any)?.departmentId) {
+      return (req.user as any)?.departmentId;
+    }
+    // Institutional administrators without a department can view all
+    return undefined;
   }
 
   public getDashboardStats = async (req: Request, res: Response): Promise<void> => {

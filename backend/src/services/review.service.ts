@@ -1,11 +1,14 @@
 import prisma from '../database';
 import { ReportStatus } from '@prisma/client';
+import { isBedDepartment } from '../config/branch-codes';
 
 export class ReviewService {
   /**
    * Retrieves pending reports.
-   * If departmentId is provided, filters to only that department (Coordinator logic).
-   * Otherwise, fetches all pending reports (Admin logic).
+   * If departmentId is provided:
+   *  - If B.Ed. department: retrieves all 1st year (1-1 and 1-2) reports across all branches.
+   *  - If branch department: retrieves 2nd, 3rd, 4th year reports for that department.
+   * Otherwise, fetches all pending reports (Admin/Management logic).
    */
   public async getPendingReports(departmentId?: string) {
     const whereClause: any = {
@@ -14,9 +17,19 @@ export class ReviewService {
     };
 
     if (departmentId) {
-      whereClause.subject = {
-        departmentId
-      };
+      const dept = await prisma.department.findUnique({ where: { id: departmentId } });
+      const isBed = isBedDepartment(dept?.departmentName);
+
+      if (isBed) {
+        whereClause.subject = {
+          semesterLevel: { in: ['1-1', '1-2', 'I-I', 'I-II', '1', '2'] }
+        };
+      } else {
+        whereClause.subject = {
+          departmentId,
+          semesterLevel: { notIn: ['1-1', '1-2', 'I-I', 'I-II', '1', '2'] }
+        };
+      }
     }
 
     return prisma.reportHistory.findMany({
@@ -92,7 +105,22 @@ export class ReviewService {
     const rejectedWhere: any = { status: ReportStatus.REJECTED, isDeleted: false };
 
     if (departmentId) {
-      const depFilter = { subject: { departmentId } };
+      const dept = await prisma.department.findUnique({ where: { id: departmentId } });
+      const isBed = isBedDepartment(dept?.departmentName);
+
+      const depFilter = isBed
+        ? {
+            subject: {
+              semesterLevel: { in: ['1-1', '1-2', 'I-I', 'I-II', '1', '2'] }
+            }
+          }
+        : {
+            subject: {
+              departmentId,
+              semesterLevel: { notIn: ['1-1', '1-2', 'I-I', 'I-II', '1', '2'] }
+            }
+          };
+
       Object.assign(pendingWhere, depFilter);
       Object.assign(approvedWhere, depFilter);
       Object.assign(rejectedWhere, depFilter);

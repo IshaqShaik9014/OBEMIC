@@ -71,12 +71,13 @@ export const DEPARTMENT_CONFIGS: DepartmentCodeConfig[] = [
     aliases: ['CSBS', 'CS & BS', 'COMPUTER SCIENCE AND BUSINESS SYSTEMS'],
   },
   {
-    departmentCode: 'H&S',
+    departmentCode: 'BED',
     subjectCodeToken: 'HS',
-    subjectCodeTokens: ['HS', 'BS', 'SH', 'HU', 'FED', 'ENG', 'MAT', 'PHY', 'CHY'],
-    departmentName: 'Humanities and Basic Sciences',
+    subjectCodeTokens: ['BED', 'BS', 'HS', 'ES', 'SH', 'HU', 'FED', 'ENG', 'MAT', 'PHY', 'CHY'],
+    departmentName: 'Basic Engineering Department',
     aliases: [
-      'H&S', 'HS', 'H & S', 'BSH', 'FED',
+      'BED', 'B.ED', 'B.ED.', 'BASIC ENGINEERING', 'BASIC ENGINEERING DEPARTMENT',
+      'FRESHERS', 'FIRST YEAR', '1ST YEAR', 'H&S', 'HS', 'H & S', 'BSH', 'FED',
       'HUMANITIES AND SCIENCES', 'BASIC SCIENCES AND HUMANITIES',
       'HUMANITIES AND BASIC SCIENCES', 'FRESHMAN ENGINEERING', 'HUMANITIES'
     ],
@@ -114,6 +115,21 @@ export const INTERDEPARTMENTAL_TOKENS = new Set([
   'SH', // Sciences and Humanities
   'FED',// Freshman Engineering
 ]);
+
+/**
+ * Checks if a department name or code corresponds to the Basic Engineering Department (B.Ed. / Freshers)
+ */
+export function isBedDepartment(deptNameOrCode?: string | null): boolean {
+  if (!deptNameOrCode) return false;
+  const normalized = deptNameOrCode.trim().toUpperCase();
+  const bedAliases = [
+    'BED', 'B.ED', 'B.ED.', 'BASIC ENGINEERING', 'BASIC ENGINEERING DEPARTMENT',
+    'FRESHERS', 'FIRST YEAR', '1ST YEAR', 'BSH', 'FED', 'H&S', 'HS',
+    'HUMANITIES AND SCIENCES', 'BASIC SCIENCES AND HUMANITIES',
+    'HUMANITIES AND BASIC SCIENCES', 'FRESHMAN ENGINEERING'
+  ];
+  return bedAliases.includes(normalized) || bedAliases.some(alias => normalized.includes(alias));
+}
 
 /**
  * Checks if a token represents an inter-departmental, foundational, or elective subject

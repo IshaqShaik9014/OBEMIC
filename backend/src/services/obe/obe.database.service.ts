@@ -1108,8 +1108,8 @@ export class ObeDatabaseService {
       summary.roles++;
     }
 
-    // 2. Departments
-    const depts = ['CSE', 'MECH', 'ECE', 'EEE', 'IT', 'AIML', 'AIDS', 'CIVIL'];
+    // 2. Departments (including BED for Freshers / First-Year Engineering)
+    const depts = ['BED', 'CSE', 'MECH', 'ECE', 'EEE', 'IT', 'AIML', 'AIDS', 'CIVIL'];
     const createdDepts: Record<string, any> = {};
     for (const dept of depts) {
       const d = await prisma.department.upsert({

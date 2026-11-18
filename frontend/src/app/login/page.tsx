@@ -327,7 +327,7 @@ export default function LoginPage({ initialModalOpen = true }: LoginPageProps) {
                         : role === 'coordinator'
                         ? 'e.g. coordinator@mictech.ac.in or Coordinator ID'
                         : role === 'obe_incharge'
-                        ? 'e.g. pavan.anumolu@mictech.ac.in or OBE001'
+                        ? 'e.g. obe@mictech.ac.in or OBE Employee ID'
                         : role === 'management'
                         ? 'e.g. management@mictech.ac.in'
                         : 'e.g. faculty@college.edu or Faculty ID'

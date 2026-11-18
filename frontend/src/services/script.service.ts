@@ -39,11 +39,12 @@ export const scriptService = {
   },
 
   /**
-   * Retrieves branch coordinators for a department
+   * Retrieves branch coordinators for a department (or B.Ed. coordinator if subject is 1st-year)
    */
-  async getBranchCoordinators(departmentId?: string): Promise<any[]> {
+  async getBranchCoordinators(departmentId?: string, subjectId?: string): Promise<any[]> {
     const query = new URLSearchParams();
     if (departmentId) query.append('departmentId', departmentId);
+    if (subjectId) query.append('subjectId', subjectId);
     const res = await api.fetch(`/scripts/branch-coordinators?${query.toString()}`);
     if (!res.ok) throw new Error('Failed to load branch coordinators');
     return res.json();

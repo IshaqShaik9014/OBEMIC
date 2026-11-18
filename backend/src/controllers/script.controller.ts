@@ -46,8 +46,8 @@ export class ScriptController {
 
   public getBranchCoordinators = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { departmentId } = req.query;
-      const coordinators = await this.scriptService.getBranchCoordinators(departmentId as string);
+      const { departmentId, subjectId } = req.query;
+      const coordinators = await this.scriptService.getBranchCoordinators(departmentId as string, subjectId as string);
       res.json(coordinators);
     } catch (e: any) {
       logger.error('Error fetching branch coordinators:', e);

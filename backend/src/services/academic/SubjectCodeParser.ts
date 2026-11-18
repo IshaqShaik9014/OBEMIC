@@ -38,6 +38,44 @@ export class SubjectCodeParser {
     'ELECTRONICS', 'COMPUTER', 'MECHANICAL', 'CIVIL'
   ]);
 
+  /**
+   * Identifies whether a subject belongs to the Basic Engineering Department (B.Ed. / Freshers / 1st Year).
+   * Subjects in Semester 1 (1-1) or Semester 2 (1-2) across all branches (IT, CS, ME, BS, HS, etc.)
+   * are administered by the B.Ed. HOD and combined Subject Coordinators.
+   */
+  public static isBedSubject(rawSubjectCode?: string | null, semesterLevel?: string | null): boolean {
+    if (semesterLevel) {
+      const cleanSem = semesterLevel.trim().toUpperCase();
+      if (
+        cleanSem === '1-1' || cleanSem === '1-2' ||
+        cleanSem === 'I-I' || cleanSem === 'I-II' ||
+        cleanSem === '1' || cleanSem === '2' ||
+        cleanSem.startsWith('1-')
+      ) {
+        return true;
+      }
+    }
+
+    if (rawSubjectCode) {
+      try {
+        const parsed = SubjectCodeParser.parse(rawSubjectCode);
+        if (parsed.semesterNumber === 1 || parsed.semesterNumber === 2) {
+          return true;
+        }
+      } catch {
+        // Fallback regex check for 1st year semester digit (1 or 2) in codes like 23IT1T03 or 23CS2T01
+        const fallbackMatch = /^(\d{2})([A-Z]{2,6})([12])([A-Z]+)(\d{1,3})$/i.exec(
+          rawSubjectCode.replace(/[\s\-_]+/g, '')
+        );
+        if (fallbackMatch) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
   public static parse(rawSubjectCode: string): ParsedSubjectCode {
     if (!rawSubjectCode || typeof rawSubjectCode !== 'string') {
       throw new Error('INVALID_SUBJECT_CODE: Subject code cannot be empty.');

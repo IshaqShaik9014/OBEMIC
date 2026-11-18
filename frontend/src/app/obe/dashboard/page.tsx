@@ -139,7 +139,7 @@ function ObeDashboardContent() {
       const bundle = bundles.find(b => b.id === assignBundleId);
       if (bundle && bundle.department) {
         try {
-          const coords = await scriptService.getBranchCoordinators(bundle.department.id);
+          const coords = await scriptService.getBranchCoordinators(bundle.department.id, bundle.subject?.id);
           setBranchCoordinators(coords);
           if (coords.length > 0) setSelectedCoordinatorId(coords[0].id);
         } catch (err) {

@@ -1,6 +1,8 @@
 import prisma from '../../database';
 import { ScriptStorageService, FileTreeNode } from './script.storage.service';
 import { ScriptAssignmentStatus } from '@prisma/client';
+import { SubjectCodeParser } from '../academic/SubjectCodeParser';
+import { isBedDepartment } from '../../config/branch-codes';
 
 export interface CreateBundleDTO {
   bundleName: string;
@@ -88,6 +90,7 @@ export class ScriptService {
 
   /**
    * Retrieves faculty members linked to a subject (or in the same department)
+   * For B.Ed. (1st Year) courses, broadens the pool to include B.Ed. faculty across sections.
    */
   public async getSubjectLinkedFaculty(subjectId: string) {
     const subject = await prisma.subject.findUnique({
@@ -117,10 +120,27 @@ export class ScriptService {
       }
     }
 
-    // Also fetch other faculty in this department for assignment flexibility
+    // Check if this is a 1st-year / B.Ed. subject (e.g. 23IT1T03, 1-1, 1-2)
+    const isBed = SubjectCodeParser.isBedSubject(subject.subjectCode, subject.semesterLevel);
+    const targetDeptIds = [subject.departmentId];
+
+    if (isBed) {
+      // Find BED department to also include basic sciences and humanities faculty
+      const bedDepts = await prisma.department.findMany({
+        where: {
+          departmentName: { in: ['BED', 'Basic Engineering Department', 'H&S', 'BSH', 'FED'] }
+        },
+        select: { id: true }
+      });
+      for (const bd of bedDepts) {
+        if (!targetDeptIds.includes(bd.id)) targetDeptIds.push(bd.id);
+      }
+    }
+
+    // Also fetch other faculty in target departments for assignment flexibility
     const deptFaculty = await prisma.user.findMany({
       where: {
-        departmentId: subject.departmentId,
+        departmentId: { in: targetDeptIds },
         status: 'ACTIVE',
         isDeleted: false,
         role: { roleName: 'FACULTY' }
@@ -141,9 +161,28 @@ export class ScriptService {
   }
 
   /**
-   * Retrieves Branch Coordinators (users with COORDINATOR or ADMIN role) for a department
+   * Retrieves Branch Coordinators (users with COORDINATOR or ADMIN role) for a department.
+   * If subjectId is supplied and identified as a 1st-year B.Ed. course, routes to the B.Ed. Coordinator.
    */
-  public async getBranchCoordinators(departmentId?: string) {
+  public async getBranchCoordinators(departmentId?: string, subjectId?: string) {
+    let targetDeptId = departmentId;
+
+    if (subjectId) {
+      const subject = await prisma.subject.findUnique({
+        where: { id: subjectId }
+      });
+      if (subject && SubjectCodeParser.isBedSubject(subject.subjectCode, subject.semesterLevel)) {
+        const bedDept = await prisma.department.findFirst({
+          where: {
+            departmentName: { in: ['BED', 'Basic Engineering Department', 'H&S', 'BSH', 'FED'] }
+          }
+        });
+        if (bedDept) {
+          targetDeptId = bedDept.id;
+        }
+      }
+    }
+
     const where: any = {
       status: 'ACTIVE',
       isDeleted: false,
@@ -151,8 +190,20 @@ export class ScriptService {
         roleName: { in: ['COORDINATOR', 'ADMIN'] }
       }
     };
-    if (departmentId) {
-      where.departmentId = departmentId;
+
+    if (targetDeptId) {
+      const dept = await prisma.department.findUnique({ where: { id: targetDeptId } });
+      if (dept && isBedDepartment(dept.departmentName)) {
+        const bedDepts = await prisma.department.findMany({
+          where: {
+            departmentName: { in: ['BED', 'Basic Engineering Department', 'H&S', 'BSH', 'FED'] }
+          },
+          select: { id: true }
+        });
+        where.departmentId = { in: bedDepts.map(d => d.id) };
+      } else {
+        where.departmentId = targetDeptId;
+      }
     }
 
     const coordinators = await prisma.user.findMany({
@@ -179,13 +230,42 @@ export class ScriptService {
   /**
    * Retrieves all script bundles allocated to a branch (for Branch Coordinator / HOD)
    * along with Subject Coordinator assignment info.
+   * Supports B.Ed. virtual routing:
+   * - B.Ed. combined coordinator/HOD receives ALL 1-1 and 1-2 script bundles across all branches.
+   * - Branch coordinators (IT, CSE, etc.) manage upper years (2-1 through 4-2).
    */
   public async getBranchBundles(departmentId: string) {
+    const dept = await prisma.department.findUnique({
+      where: { id: departmentId }
+    });
+    const isBed = isBedDepartment(dept?.departmentName);
+
+    const where: any = {
+      isDeleted: false
+    };
+
+    if (isBed) {
+      // B.Ed. Coordinator/HOD has combined authority over all 1st year subjects across all branches
+      where.OR = [
+        { departmentId },
+        { semesterLevel: { in: ['1-1', '1-2', 'I-I', 'I-II', '1', '2'] } },
+        { yearLevel: { in: ['I', '1', '1st', 'First'] } },
+        {
+          subject: {
+            semesterLevel: { in: ['1-1', '1-2', 'I-I', 'I-II', '1', '2'] }
+          }
+        }
+      ];
+    } else {
+      // Degree branch (e.g. IT, CSE, MECH) manages higher years (2-1 through 4-2).
+      // Filter out 1-1 and 1-2 which are under B.Ed. combined authority.
+      where.departmentId = departmentId;
+      where.semesterLevel = { notIn: ['1-1', '1-2', 'I-I', 'I-II', '1', '2'] };
+      where.yearLevel = { notIn: ['I', '1', '1st', 'First'] };
+    }
+
     const bundles = await prisma.scriptBundle.findMany({
-      where: {
-        departmentId,
-        isDeleted: false
-      },
+      where,
       include: {
         subject: {
           select: { id: true, subjectCode: true, subjectName: true }
@@ -333,7 +413,18 @@ export class ScriptService {
     });
     if (!subject) throw new Error('Selected subject not found in database');
 
-    const departmentId = subject.departmentId || bundleData.departmentId;
+    let departmentId = subject.departmentId || bundleData.departmentId;
+
+    // Check if this is a 1st-year / B.Ed. subject (e.g. 23IT1T03, 1-1, 1-2)
+    const isBed = SubjectCodeParser.isBedSubject(subject.subjectCode, subject.semesterLevel || bundleData.semesterLevel);
+    if (isBed) {
+      const bedDept = await prisma.department.findFirst({
+        where: { departmentName: { in: ['BED', 'Basic Engineering Department', 'H&S', 'BSH', 'FED'] } }
+      });
+      if (bedDept) {
+        departmentId = bedDept.id;
+      }
+    }
 
     // 2. Validate Academic Year
     let validAcademicYearId = bundleData.academicYearId;
@@ -421,7 +512,18 @@ export class ScriptService {
     });
     if (!subject) throw new Error('Selected subject not found in database');
 
-    const departmentId = subject.departmentId || bundleData.departmentId;
+    let departmentId = subject.departmentId || bundleData.departmentId;
+
+    // Check if this is a 1st-year / B.Ed. subject (e.g. 23IT1T03, 1-1, 1-2)
+    const isBed = SubjectCodeParser.isBedSubject(subject.subjectCode, subject.semesterLevel || bundleData.semesterLevel);
+    if (isBed) {
+      const bedDept = await prisma.department.findFirst({
+        where: { departmentName: { in: ['BED', 'Basic Engineering Department', 'H&S', 'BSH', 'FED'] } }
+      });
+      if (bedDept) {
+        departmentId = bedDept.id;
+      }
+    }
 
     // 2. Validate Academic Year
     let validAcademicYearId = bundleData.academicYearId;
@@ -512,8 +614,21 @@ export class ScriptService {
   }) {
     const where: any = { isDeleted: false };
     if (filters.subjectId) where.subjectId = filters.subjectId;
-    if (filters.departmentId) where.departmentId = filters.departmentId;
     if (filters.academicYearId) where.academicYearId = filters.academicYearId;
+
+    if (filters.departmentId) {
+      const dept = await prisma.department.findUnique({ where: { id: filters.departmentId } });
+      if (dept && isBedDepartment(dept.departmentName)) {
+        where.OR = [
+          { departmentId: filters.departmentId },
+          { semesterLevel: { in: ['1-1', '1-2', 'I-I', 'I-II', '1', '2'] } },
+          { yearLevel: { in: ['I', '1', '1st', 'First'] } },
+          { subject: { semesterLevel: { in: ['1-1', '1-2', 'I-I', 'I-II', '1', '2'] } } }
+        ];
+      } else {
+        where.departmentId = filters.departmentId;
+      }
+    }
 
     const bundles = await prisma.scriptBundle.findMany({
       where,
